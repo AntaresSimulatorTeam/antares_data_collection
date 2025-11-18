@@ -19,15 +19,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
 
       - name: Install tox + tox-uv
         run: uv tool install tox --with tox-uv
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
       - name: Run tox
         run: tox -e ${{ matrix.tox-env }}
