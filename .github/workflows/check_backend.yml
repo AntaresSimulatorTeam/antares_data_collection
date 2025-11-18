@@ -1,5 +1,11 @@
 name: check_backend.yml
 
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+
 jobs:
   build:
     name: continuous-integration
