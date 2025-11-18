@@ -29,4 +29,4 @@ jobs:
         run: uv tool install tox --with tox-uv
 
       - name: Run tests with tox+uv
-        run: tox -e py${{ matrix.python-version//./ }}
+        run: tox -e py${{ replace(matrix.python-version, '.', '') }}
