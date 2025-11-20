@@ -1,4 +1,4 @@
-name: tests
+name: tests+lint+type
 
 on:
   push:
@@ -24,6 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+          python-version: ${{ runner.os == 'Windows' && '3.11' || null }}
 
       - name: Install tox + tox-uv
         run: uv tool install tox --with tox-uv
