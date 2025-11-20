@@ -10,7 +10,9 @@
 * Install `uv` and follow steps from doc ([Doc](https://docs.astral.sh/uv/))
 * Clone repository `git clone https://github.com/AntaresSimulatorTeam/antares_data_collection.git`
 * Put in the root directory and install dependencies (prod+dev)
-  * `uv sync` 
+  * `uv sync --locked --all-extras --dev` 
+
+# check/test package
 
 ## Linting and formatting
 
@@ -19,3 +21,8 @@ To reformat your code, use this command line: `uv ruff check src/ tests/ --fix &
 ## Typechecking
 
 To typecheck your code, use this command line: `uv run mypy src/`
+
+## use `tox` for multi version of python and multi os
+`tox` configuration is based on file `tox.ini`
+
+Just use `tox`
