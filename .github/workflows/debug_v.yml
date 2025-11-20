@@ -1,0 +1,21 @@
+name: debug uv/tox on windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install tox + tox-uv
+        run: uv tool install tox --with tox-uv
+
+      - name: Determine python version tox is using
+        run: D:\a\_temp\uv-tool-dir\tox\Scripts\python.exe --version
