@@ -1,0 +1,37 @@
+name: tests+lint+type
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        # tox-env: ["py310", "py311", "py312"] => config used with tox.ini
+
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: ${{ runner.os == 'Windows' && '3.11' || null }}
+
+      - name: Install tox + tox-uv
+        run: uv tool install tox --with tox-uv
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tox
+        # use all env tox defined in tox.ini
+        run: tox
