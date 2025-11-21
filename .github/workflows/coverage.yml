@@ -20,6 +20,9 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install tox + tox-uv
+        run: uv tool install tox --with tox-uv
+
       - name: Install project dependencies
         run: uv sync --locked --all-extras --dev
 
