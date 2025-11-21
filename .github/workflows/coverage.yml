@@ -1,0 +1,54 @@
+name: Python CI with Coverage and Sonar
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  coverage:
+    name: Run tests and generate coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python and uv
+        # Sonar need "Use full commit SHA hash"
+        uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244
+        with:
+          python-version: 3.11
+
+      - name: Install tox + tox-uv
+        run: uv tool install tox --with tox-uv
+
+      - name: Install project dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests and generate coverage
+        run: tox -e coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage-report
+          path: coverage.xml
+
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-22.04
+    needs: coverage
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: python-coverage-report
+
+      - name: Run SonarCloud analysis
+        uses: sonarsource/sonarcloud-github-action@v3.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
