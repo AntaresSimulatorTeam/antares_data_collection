@@ -54,7 +54,7 @@ def check_file(file_path: Path, action: str) -> bool:
         ) as f:  # doesn't seem really optimal as I read the file twice.
             already_licensed = False
             lines = f.readlines()
-            first_line = lines[0].lower() if len(lines) > 0 else []
+            first_line = lines[0].lower() if len(lines) > 0 else ""
             if (
                 "copyright" in first_line or "license" in first_line
             ):  # assumes license follows this
@@ -66,6 +66,9 @@ def check_file(file_path: Path, action: str) -> bool:
     if new_lines:
         with open(file_path, "w") as f:
             f.writelines(new_lines)
+
+    # if no header
+    return False
 
 
 def check_dir(
@@ -114,7 +117,7 @@ def cli(path: Path, action: str) -> None:
             f"Parameter --action should be 'check', 'check-strict' or 'fix' and was '{action}'"
         )
 
-    invalid_files = []
+    invalid_files: List[Path] = []
     cwd = Path.cwd()
     check_dir(cwd, path, action, invalid_files)
     file_count = len(invalid_files)

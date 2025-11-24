@@ -32,12 +32,6 @@ omit = [
     "*/site-packages/antares_data_collection/cli/*"
 ]
 
-[tool.mypy]
-exclude = ["src/antares_data_collection/cli/.*"]
-
-[tool.ruff]
-exclude = ["src/antares_data_collection/cli/"]
-
 [project.scripts]
 license-checker = "antares_data_collection.cli.license_checker_and_adder:cli"
 
