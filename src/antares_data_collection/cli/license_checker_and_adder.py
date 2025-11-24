@@ -135,7 +135,7 @@ def cli(path: Path, action: str) -> None:
         click.echo("All good !")
 
 
-def main():
+def main() -> None:
     cli(prog_name="cli")
 
 

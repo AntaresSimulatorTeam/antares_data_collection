@@ -25,13 +25,6 @@ classifiers = [
     "Typing :: Typed"
 ]
 
-# cli/ is used to apply a function to manage header of scripts
-[tool.coverage.run]
-omit = [
-    "src/antares_data_collection/cli/*",
-    "*/site-packages/antares_data_collection/cli/*"
-]
-
 [project.scripts]
 license-checker = "antares_data_collection.cli.license_checker_and_adder:cli"
 
