@@ -28,7 +28,8 @@ classifiers = [
 # cli/ is used to apply a function to manage header of scripts
 [tool.coverage.run]
 omit = [
-    "*/cli/license_checker_and_adder.py",
+    "src/antares_data_collection/cli/*",
+    "*/site-packages/antares_data_collection/cli/*"
 ]
 
 [tool.mypy]
