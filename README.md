@@ -9,6 +9,7 @@
 
 * Install `uv` and follow steps from doc ([Doc](https://docs.astral.sh/uv/))
 * Install a specific version of Python with ` uv python install 3.11`
+* Install `tox` with `uv tool install tox --with tox-uv`
 * Clone repository `git clone https://github.com/AntaresSimulatorTeam/antares_data_collection.git`
 * Put in the root directory and install dependencies (prod+dev)
   * `uv sync --locked --all-extras --dev` 
