@@ -8,9 +8,10 @@ authors = [
 ]
 requires-python = ">=3.11"
 
-# click is used as runtime with package to add header with licence information
+# click is used as runtime with the package to add header with license information
 dependencies = [
     "click>=8.3.1",
+    "pydantic>=2.12.4",
 ]
 
 classifiers = [
