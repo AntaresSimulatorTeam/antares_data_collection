@@ -7,8 +7,10 @@ authors = [
     { name = "berthetclement", email = "clement.berthet013@gmail.com" }
 ]
 requires-python = ">=3.11"
+
+# click is used as runtime with package to add header with licence information
 dependencies = [
-    "pandas"
+    "click>=8.3.1",
 ]
 
 classifiers = [
@@ -22,6 +24,9 @@ classifiers = [
     "Typing :: Typed"
 ]
 
+[project.scripts]
+license-checker = "antares_data_collection.cli.license_checker_and_adder:cli"
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -33,7 +38,6 @@ where = ["src"]
 dev = [
     "coverage>=7.11.3",
     "mypy>=1.18.2",
-    "pandas-stubs>=2.3.2.250926",
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.5",
