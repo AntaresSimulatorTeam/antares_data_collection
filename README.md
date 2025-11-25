@@ -14,6 +14,15 @@
 * Put in the root directory and install dependencies (prod+dev)
   * `uv sync --locked --all-extras --dev` 
 
+## Install package development
+* `uv run pip install  -e .`
+
+If you have issue with pip :  
+* `which pip`
+* add pip in your .venv in your project `python -m ensurepip --upgrade`
+  * then upgrade : ` python -m pip install --upgrade pip setuptools build`
+
+
 ## Install Dependencies
 Install all dependencies (prod + dev):  
 `uv sync`
@@ -54,6 +63,7 @@ To simply launch all your tests :
 ## Specific tests
 Use `ruff` to check and format your code :
   - `tox -e lint`
+  - these tests execute an internal script to check/put an header on scripts/tests
 
 Use `mypy` to check Typechecking : 
   - `tox -e type`
