@@ -23,8 +23,8 @@ jobs:
       - name: Install tox + tox-uv
         run: uv tool install tox --with tox-uv
 
-#      - name: Install project dependencies
-#        run: uv sync --locked --all-extras --dev
+      - name: Install project dependencies
+        run: uv sync --locked --all-extras --dev
 
       - name: Run tests and generate coverage
         run: tox -e coverage
@@ -52,3 +52,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.python.coverage.reportPaths=coverage.xml
