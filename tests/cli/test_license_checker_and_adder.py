@@ -67,15 +67,19 @@ def test_check_file_fix(tmp_py_file: Path) -> None:
     content: str = tmp_py_file.read_text()
     assert LICENSE_HEADER.splitlines()[0] in content
 
+
 def test_check_file_fix_already_licensed(tmp_path: Path) -> None:
     # file with incomplete license header
     file3: Path = tmp_path / "bb.py"
-    file3.write_text("# Copyright (c) 2024, RTE (https://www.rte-france.com)" + "\nprint('bb')\n")
+    file3.write_text(
+        "# Copyright (c) 2024, RTE (https://www.rte-france.com)" + "\nprint('bb')\n"
+    )
 
     # then
     with pytest.raises(ValueError, match="already licensed."):
         # when
         lca.check_file(file3, action="fix")
+
 
 def test_check_file_already_licensed(tmp_py_file: Path) -> None:
     tmp_py_file.write_text(LICENSE_HEADER + "\nprint('hello')")
@@ -121,26 +125,28 @@ def test_check_dir_fix(tmp_dir_with_files: Path) -> None:
     content_c: str = c_path.read_text()
     assert LICENSE_HEADER.splitlines()[0] in content_c
 
+
 # -------------------
 # Tests: runner CliRunner()
 # -------------------
 def test_cli_raise_error_parameter(tmp_dir_with_files: Path) -> None:
     from click.testing import CliRunner
+
     runner = CliRunner()
-    result = runner.invoke(
-        lca.cli,
-        [f"--path={tmp_dir_with_files}", "--action=toto"]
-    )
+    result = runner.invoke(lca.cli, [f"--path={tmp_dir_with_files}", "--action=toto"])
 
     # exit code
     assert result.exit_code != 0
     # check if ValueError
     assert isinstance(result.exception, ValueError)
     # catch ValueError message
-    assert "Parameter --action should be 'check', 'check-strict' or 'fix' and was 'toto'" in str(result.exception)
+    assert (
+        "Parameter --action should be 'check', 'check-strict' or 'fix' and was 'toto'"
+        in str(result.exception)
+    )
 
 
-def test_cli_all_good(tmp_path: Path):
+def test_cli_all_good(tmp_path: Path) -> None:
     file = tmp_path / "good.py"
     file.write_text(lca.LICENSE_HEADER + "\nprint('ok')\n")
 
@@ -150,22 +156,24 @@ def test_cli_all_good(tmp_path: Path):
     assert "All good !" in result.output
 
 
-def test_cli_invalid_files_check(tmp_dir_with_files: Path):
+def test_cli_invalid_files_check(tmp_dir_with_files: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(lca.cli, [f"--path={tmp_dir_with_files}", "--action=check"])
     assert result.exit_code == 0
     assert "files have an invalid header" in result.output
 
 
-def test_cli_invalid_files_check_strict(tmp_dir_with_files: Path):
+def test_cli_invalid_files_check_strict(tmp_dir_with_files: Path) -> None:
     runner = CliRunner()
-    result = runner.invoke(lca.cli, [f"--path={tmp_dir_with_files}", "--action=check-strict"])
+    result = runner.invoke(
+        lca.cli, [f"--path={tmp_dir_with_files}", "--action=check-strict"]
+    )
     assert result.exit_code != 0
     assert isinstance(result.exception, ValueError)
     assert "Some files have invalid headers" in str(result.exception)
 
 
-def test_cli_invalid_files_fix(tmp_dir_with_files: Path):
+def test_cli_invalid_files_fix(tmp_dir_with_files: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(lca.cli, [f"--path={tmp_dir_with_files}", "--action=fix"])
     assert result.exit_code == 0
