@@ -25,6 +25,17 @@ classifiers = [
     "Typing :: Typed"
 ]
 
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+strict = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_missing_imports = true
+disable_error_code = ["misc"]
+
 [project.scripts]
 license-checker = "antares_data_collection.cli.license_checker_and_adder:cli"
 

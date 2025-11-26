@@ -46,13 +46,13 @@ class ImportConfig(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def set_file_type(cls, model):
-        if model.file_type is None:
-            suffix = model.path.suffix.lower()
+    def set_file_type(self) -> "ImportConfig":
+        if self.file_type is None:
+            suffix = self.path.suffix.lower()
             if suffix in {".csv", ".txt", ".tsv"}:
-                model.file_type = "csv"
+                self.file_type = "csv"
             elif suffix in {".xls", ".xlsx"}:
-                model.file_type = "excel"
+                self.file_type = "excel"
             elif suffix == ".parquet":
-                model.file_type = "parquet"
-        return model
+                self.file_type = "parquet"
+        return self
