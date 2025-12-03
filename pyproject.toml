@@ -34,6 +34,15 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.mypy]
+#python_version = "3.11"
+ignore_missing_imports = true
+# strict = true
+files = ["src", "tests"]
+
+[tool.coverage.run]
+relative_files = true
+
 [dependency-groups]
 dev = [
     "coverage>=7.11.3",
