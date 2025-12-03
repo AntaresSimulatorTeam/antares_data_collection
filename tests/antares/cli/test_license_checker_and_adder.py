@@ -14,7 +14,7 @@ import pytest
 from pathlib import Path
 from typing import List
 
-from antares_data_collection.cli import license_checker_and_adder as lca
+from antares.data_collection.cli import license_checker_and_adder as lca
 
 LICENSE_HEADER = lca.LICENSE_HEADER
 
