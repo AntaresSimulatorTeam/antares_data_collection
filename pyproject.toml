@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 [project.scripts]
-license-checker = "antares_data_collection.cli.license_checker_and_adder:cli"
+license-checker = "antares.data_collection.cli.license_checker_and_adder:cli"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -33,6 +33,15 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.mypy]
+#python_version = "3.11"
+ignore_missing_imports = true
+# strict = true
+files = ["src", "tests"]
+
+[tool.coverage.run]
+relative_files = true
 
 [dependency-groups]
 dev = [
