@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import re
 
 import pytest
 from pathlib import Path
@@ -35,7 +36,7 @@ def test_links_dir_input_not_exists(tmp_path: Path) -> None:
 
     # then
     with pytest.raises(
-        ValueError, match=f"Input directory {fake_path} does not exist."
+        ValueError, match=re.escape(f"Input directory {fake_path} does not exist.")
     ):
         links.create_links_part(dir_input=fake_path, dir_output=fake_path)
 
@@ -46,7 +47,7 @@ def test_links_dir_output_not_exists(tmp_path: Path) -> None:
 
     # then
     with pytest.raises(
-        ValueError, match=f"Output directory {fake_path} does not exist."
+        ValueError, match=re.escape(f"Output directory {fake_path} does not exist.")
     ):
         links.create_links_part(dir_input=tmp_path, dir_output=fake_path)
 
