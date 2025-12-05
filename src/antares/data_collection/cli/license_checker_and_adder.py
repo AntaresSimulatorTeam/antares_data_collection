@@ -100,7 +100,8 @@ def check_dir(
     "--path",
     nargs=1,
     required=True,
-    type=click.Path(exists=True, path_type=Path),
+    # Use str as path_type for better typing compatibility with types-click stubs
+    type=click.Path(exists=True, path_type=str),
     help="Path to check",
 )
 @click.option(
@@ -111,7 +112,7 @@ def check_dir(
     type=str,
     help="Action to realise. Can either be check or fix",
 )
-def cli(path: Path, action: str) -> None:
+def cli(path: str, action: str) -> None:
     if action not in ["check", "check-strict", "fix"]:
         raise ValueError(
             f"Parameter --action should be 'check', 'check-strict' or 'fix' and was '{action}'"
@@ -119,7 +120,8 @@ def cli(path: Path, action: str) -> None:
 
     invalid_files: List[Path] = []
     cwd = Path.cwd()
-    check_dir(cwd, path, action, invalid_files)
+    path_obj = Path(path)
+    check_dir(cwd, path_obj, action, invalid_files)
     file_count = len(invalid_files)
     if file_count > 0:
         if action == "fix":
