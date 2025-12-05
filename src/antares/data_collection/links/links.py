@@ -24,7 +24,7 @@ def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
     if not dir_output.is_dir():
         raise ValueError(f"Output directory {dir_output} does not exist.")
 
-    for file_name in conf_links.LinksFileNames.files:
+    for file_name in conf_links.LinksFileNames().files:
         path_file = dir_input / file_name
         if not path_file.exists():
             raise ValueError(f"Input file does not exist: {path_file}")

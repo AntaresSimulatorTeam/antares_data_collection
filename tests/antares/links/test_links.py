@@ -22,7 +22,7 @@ from antares.data_collection.links import conf_links, links
 # -------------------
 @pytest.fixture
 def tmp_dir_with_links_files(tmp_path: Path) -> Path:
-    names_files = conf_links.LinksFileNames.files
+    names_files = conf_links.LinksFileNames().files
     for filename in names_files:
         file_path: Path = tmp_path / filename
         file_path.touch()

@@ -11,13 +11,8 @@
 # This file is part of the Antares project.
 
 
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
 class LinksFileNames:
-    files: tuple[str, ...] = (
-        "NTCs Index.csv",
-        "NTCs.csv",
-        "Transfer Links.csv",
-    )
+    default_values: list[str] = ["NTCs Index.csv", "NTCs.csv", "Transfer Links.csv"]
+
+    def __init__(self, files: list[str] | None = None) -> None:
+        self.files = files if files is not None else self.default_values
