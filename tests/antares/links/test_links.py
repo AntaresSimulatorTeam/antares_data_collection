@@ -58,8 +58,22 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
         links.create_links_part(dir_input=tmp_path, dir_output=tmp_path)
 
 
-def test_links_files_exist(tmp_dir_with_links_files: Path) -> None:
-    # when
+# def test_links_files_exist(tmp_dir_with_links_files: Path) -> None:
+#     # when
+#     links.create_links_part(
+#         dir_input=tmp_dir_with_links_files, dir_output=tmp_dir_with_links_files
+#     )
+
+##
+# data management tests
+##
+
+ROOT_TEST = Path(__file__).resolve().parents[2]  # ou 3 selon ta structure
+DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
+
+
+def test_links_read_data() -> None:
     links.create_links_part(
-        dir_input=tmp_dir_with_links_files, dir_output=tmp_dir_with_links_files
+        dir_input=DATA_DIR,
+        dir_output=DATA_DIR,
     )

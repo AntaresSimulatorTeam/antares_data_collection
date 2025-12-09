@@ -1,0 +1,142 @@
+"CURVE_UID","ZONE","ID","LABEL","COUNT"
+"CH:NTCs_CH00_FR00_2028_2028_HVAC","CH","CH00_FR00_2028_2028_HVAC","Transfer capacity",3
+"CH:NTCs_CH00_FR00_2030_2050_HVAC","CH","CH00_FR00_2030_2050_HVAC","Transfer capacity",3
+"CH:NTCs_CH00_ITN1_2028_2028_HVAC","CH","CH00_ITN1_2028_2028_HVAC","Transfer capacity",628
+"CH:NTCs_CH00_ITN1_2030_2035_HVAC_TYNDP","CH","CH00_ITN1_2030_2035_HVAC_TYNDP","Transfer capacity",628
+"CH:NTCs_CH00_ITN1_2030_2050_HVAC_ERAA","CH","CH00_ITN1_2030_2050_HVAC_ERAA","Transfer capacity",628
+"CH:NTCs_CH00_ITN1_2040_2050_HVAC_TYNDP","CH","CH00_ITN1_2040_2050_HVAC_TYNDP","Transfer capacity",628
+"CH:NTCs_FR00_CH00_2028_2028_HVAC","CH","FR00_CH00_2028_2028_HVAC","Transfer capacity",3
+"CH:NTCs_FR00_CH00_2030_2050_HVAC","CH","FR00_CH00_2030_2050_HVAC","Transfer capacity",3
+"CH:NTCs_ITN1_CH00_2028_2028_HVAC","CH","ITN1_CH00_2028_2028_HVAC","Transfer capacity",628
+"CH:NTCs_ITN1_CH00_2030_2035_HVAC_TYNDP","CH","ITN1_CH00_2030_2035_HVAC_TYNDP","Transfer capacity",628
+"CH:NTCs_ITN1_CH00_2030_2050_HVAC_ERAA","CH","ITN1_CH00_2030_2050_HVAC_ERAA","Transfer capacity",628
+"CH:NTCs_ITN1_CH00_2040_2050_HVAC_TYNDP","CH","ITN1_CH00_2040_2050_HVAC_TYNDP","Transfer capacity",628
+"DK:NTCs_DE00_DKBH","DK","DE00-DKBH","Transfer capacity",3
+"DK:NTCs_DE00_DKE1","DK","DE00-DKE1","Transfer capacity",3
+"DK:NTCs_DE00_DKW1_from_2027","DK","DE00-DKW1 from 2027","Transfer capacity",3
+"DK:NTCs_DE00_DKW1_until_2026","DK","DE00-DKW1 until 2026","Transfer capacity",3
+"DK:NTCs_DEKF_DKKF","DK","DEKF-DKKF","Transfer capacity",3
+"DK:NTCs_DKE1_DE00","DK","DKE1-DE00","Transfer capacity",3
+"DK:NTCs_DKE1_DKBH","DK","DKE1-DKBH","Transfer capacity",3
+"DK:NTCs_DKE1_DKW1","DK","DKE1-DKW1","Transfer capacity",3
+"DK:NTCs_DKE1_SE04","DK","DKE1-SE04","Transfer capacity",3
+"DK:NTCs_DKNS_DE00","DK","DKNS-DE00","Transfer capacity",3
+"DK:NTCs_DKW1_DKE1","DK","DKW1-DKE1","Transfer capacity",3
+"DK:NTCs_DKW1_DKNS","DK","DKW1-DKNS","Transfer capacity",3
+"DK:NTCs_DKW1_NL00","DK","DKW1-NL00","Transfer capacity",3
+"DK:NTCs_DKW1_NOS0","DK","DKW1-NOS0","Transfer capacity",3
+"DK:NTCs_DKW1_SE03","DK","DKW1-SE03","Transfer capacity",3
+"DK:NTCs_DKW1_UK00","DK","DKW1-UK00","Transfer capacity",3
+"DK:NTCs_SE04_DKE1","DK","SE04-DKE1","Transfer capacity",3
+"EE:NTCs_EE_LV_2035_2050","EE","EE-LV 2035-2050","Transfer capacity",2211
+"EE:NTCs_EE_LV_until_2034","EE","EE-LV until 2034","Transfer capacity",2211
+"EE:NTCs_LV_EE_2035_2050","EE","LV-EE 2035-2050","Transfer capacity",2211
+"EE:NTCs_LV_EE_until_2034","EE","LV-EE until 2034","Transfer capacity",1
+"ES:NTCs_ES_FR_2025","ES","ES-FR 2025","Transfer capacity",733
+"ES:NTCs_ES_FR_2029","ES","ES-FR 2029","Transfer capacity",733
+"ES:NTCs_ES_FR_2035","ES","ES-FR 2035","Transfer capacity",1
+"ES:NTCs_ES_FR_2050","ES","ES-FR 2050","Transfer capacity",1
+"ES:NTCs_ES_PT_2026","ES","ES-PT_2026","Transfer capacity",1
+"ES:NTCs_ES_PT_2050","ES","ES-PT_2050","Transfer capacity",1
+"ES:NTCs_FR_ES_2025","ES","FR-ES 2025","Transfer capacity",733
+"ES:NTCs_FR_ES_2029","ES","FR-ES 2029","Transfer capacity",369
+"ES:NTCs_FR_ES_2035","ES","FR-ES 2035","Transfer capacity",1
+"ES:NTCs_FR_ES_2050","ES","FR-ES 2050","Transfer capacity",1
+"ES:NTCs_PT_ES_2026","ES","PT-ES_2026","Transfer capacity",1
+"ES:NTCs_PT_ES_2050","ES","PT-ES_2050","Transfer capacity",1
+"FR:NTCs_BE_FR_2024_2030","FR","BE-FR_2024_2030","Transfer capacity",1
+"FR:NTCs_BE_FR_2031_2050","FR","BE-FR_2031_2050","Transfer capacity",1
+"FR:NTCs_CH_FR_2024_2029","FR","CH-FR_2024_2029","Transfer capacity",3
+"FR:NTCs_CH_FR_2030_2050","FR","CH-FR_2030_2050","Transfer capacity",3
+"FR:NTCs_DE_FR_2024_2029","FR","DE-FR_2024_2029","Transfer capacity",1
+"FR:NTCs_DE_FR_2030_2050","FR","DE-FR_2030_2050","Transfer capacity",1
+"FR:NTCs_ES_FR_2024_2028_ERAA","FR","ES-FR_2024_2028_ERAA","Transfer capacity",733
+"FR:NTCs_ES_FR_2024_2028_TYNDP","FR","ES-FR_2024_2028_TYNDP","Transfer capacity",1
+"FR:NTCs_ES_FR_20292040_TYNDP","FR","ES-FR_20292040_TYNDP","Transfer capacity",1
+"FR:NTCs_ES_FR_2029_2040_ERAA","FR","ES-FR_2029_2040_ERAA","Transfer capacity",733
+"FR:NTCs_ES_FR_2041_2045","FR","ES-FR_2041_2045","Transfer capacity",1
+"FR:NTCs_ES_FR_2046_2050","FR","ES-FR_2046_2050","Transfer capacity",1
+"FR:NTCs_FR_BE_2024_2030","FR","FR-BE_2024_2030","Transfer capacity",1
+"FR:NTCs_FR_BE_2031_2050","FR","FR-BE_2031_2050","Transfer capacity",1
+"FR:NTCs_FR_CH_2024_2029","FR","FR-CH_2024_2029","Transfer capacity",3
+"FR:NTCs_FR_CH_2030_2050","FR","FR-CH_2030_2050","Transfer capacity",3
+"FR:NTCs_FR_DE_2024_2029","FR","FR-DE_2024_2029","Transfer capacity",1
+"FR:NTCs_FR_DE_2030_2050","FR","FR-DE_2030_2050","Transfer capacity",1
+"FR:NTCs_FR_ES_2024_2028_ERAA","FR","FR-ES_2024_2028_ERAA","Transfer capacity",733
+"FR:NTCs_FR_ES_2024_2028_TYNDP","FR","FR-ES_2024_2028_TYNDP","Transfer capacity",1
+"FR:NTCs_FR_ES_2029_2040_ERAA","FR","FR-ES_2029_2040_ERAA","Transfer capacity",369
+"FR:NTCs_FR_ES_2029_2040_TYNDP","FR","FR-ES_2029_2040_TYNDP","Transfer capacity",1
+"FR:NTCs_FR_ES_2041_2045","FR","FR-ES_2041_2045","Transfer capacity",1
+"FR:NTCs_FR_ES_2046_2050","FR","FR-ES_2046_2050","Transfer capacity",1
+"FR:NTCs_FR_IE_2028_2050","FR","FR-IE_2028_2050","Transfer capacity",1
+"FR:NTCs_FR_ITN_2024_2050","FR","FR-ITN_2024_2050","Transfer capacity",733
+"FR:NTCs_FR_UK_2024_2042","FR","FR-UK_2024_2042","Transfer capacity",1
+"FR:NTCs_FR_UK_2043_2049","FR","FR-UK_2043_2049","Transfer capacity",1
+"FR:NTCs_FR_UK_2050","FR","FR-UK_2050","Transfer capacity",1
+"FR:NTCs_IE_FR_2028_2050","FR","IE-FR_2028_2050","Transfer capacity",1
+"FR:NTCs_ITN_FR_2024_2050","FR","ITN-FR_2024_2050","Transfer capacity",733
+"FR:NTCs_UK_FR_2024_2042","FR","UK-FR_2024_2042","Transfer capacity",1
+"FR:NTCs_UK_FR_2043_2049","FR","UK-FR_2043_2049","Transfer capacity",1
+"FR:NTCs_UK_FR_2050","FR","UK-FR_2050","Transfer capacity",1
+"GR:NTCs_GR00_GR03_2025","GR","GR00_GR03_2025","Transfer capacity",2
+"IT:NTCs_AT00_ITN1_2028_2035_HVAC","IT","AT00_ITN1_2028_2035_HVAC","Transfer capacity",733
+"IT:NTCs_AT00_ITN1_2040_2050_HVAC","IT","AT00_ITN1_2040_2050_HVAC","Transfer capacity",733
+"IT:NTCs_CH00_ITN1_2028_2040_HVAC","IT","CH00_ITN1_2028_2040_HVAC","Transfer capacity",733
+"IT:NTCs_CH00_ITN1_2050_2050_HVAC","IT","CH00_ITN1_2050_2050_HVAC","Transfer capacity",733
+"IT:NTCs_FR00_ITN1_2028_2050_HVAC","IT","FR00_ITN1_2028_2050_HVAC","Transfer capacity",733
+"IT:NTCs_ITCN_ITCS_2028_2030_HVAC","IT","ITCN_ITCS_2028_2030_HVAC","Transfer capacity",731
+"IT:NTCs_ITCN_ITCS_2033_2035_HVAC","IT","ITCN_ITCS_2033_2035_HVAC","Transfer capacity",731
+"IT:NTCs_ITCN_ITCS_2040_2050_HVAC","IT","ITCN_ITCS_2040_2050_HVAC","Transfer capacity",731
+"IT:NTCs_ITCN_ITN1_2028_2028_HVAC","IT","ITCN_ITN1_2028_2028_HVAC","Transfer capacity",731
+"IT:NTCs_ITCN_ITN1_2030_2033_HVAC","IT","ITCN_ITN1_2030_2033_HVAC","Transfer capacity",731
+"IT:NTCs_ITCN_ITN1_2035_2050_HVAC","IT","ITCN_ITN1_2035_2050_HVAC","Transfer capacity",731
+"IT:NTCs_ITCO_ITSA_2028_2050_HVAC","IT","ITCO_ITSA_2028_2050_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_AT00_2028_2035_HVAC","IT","ITN1_AT00_2028_2035_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_AT00_2040_2050_HVAC","IT","ITN1_AT00_2040_2050_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_CH00_2028_2040_HVAC","IT","ITN1_CH00_2028_2040_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_CH00_2050_2050_HVAC","IT","ITN1_CH00_2050_2050_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_FR00_2028_2050_HVAC","IT","ITN1_FR00_2028_2050_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_ITCN_2028_2028_HVAC","IT","ITN1_ITCN_2028_2028_HVAC","Transfer capacity",731
+"IT:NTCs_ITN1_ITCN_2030_2033_HVAC","IT","ITN1_ITCN_2030_2033_HVAC","Transfer capacity",731
+"IT:NTCs_ITN1_ITCN_2035_2050_HVAC","IT","ITN1_ITCN_2035_2050_HVAC","Transfer capacity",731
+"IT:NTCs_ITN1_SI00_2028_2028_HVAC","IT","ITN1_SI00_2028_2028_HVAC","Transfer capacity",733
+"IT:NTCs_ITN1_SI00_2030_2050_HVAC","IT","ITN1_SI00_2030_2050_HVAC","Transfer capacity",733
+"IT:NTCs_ITSA_ITCO_2028_2050_HVAC","IT","ITSA_ITCO_2028_2050_HVAC","Transfer capacity",495
+"IT:NTCs_ITSA_ITCS_2028_2035_HVDC","IT","ITSA_ITCS_2028_2035_HVDC","Transfer capacity",731
+"IT:NTCs_ITSA_ITCS_2040_2050_HVDC","IT","ITSA_ITCS_2040_2050_HVDC","Transfer capacity",731
+"IT:NTCs_SI00_ITN1_2028_2028_HVAC","IT","SI00_ITN1_2028_2028_HVAC","Transfer capacity",733
+"IT:NTCs_SI00_ITN1_2030_2050_HVAC","IT","SI00_ITN1_2030_2050_HVAC","Transfer capacity",733
+"RS:NTCs_AL00_RS00_1","RS","AL00-RS00-1","Transfer capacity",1
+"RS:NTCs_AL00_RS00_2","RS","AL00-RS00-2","Transfer capacity",1
+"RS:NTCs_BA00_RS00_1","RS","BA00-RS00-1","Transfer capacity",12
+"RS:NTCs_BA00_RS00_2","RS","BA00-RS00-2","Transfer capacity",12
+"RS:NTCs_BG00_RS00_1","RS","BG00-RS00-1","Transfer capacity",9
+"RS:NTCs_BG00_RS00_2","RS","BG00-RS00-2","Transfer capacity",9
+"RS:NTCs_HR00_RS00_1","RS","HR00-RS00-1","Transfer capacity",4
+"RS:NTCs_HR00_RS00_2","RS","HR00-RS00-2","Transfer capacity",4
+"RS:NTCs_HU00_RS00_1","RS","HU00-RS00-1","Transfer capacity",10
+"RS:NTCs_HU00_RS00_2","RS","HU00-RS00-2","Transfer capacity",10
+"RS:NTCs_ME00_RS00_1","RS","ME00-RS00-1","Transfer capacity",1
+"RS:NTCs_ME00_RS00_2","RS","ME00-RS00-2","Transfer capacity",1
+"RS:NTCs_MK00_RS00","RS","MK00-RS00","Transfer capacity",11
+"RS:NTCs_RO00_RS00_1","RS","RO00-RS00-1","Transfer capacity",12
+"RS:NTCs_RO00_RS00_2","RS","RO00-RS00-2","Transfer capacity",12
+"RS:NTCs_RO00_RS00_3","RS","RO00-RS00-3","Transfer capacity",12
+"RS:NTCs_RO00_RS00_4","RS","RO00-RS00-4","Transfer capacity",12
+"RS:NTCs_RS00_AL00_1","RS","RS00-AL00-1","Transfer capacity",1
+"RS:NTCs_RS00_AL00_2","RS","RS00-AL00-2","Transfer capacity",1
+"RS:NTCs_RS00_BA00_1","RS","RS00-BA00-1","Transfer capacity",10
+"RS:NTCs_RS00_BA00_2","RS","RS00-BA00-2","Transfer capacity",10
+"RS:NTCs_RS00_BG00_1","RS","RS00-BG00-1","Transfer capacity",7
+"RS:NTCs_RS00_BG00_2","RS","RS00-BG00-2","Transfer capacity",7
+"RS:NTCs_RS00_HR00_1","RS","RS00-HR00-1","Transfer capacity",4
+"RS:NTCs_RS00_HR00_2","RS","RS00-HR00-2","Transfer capacity",4
+"RS:NTCs_RS00_HU00_1","RS","RS00-HU00-1","Transfer capacity",8
+"RS:NTCs_RS00_HU00_2","RS","RS00-HU00-2","Transfer capacity",8
+"RS:NTCs_RS00_ME00_1","RS","RS00-ME00-1","Transfer capacity",3
+"RS:NTCs_RS00_ME00_2","RS","RS00-ME00-2","Transfer capacity",3
+"RS:NTCs_RS00_MK00","RS","RS00-MK00","Transfer capacity",10
+"RS:NTCs_RS00_RO00_1","RS","RS00-RO00-1","Transfer capacity",11
+"RS:NTCs_RS00_RO00_2","RS","RS00-RO00-2","Transfer capacity",11
+"RS:NTCs_RS00_RO00_3","RS","RS00-RO00-3","Transfer capacity",11
+"RS:NTCs_RS00_RO00_4","RS","RS00-RO00-4","Transfer capacity",11

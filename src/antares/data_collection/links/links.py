@@ -15,6 +15,8 @@ from typing import Any
 
 from antares.data_collection.links import conf_links
 
+import pandas as pd
+
 
 def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
     # check input/output directory
@@ -24,7 +26,23 @@ def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
     if not dir_output.is_dir():
         raise ValueError(f"Output directory {dir_output} does not exist.")
 
+    # check is files needed are present
     for file_name in conf_links.LinksFileNames().files:
         path_file = dir_input / file_name
         if not path_file.exists():
             raise ValueError(f"Input file does not exist: {path_file}")
+
+    # read files
+    # df_ntc_index = pd.read_csv(dir_input / conf_links.LinksFileNames().files "NTCs Index.csv", sep=",")
+    # df_ntc = pd.read_csv(dir_input / "NTCs.csv", sep=";")
+    # df_links = pd.read_csv(dir_input / "Transfer Links.csv", sep=";")
+
+    results = {}
+    for file_name in conf_links.LinksFileNames().files:
+        full_path = dir_input / file_name
+        df = pd.read_csv(full_path)
+        results[file_name] = df
+
+    # FIX NA values to 0 fot columns "FOR"
+
+    # export part
