@@ -14,7 +14,15 @@ import re
 import pytest
 from pathlib import Path
 
+import pandas as pd
+
 from antares.data_collection.links import conf_links, links
+
+
+# global
+ROOT_TEST = Path(__file__).resolve().parents[2]
+LINKS_DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
+REF_DATA = ROOT_TEST / "data_references"
 
 
 # -------------------
@@ -28,6 +36,26 @@ def tmp_dir_with_links_files(tmp_path: Path) -> Path:
         file_path.touch()
 
     return tmp_path
+
+
+##
+# all ref needed
+##
+@pytest.fixture
+def ref_params() -> dict[str, pd.DataFrame]:
+    ref_code_antares = pd.read_csv(REF_DATA / "ref_pays.csv")
+    ref_links = pd.read_csv(REF_DATA / "ref_links.csv")
+    ref_scenario = pd.read_csv(REF_DATA / "study_scenario.csv")
+    ref_peak_hours = pd.read_csv(REF_DATA / "peak_hours.csv")
+    ref_peak_months = pd.read_csv(REF_DATA / "peak_months.csv")
+
+    return {
+        "ref_code_antares": ref_code_antares,
+        "ref_links": ref_links,
+        "ref_scenario": ref_scenario,
+        "ref_peak_hours": ref_peak_hours,
+        "ref_peak_months": ref_peak_months,
+    }
 
 
 def test_links_dir_input_not_exists(tmp_path: Path) -> None:
@@ -68,12 +96,8 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
 # data management tests
 ##
 
-ROOT_TEST = Path(__file__).resolve().parents[2]  # ou 3 selon ta structure
-DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
-
 
 def test_links_read_data() -> None:
     links.create_links_part(
-        dir_input=DATA_DIR,
-        dir_output=DATA_DIR,
+        dir_input=LINKS_DATA_DIR, dir_output=LINKS_DATA_DIR, ref_params=ref_params
     )

@@ -43,6 +43,7 @@ def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
         df = pd.read_csv(full_path)
         results[file_name] = df
 
-    # FIX NA values to 0 fot columns "FOR"
+    # merging TS data (index + TS)
+    # df: pd.DataFrame = results["NTCs Index.csv"]
 
     # export part
