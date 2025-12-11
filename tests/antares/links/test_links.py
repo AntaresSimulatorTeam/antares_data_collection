@@ -96,8 +96,7 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
 # data management tests
 ##
 
-
-def test_links_read_data() -> None:
+def test_links_read_data(ref_params: dict[str, pd.DataFrame]) -> None:
     links.create_links_part(
         dir_input=LINKS_DATA_DIR, dir_output=LINKS_DATA_DIR, ref_params=ref_params
     )

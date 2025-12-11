@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
 from pathlib import Path
 from typing import Any
 
@@ -33,17 +32,34 @@ def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
             raise ValueError(f"Input file does not exist: {path_file}")
 
     # read files
-    # df_ntc_index = pd.read_csv(dir_input / conf_links.LinksFileNames().files "NTCs Index.csv", sep=",")
-    # df_ntc = pd.read_csv(dir_input / "NTCs.csv", sep=";")
-    # df_links = pd.read_csv(dir_input / "Transfer Links.csv", sep=";")
-
     results = {}
     for file_name in conf_links.LinksFileNames().files:
         full_path = dir_input / file_name
         df = pd.read_csv(full_path)
         results[file_name] = df
 
-    # merging TS data (index + TS)
-    # df: pd.DataFrame = results["NTCs Index.csv"]
+    # compute median group by HP/HC & Winter/Summer
+        # use ref "peak" to tag and grouping then
+    df_ts_ntc = results['NTCs.csv'].copy()
+    ref_hours = kwargs['ref_params']['ref_peak_hours']
+    ref_months = kwargs['ref_params']['ref_peak_months']
+
+    # merge hours/saison
+        # NO DOC/NO Autocompletion df_ts_ntc.merge(ref_hours, left_on="HOUR", right_on="hour", how="left")
+    df_ts_ntc = pd.merge(df_ts_ntc, ref_hours, left_on="HOUR", right_on="hour", how="left")
+    df_ts_ntc = pd.merge(df_ts_ntc, ref_months, left_on="MONTH", right_on="month", how="left")
+    df_ts_ntc = df_ts_ntc.drop(columns=["hour", "month", "MONTH", "DAY", "HOUR"])
+
+    # compute median hours/saison
+    df_median_grouped = df_ts_ntc.groupby(by=['period_hour', 'period_month'], as_index=False).median()
+    df_median_tot = df_ts_ntc.median(numeric_only=True)
+
+    # TODO add col name MEDIAN (df_median_tot) and put long format and rename columns (df_median_grouped)
+
+
+    # merge those median with ntc index
+    df_ts_ntc_index = results['NTCs Index.csv'].copy()
+        # TODO df_ts_ntc_index.merge(df_median_grouped, left_on="CURVE_UID", right_on="NTC", how="left")
+
 
     # export part
