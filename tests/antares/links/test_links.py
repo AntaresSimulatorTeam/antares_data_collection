@@ -10,6 +10,7 @@
 #
 # This file is part of the Antares project.
 import re
+from typing import Any
 
 import pytest
 from pathlib import Path
@@ -42,12 +43,13 @@ def tmp_dir_with_links_files(tmp_path: Path) -> Path:
 # all ref needed
 ##
 @pytest.fixture
-def ref_params() -> dict[str, pd.DataFrame]:
+def ref_params() -> dict[str, Any]:
     ref_code_antares = pd.read_csv(REF_DATA / "ref_pays.csv")
     ref_links = pd.read_csv(REF_DATA / "ref_links.csv")
     ref_scenario = pd.read_csv(REF_DATA / "study_scenario.csv")
     ref_peak_hours = pd.read_csv(REF_DATA / "peak_hours.csv")
     ref_peak_months = pd.read_csv(REF_DATA / "peak_months.csv")
+    year = list(range(2030, 2061))
 
     return {
         "ref_code_antares": ref_code_antares,
@@ -55,6 +57,7 @@ def ref_params() -> dict[str, pd.DataFrame]:
         "ref_scenario": ref_scenario,
         "ref_peak_hours": ref_peak_hours,
         "ref_peak_months": ref_peak_months,
+        "calendar_year": year,
     }
 
 
@@ -95,6 +98,7 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
 ##
 # data management tests
 ##
+
 
 def test_links_read_data(ref_params: dict[str, pd.DataFrame]) -> None:
     links.create_links_part(
