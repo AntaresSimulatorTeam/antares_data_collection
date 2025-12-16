@@ -10,11 +10,3 @@
 #
 # This file is part of the Antares project.
 
-class LinksFileConfig:
-    def __init__(self) -> None:
-        self.NTC_INDEX = "NTCs Index.csv"
-        self.NTC_TS = "NTCs.csv"
-        self.TRANSFER_LINKS = "Transfer Links.csv"
-
-    def all_names(self) -> list[str]:
-        return [self.NTC_INDEX, self.NTC_TS, self.TRANSFER_LINKS]

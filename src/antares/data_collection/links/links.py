@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-from pathlib import Path
 from typing import Any
 
 from antares.data_collection.links import conf_links
@@ -17,25 +16,21 @@ from antares.data_collection.links import conf_links
 import pandas as pd
 from typing import List, Optional
 
+from antares.data_collection.tools.conf import LocalConfiguration
 
-def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
-    # check input/output directory
-    if not dir_input.is_dir():
-        raise ValueError(f"Input directory {dir_input} does not exist.")
 
-    if not dir_output.is_dir():
-        raise ValueError(f"Output directory {dir_output} does not exist.")
-
-    # check is files needed are present
-    for file_name in conf_links.LinksFileNames().files:
-        path_file = dir_input / file_name
+def create_links_part(conf_input: LocalConfiguration, **kwargs: Any) -> None:
+    # check files required
+    conf_links_files = conf_links.LinksFileConfig()
+    for file_name in conf_links_files.all_names():
+        path_file = conf_input.input_path / file_name
         if not path_file.exists():
             raise ValueError(f"Input file does not exist: {path_file}")
 
     # read files
     results = {}
-    for file_name in conf_links.LinksFileNames().files:
-        full_path = dir_input / file_name
+    for file_name in conf_links_files.all_names():
+        full_path = conf_input.input_path / file_name
         df = pd.read_csv(full_path)
         results[file_name] = df
 
@@ -43,15 +38,19 @@ def create_links_part(dir_input: Path, dir_output: Path, **kwargs: Any) -> None:
     # NTC TS + INDEX
     # computes a median group by HP/HC & Winter/Summer
     # use ref "peak" to tag and grouping then
-    df_ts_ntc = results["NTCs.csv"].copy()
+    df_ts_ntc = results[conf_links_files.NTC_TS].copy()
+
+    # TODO use internal class ?
     ref_hours = kwargs["ref_params"]["ref_peak_hours"]
     ref_months = kwargs["ref_params"]["ref_peak_months"]
 
+    # TODO add function merge
     # merge hours/saison
     # NO DOC/NO Autocompletion df_ts_ntc.merge(ref_hours, left_on="HOUR", right_on="hour", how="left")
     df_ts_ntc = pd.merge(
         df_ts_ntc, ref_hours, left_on="HOUR", right_on="hour", how="left"
     )
+
     df_ts_ntc = pd.merge(
         df_ts_ntc, ref_months, left_on="MONTH", right_on="month", how="left"
     )

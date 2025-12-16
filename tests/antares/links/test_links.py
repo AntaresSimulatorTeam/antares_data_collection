@@ -18,7 +18,7 @@ from pathlib import Path
 import pandas as pd
 
 from antares.data_collection.links import conf_links, links
-
+from antares.data_collection.tools.conf import LocalConfiguration
 
 # global
 ROOT_TEST = Path(__file__).resolve().parents[2]
@@ -31,7 +31,8 @@ REF_DATA = ROOT_TEST / "data_references"
 # -------------------
 @pytest.fixture
 def tmp_dir_with_links_files(tmp_path: Path) -> Path:
-    names_files = conf_links.LinksFileNames().files
+    conf_links_files = conf_links.LinksFileConfig()
+    names_files = conf_links_files.all_names()
     for filename in names_files:
         file_path: Path = tmp_path / filename
         file_path.touch()
@@ -61,46 +62,30 @@ def ref_params() -> dict[str, Any]:
     }
 
 
-def test_links_dir_input_not_exists(tmp_path: Path) -> None:
-    # given
-    fake_path = tmp_path / "toto"
-
-    # then
-    with pytest.raises(
-        ValueError, match=re.escape(f"Input directory {fake_path} does not exist.")
-    ):
-        links.create_links_part(dir_input=fake_path, dir_output=fake_path)
-
-
-def test_links_dir_output_not_exists(tmp_path: Path) -> None:
-    # given
-    fake_path = tmp_path / "toto"
-
-    # then
-    with pytest.raises(
-        ValueError, match=re.escape(f"Output directory {fake_path} does not exist.")
-    ):
-        links.create_links_part(dir_input=tmp_path, dir_output=fake_path)
-
-
 def test_links_files_not_exist(tmp_path: Path) -> None:
-    # when
-    with pytest.raises(ValueError, match="Input file does not exist:"):
-        links.create_links_part(dir_input=tmp_path, dir_output=tmp_path)
+    local_conf = LocalConfiguration(
+        input_path=tmp_path,
+        export_path=tmp_path,
+        scenario_name="test",
+        data_references=tmp_path,
+    )
+    # then
+    with pytest.raises(ValueError, match=re.escape("Input file does not exist: ")):
+        links.create_links_part(conf_input=local_conf, useless="useless")
 
-
-# def test_links_files_exist(tmp_dir_with_links_files: Path) -> None:
-#     # when
-#     links.create_links_part(
-#         dir_input=tmp_dir_with_links_files, dir_output=tmp_dir_with_links_files
-#     )
 
 ##
 # data management tests
 ##
 
-
 def test_links_read_data(ref_params: dict[str, pd.DataFrame]) -> None:
-    links.create_links_part(
-        dir_input=LINKS_DATA_DIR, dir_output=LINKS_DATA_DIR, ref_params=ref_params
+    local_conf = LocalConfiguration(
+        input_path=LINKS_DATA_DIR,
+        export_path=LINKS_DATA_DIR,
+        scenario_name="test",
+        data_references=REF_DATA,
     )
+    links.create_links_part(conf_input=local_conf, ref_params=ref_params)
+
+
+# TODO create .csv (temp) and delete then
