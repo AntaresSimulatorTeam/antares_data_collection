@@ -34,7 +34,7 @@ def test_conf_input_not_exist(tmp_path: Path) -> None:
             input_path=fake_path,
             export_path=fake_path,
             scenario_name="test",
-            data_references=fake_path,
+            data_references_path=fake_path,
         )
 
 
@@ -51,7 +51,7 @@ def test_conf_output_not_exist(tmp_path: Path) -> None:
             input_path=tmp_path,
             export_path=fake_path,
             scenario_name="test",
-            data_references=fake_path,
+            data_references_path=fake_path,
         )
 
 
@@ -62,7 +62,7 @@ def test_conf_scenario_name_empty(tmp_path: Path) -> None:
             input_path=tmp_path,
             export_path=tmp_path,
             scenario_name="",
-            data_references=tmp_path,
+            data_references_path=tmp_path,
         )
 
 
@@ -79,5 +79,5 @@ def test_conf_ref_not_exist(tmp_path: Path) -> None:
             input_path=tmp_path,
             export_path=tmp_path,
             scenario_name="test",
-            data_references=fake_path_file,
+            data_references_path=fake_path_file,
         )

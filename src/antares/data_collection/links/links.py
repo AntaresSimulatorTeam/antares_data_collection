@@ -9,7 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-from typing import Any
+
 
 from antares.data_collection.links import conf_links
 
@@ -19,7 +19,7 @@ from typing import List, Optional
 from antares.data_collection.tools.conf import LocalConfiguration
 
 
-def create_links_part(conf_input: LocalConfiguration, **kwargs: Any) -> None:
+def create_links_part(conf_input: LocalConfiguration) -> None:
     # check files required
     conf_links_files = conf_links.LinksFileConfig()
     for file_name in conf_links_files.all_names():
@@ -40,11 +40,11 @@ def create_links_part(conf_input: LocalConfiguration, **kwargs: Any) -> None:
     # use ref "peak" to tag and grouping then
     df_ts_ntc = results[conf_links_files.NTC_TS].copy()
 
-    # TODO use internal class ?
-    ref_hours = kwargs["ref_params"]["ref_peak_hours"]
-    ref_months = kwargs["ref_params"]["ref_peak_months"]
+    # read references .xlsx files
+    ref_peak = pd.read_excel(conf_input.data_references_path, sheet_name="PEAK_PARAMS")
+    ref_hours = ref_peak[["hour", "period_hour"]]
+    ref_months = ref_peak[["month", "period_month"]]
 
-    # TODO add function merge
     # merge hours/saison
     # NO DOC/NO Autocompletion df_ts_ntc.merge(ref_hours, left_on="HOUR", right_on="hour", how="left")
     df_ts_ntc = pd.merge(
@@ -84,7 +84,9 @@ def create_links_part(conf_input: LocalConfiguration, **kwargs: Any) -> None:
     df_ts_median = pd.merge(df_pivot, df_median_tot, how="left")
 
     # merge median with ntc index
-    df_ts_ntc_index = results["NTCs Index.csv"].copy().drop(columns=["LABEL", "COUNT"])
+    df_ts_ntc_index = (
+        results[conf_links_files.NTC_INDEX].copy().drop(columns=["LABEL", "COUNT"])
+    )
     df_ts_ntc_index = pd.merge(
         df_ts_ntc_index, df_ts_median, on="CURVE_UID", how="left"
     )
@@ -93,7 +95,7 @@ def create_links_part(conf_input: LocalConfiguration, **kwargs: Any) -> None:
     # region
     # Transfer capacity
     # global filter `TRANSFER_TYPE` = NTC + `TRANSFER_TECHNOLOGY` = HVAC
-    df_transfer = results["Transfer Links.csv"].copy()
+    df_transfer = results[conf_links_files.TRANSFER_LINKS].copy()
     df_transfer = df_transfer.loc[
         (df_transfer["TRANSFER_TYPE"] == "NTC")
         & (df_transfer["TRANSFER_TECHNOLOGY"] == "HVAC")
@@ -108,10 +110,40 @@ def create_links_part(conf_input: LocalConfiguration, **kwargs: Any) -> None:
         how="left",
     ).drop(columns=["ID", "CURVE_UID"])
 
+    # merge column 'code_antares' :
+    # for market zone source and market zone destination
+    ref_country_links = pd.read_excel(
+        conf_input.data_references_path, sheet_name="LINKS"
+    )
+
+    # source
+    df_transfer = pd.merge(
+        df_transfer,
+        ref_country_links,
+        left_on="MARKET_ZONE_SOURCE",
+        right_on="market_node",
+        how="left",
+    )
+    df_transfer.drop(columns=["market_node"], inplace=True)
+    df_transfer.rename(columns={"code_antares": "code_source"}, inplace=True)
+
+    # destination
+    df_transfer = pd.merge(
+        df_transfer,
+        ref_country_links,
+        left_on="MARKET_ZONE_DESTINATION",
+        right_on="market_node",
+        how="left",
+    )
+    df_transfer.drop(columns=["market_node"], inplace=True)
+    df_transfer.rename(columns={"code_antares": "code_destination"}, inplace=True)
+
     # treatment for calendar year
     # filter with scenario and calendar year
-    year_param = kwargs["ref_params"]["calendar_year"]
-    ref_scenario = kwargs["ref_params"]["ref_scenario"]
+    year_param = conf_input.calendar_year
+    ref_scenario = pd.read_excel(
+        conf_input.data_references_path, sheet_name="STUDY_SCENARIO"
+    )
 
     d_df_year = {}
     for iyear in year_param:
