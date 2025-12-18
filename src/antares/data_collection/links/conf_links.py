@@ -10,6 +10,7 @@
 #
 # This file is part of the Antares project.
 
+
 class LinksFileConfig:
     def __init__(self) -> None:
         self.NTC_INDEX = "NTCs Index.csv"

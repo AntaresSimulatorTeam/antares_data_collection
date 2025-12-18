@@ -162,7 +162,7 @@ def create_links_part(conf_input: LocalConfiguration) -> None:
 
         d_df_year[str(iyear)] = df_transfer_year
 
-    d_df_year.keys()
+    print(d_df_year.keys())
     # endregion
 
     # export part
