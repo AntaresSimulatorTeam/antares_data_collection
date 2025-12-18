@@ -15,12 +15,15 @@
   * `uv sync --locked --all-extras --dev` 
 
 ## Install package development
-* `uv run pip install  -e .`
+* `uv run pip install  -e .` (it can be not possible if you have a global pip installation with python 3.10)
 
 If you have issue with pip :  
 * `which pip`
-* add pip in your .venv in your project `python -m ensurepip --upgrade`
-  * then upgrade : ` python -m pip install --upgrade pip setuptools build`
+* add pip in your .venv in your project `uv`
+  * install pip in .venv in your projet `python -m ensurepip --upgrade`
+  * `uv run python -m pip install -e .`
+  * then upgrade : `python -m pip install --upgrade pip setuptools build`
+    * now you should be able to use `uv run pip install  -e .`
 
 
 ## Install Dependencies

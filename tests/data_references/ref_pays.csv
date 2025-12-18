@@ -1,0 +1,107 @@
+Nom_pays,code_pays,areas,market_node,code_antares
+Albanie,AL,Albanie,AL00,AL
+Autriche,AT,Autriche,AT00,AT
+Bosnie,BA,Bosnie,BA00,BA
+Belgique,BE,Belgique,BE00,BE
+Belgique,BE,,BEO1_OFF,BEo1
+Belgique,BE,,BEO2_OFF,BE
+Bulgarie,BG,Bulgarie,BG00,BG
+Suisse,CH,Suisse,CH00,CH
+Chypre,CY,Chypre,CY00,CY
+République tchèque,CZ,République tchèque,CZ00,CZ
+Allemagne,DE,Allemagne,DE00,DE
+Allemagne,DE,,DEKF_OFF,DEkf
+Danemark,DK,,DKB2_OFF,DKbh
+Danemark,DK,,DKBH_OFF,DKbh
+Danemark,DK,Danemark est,DKE1,DKe
+Danemark,DK,,DKHE_OFF,DKe
+Danemark,DK,,DKK2_OFF,DKe
+Danemark,DK,,DKKA_OFF,DKw
+Danemark,DK,,DKKF_OFF,DKkf
+Danemark,DK,,DKN1_OFF,DKw
+Danemark,DK,,DKN2_OFF,DKw
+Danemark,DK,,DKN3_OFF,DKw
+Danemark,DK,,DKN4_OFF,DKw
+Danemark,DK,,DKN5_OFF,DKw
+Danemark,DK,,DKN6_OFF,DKw
+Danemark,DK,,DKN7_OFF,DKw
+Danemark,DK,,DKN8_OFF,DKw
+Danemark,DK,,DKN9_OFF,DKkf
+Danemark,DK,,DKNS_OFF,DKns
+Danemark,DK,Danemark ouest,DKW1,DKw
+Estonie,EE,Estonie,EE00,EE
+Espagne,ES,Espagne,ES00,ES
+Finlande,FI,Finlande,FI00,FI
+France,FR,France,FR00,FR
+France,FR,Corse,FR15,
+Grèce,GR,Grèce,GR00,GR
+Grèce,GR,Crète,GR03,GR
+Croatie,HR,Croatie,HR00,HR
+Hongrie,HU,Hongrie,HU00,HU
+Irlande,IE,Irlande,IE00,IE
+Italie,IT,Italie calabre,ITCA,ITca
+Italie,IT,Italie centre-nord,ITCN,ITcn
+Italie,IT,Italie centre-sud,ITCS,ITcs
+Italie,IT,Italie du nord,ITN1,ITn
+Italie,IT,Italie du sud,ITS1,ITs
+Italie,IT,Italie Sardaigne,ITSA,ITsar
+Italie,IT,Italie Sicile,ITSI,ITsic
+Lituanie,LT,Lituanie,LT00,LT
+Lituanie,LT,,LTH1_OFF,LT
+Luxembourg,LU,Luxembourg,LUB1,
+Luxembourg,LU,Luxembourg,LUF1,
+Luxembourg,LU,Luxembourg,LUG1,LU
+Luxembourg,LU,Luxembourg,LUV1,LU
+Lettonie,LV,Lettonie,LV00,LV
+Moldavie,MD,Moldavie,MD00,
+Montenegro,ME,Montenegro,ME00,ME
+Macédoine,MK,Macédoine du Nord,MK00,MK
+Malte,MT,Malte,MT00,MT
+Pays-Bas,NL,Pays-Bas,NL00,NL
+Pays-Bas,NL,,NL0A_OFF,NL
+Pays-Bas,NL,,NL0B_OFF,NL
+Pays-Bas,NL,,NL0C_OFF,NL
+Pays-Bas,NL,,NL0D_OFF,NL
+Pays-Bas,NL,,NL0E_OFF,NL
+Pays-Bas,NL,,NL0F_OFF,NL
+Pays-Bas,NL,,NL0G_OFF,NL
+Pays-Bas,NL,,NL0J_OFF,NL
+Pays-Bas,NL,,NL0K_OFF,NL
+Pays-Bas,NL,,NL0L_OFF,NL
+Pays-Bas,NL,,NL0M_OFF,NL
+Pays-Bas,NL,,NL0N_OFF,NL
+Pays-Bas,NL,,NL0P_OFF,NL
+Pays-Bas,NL,,NL0Q_OFF,NL
+Pays-Bas,NL,,NL0R_OFF,NL
+Pays-Bas,NL,,NL0S_OFF,NL
+Pays-Bas,NL,,NL0T_OFF,NL
+Pays-Bas,NL,,NL0U_OFF,NL
+Pays-Bas,NL,,NL0V_OFF,NL
+Pays-Bas,NL,,NL0W_OFF,NL
+Pays-Bas,NL,,NL0X_OFF,NL
+Pays-Bas,NL,,NL0Y_OFF,NL
+Pays-Bas,NL,,NLLL_OFF,NLll
+Norvège,NO,Norvège médian,NOM1,NOm
+Norvège,NO,Norvège nord,NON1,NOn
+Norvège,NO,,NONC_OFF,NOm
+Norvège,NO,,NOND_OFF,NOn
+Norvège,NO,Norvège sud,NOS1,NOs
+Norvège,NO,Norvège sud,NOS2,NOs
+Norvège,NO,Norvège sud,NOS3,NOs
+Norvège,NO,,NOSF_OFF,NOs
+Norvège,NO,,NOWB_OFF,NOs
+Norvège,NO,,NOWF_OFF,NOs
+Pologne,PL,Pologne,PL00,PL
+Portugal,PT,Portugal,PT00,PT
+Roumanie,RO,Roumanie,RO00,RO
+Serbie,RS,Serbie,RS00,RS
+Suède,SE,Suède 1,SE01,SE1
+Suède,SE,Suède 2,SE02,SE2
+Suède,SE,Suède 3,SE03,SE3
+Suède,SE,Suède 4,SE04,SE4
+Slovénie,SI,Slovénie,SI00,SI
+Slovaquie,SK,Slovaquie,SK00,SK
+Turquie,TR,Turquie,TR00,
+Ukraine,UA,Ukraine,UA00,
+Royaume-Uni,GB,Grande-Bretagne,UK00,UKgb
+Royaume-Uni,NI,Irlande du nord,UKNI,UKni
