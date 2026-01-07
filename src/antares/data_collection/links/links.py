@@ -18,6 +18,15 @@ from typing import List, Optional
 
 from antares.data_collection.tools.conf import LocalConfiguration
 
+# Data referential
+from antares.data_collection.links.conf_links import (
+    ReferentialSheetNames as RefSheetNames,
+)
+from antares.data_collection.links.conf_links import PeakParamsColumnsNames as RefPeak
+
+# Data Links
+from antares.data_collection.links.conf_links import NTCS
+
 
 def create_links_part(conf_input: LocalConfiguration) -> None:
     # check files required
@@ -41,14 +50,15 @@ def create_links_part(conf_input: LocalConfiguration) -> None:
     df_ts_ntc = results[conf_links_files.NTC_TS].copy()
 
     # read references .xlsx files
-    ref_peak = pd.read_excel(conf_input.data_references_path, sheet_name="PEAK_PARAMS")
-    ref_hours = ref_peak[["hour", "period_hour"]]
-    ref_months = ref_peak[["month", "period_month"]]
+    ref_peak = pd.read_excel(
+        conf_input.data_references_path, sheet_name=RefSheetNames.PEAK_PARAMS.value
+    )
+    ref_hours = ref_peak[[RefPeak.HOUR.value, RefPeak.PERIOD_HOUR.value]]
+    ref_months = ref_peak[[RefPeak.MONTH.value, RefPeak.PERIOD_MONTH.value]]
 
     # merge hours/saison
-    # NO DOC/NO Autocompletion df_ts_ntc.merge(ref_hours, left_on="HOUR", right_on="hour", how="left")
     df_ts_ntc = pd.merge(
-        df_ts_ntc, ref_hours, left_on="HOUR", right_on="hour", how="left"
+        df_ts_ntc, ref_hours, left_on=NTCS.HOUR, right_on=RefPeak.HOUR.value, how="left"
     )
 
     df_ts_ntc = pd.merge(
