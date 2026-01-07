@@ -71,7 +71,7 @@ def create_links_part(conf_input: LocalConfiguration) -> None:
         .astype(str)
         .str.cat(df_median_grouped["period_hour"].astype(str), sep="_")
     )
-    df_median_grouped.colname = df_median_grouped.colname.str.upper()
+    df_median_grouped["colname"] = df_median_grouped["colname"].str.upper()
     df_median_grouped = df_median_grouped.drop(columns=["period_month", "period_hour"])
 
     df_pivot = (

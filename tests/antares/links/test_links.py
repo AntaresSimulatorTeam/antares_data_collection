@@ -17,27 +17,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.links import conf_links, links
+from antares.data_collection.links import links
 from antares.data_collection.tools.conf import LocalConfiguration
 
 # global
 ROOT_TEST = Path(__file__).resolve().parents[2]
-LINKS_DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
-REF_DATA = ROOT_TEST / "data_references"
-
-
-# -------------------
-# Fixture: temporary directory with fake links files
-# -------------------
-@pytest.fixture
-def tmp_dir_with_links_files(tmp_path: Path) -> Path:
-    conf_links_files = conf_links.LinksFileConfig()
-    names_files = conf_links_files.all_names()
-    for filename in names_files:
-        file_path: Path = tmp_path / filename
-        file_path.touch()
-
-    return tmp_path
 
 
 ## mock referential MAIN_PARAMS
@@ -88,37 +72,65 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
 ## mock data LINKS
 @pytest.fixture
 def mock_links_data_csv(tmp_path: Path) -> Path:
-    data_test = {
-        "Transfer Links": pd.DataFrame(
-            {
-                "ZONE": ["FR", "FR", "BE", "BE"],
-                "MARKET_ZONE_SOURCE": ["BE00", "BE00", "FR00", "FR00"],
-                "MARKET_ZONE_DESTINATION": ["FR00", "FR00", "BE00", "BE00"],
-                "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
-                "STUDY_SCENARIO": [
-                    "ERAA&TYNDP",
-                    "ERAA&TYNDP",
-                    "ERAA&TYNDP",
-                    "ERAA&TYNDP",
-                ],
-                "YEAR_VALID_START": [2031, 2024, 2032, 2025],
-                "YEAR_VALID_END": [2050, 2030, 2050, 2031],
-                "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
-                "NTC_LIMIT_CAPACITY_STATIC": ["", "", 5300.0, 4300.0],
-                "NTC_CURVE_ID": ["BE-FR_2031_2050", "BE-FR_2024_2030", "", ""],
-                "NO_POLES": [2, 2, 1, 1],
-                "FOR": ["", "", 0.06, 0.06],
-                "COMPL": ["Yes", "Yes", "No", "No"],
-                "FOR_DIRECTION": [
-                    "Bi-directional",
-                    "Bi-directional",
-                    "Uni-directional",
-                    "Uni-directional",
-                ],
-                "EXCHANGE_FLOW_CURVE_ID": ["", "", "", ""],
-            }
-        ),
-    }
+    ## create one data frame by file
+
+    # "Transfer Links.csv"
+    df_tf = pd.DataFrame(
+        {
+            "ZONE": ["FR", "FR", "BE", "BE"],
+            "MARKET_ZONE_SOURCE": ["BE00", "BE00", "FR00", "FR00"],
+            "MARKET_ZONE_DESTINATION": ["FR00", "FR00", "BE00", "BE00"],
+            "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
+            "STUDY_SCENARIO": [
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+            ],
+            "YEAR_VALID_START": [2031, 2024, 2032, 2025],
+            "YEAR_VALID_END": [2050, 2030, 2050, 2031],
+            "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
+            "NTC_LIMIT_CAPACITY_STATIC": ["", "", 5300.0, 4300.0],
+            "NTC_CURVE_ID": ["BE-FR_2031_2050", "BE-FR_2024_2030", "", ""],
+            "NO_POLES": [2, 2, 1, 1],
+            "FOR": ["", "", 0.06, 0.06],
+            "COMPL": ["Yes", "Yes", "No", "No"],
+            "FOR_DIRECTION": [
+                "Bi-directional",
+                "Bi-directional",
+                "Uni-directional",
+                "Uni-directional",
+            ],
+            "EXCHANGE_FLOW_CURVE_ID": ["", "", "", ""],
+        }
+    )
+
+    # "NTCs Index.csv"
+    df_index = pd.DataFrame(
+        {
+            "CURVE_UID": ["FR:NTCs_BE_FR_2024_2030", "FR:NTCs_BE_FR_2031_2050"],
+            "ZONE": ["FR", "FR"],
+            "ID": ["BE-FR_2031_2050", "BE-FR_2024_2030"],
+            "LABEL": ["xxx", "xxx"],
+            "COUNT": [1, 2],
+        }
+    )
+
+    # "NTCs.csv"
+    dates = pd.date_range(start="2023-01-01 00:00", end="2023-12-31 23:00", freq="h")
+
+    df_ntc_ts = pd.DataFrame(
+        {
+            "MONTH": dates.month,
+            "DAY": dates.day,
+            "HOUR": dates.hour + 1,
+            "FR:NTCs_BE_FR_2024_2030": pd.Series(range(1, 8760 + 1)),
+            "FR:NTCs_BE_FR_2031_2050": pd.Series(range(1, 8760 + 1)),
+        }
+    )
+
+    # dictionary
+    data_test = {"Transfer Links": df_tf, "NTCs Index": df_index, "NTCs": df_ntc_ts}
 
     output_path = tmp_path / "links_data"
     os.makedirs(output_path)
@@ -130,16 +142,6 @@ def mock_links_data_csv(tmp_path: Path) -> Path:
         df.to_csv(path_file, index=False)
 
     return output_path
-
-
-def test_fixture(mock_links_data_csv: Path, mock_links_main_params_xlsx: Path) -> None:
-    LocalConfiguration(
-        input_path=mock_links_data_csv,
-        export_path=mock_links_data_csv,
-        scenario_name="test",
-        data_references_path=mock_links_main_params_xlsx,
-        calendar_year=[2030, 2060],
-    )
 
 
 def test_links_files_not_exist(tmp_path: Path) -> None:
@@ -159,10 +161,12 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
 ##
 
 
-def test_links_read_data(mock_links_main_params_xlsx: Path) -> None:
+def test_links_read_data(
+    mock_links_main_params_xlsx: Path, mock_links_data_csv: Path
+) -> None:
     local_conf = LocalConfiguration(
-        input_path=LINKS_DATA_DIR,
-        export_path=LINKS_DATA_DIR,
+        input_path=mock_links_data_csv,
+        export_path=mock_links_data_csv,
         scenario_name="test",
         data_references_path=mock_links_main_params_xlsx,
         calendar_year=[2030, 2060],

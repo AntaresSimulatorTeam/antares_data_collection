@@ -17,9 +17,6 @@ import re
 
 from antares.data_collection.tools.conf import LocalConfiguration
 
-# global
-ROOT_TEST = Path(__file__).resolve().parents[2]
-
 
 def test_conf_input_not_exist(tmp_path: Path) -> None:
     # given
