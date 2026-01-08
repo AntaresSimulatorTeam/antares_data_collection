@@ -81,9 +81,6 @@ class TransferLinks(StrEnum):
     NTC_CURVE_ID = "NTC_CURVE_ID"
     NO_POLES = "NO_POLES"
     FOR = "FOR"
-    COMPL = "COMPL"
-    FOR_DIRECTION = "FOR_DIRECTION"
-    EXCHANGE_FLOW_CURVE_ID = "EXCHANGE_FLOW_CURVE_ID"
 
 
 # "NTCs Index.csv"

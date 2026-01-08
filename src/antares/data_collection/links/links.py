@@ -9,12 +9,11 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
+import numpy as np
 
 from antares.data_collection.links import conf_links
 
 import pandas as pd
-from typing import List, Optional
 
 from antares.data_collection.tools.conf import LocalConfiguration
 
@@ -27,8 +26,11 @@ from antares.data_collection.links.conf_links import PeakParamsColumnsNames as R
 # Data Links
 from antares.data_collection.links.conf_links import NTCS
 
+# internal function(s)
+from antares.data_collection.tools import tools
 
-def create_links_part(conf_input: LocalConfiguration) -> None:
+
+def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFrame]:
     # check files required
     conf_links_files = conf_links.LinksFileConfig()
     for file_name in conf_links_files.all_names():
@@ -148,6 +150,19 @@ def create_links_part(conf_input: LocalConfiguration) -> None:
     df_transfer.drop(columns=["market_node"], inplace=True)
     df_transfer.rename(columns={"code_antares": "code_destination"}, inplace=True)
 
+    # new column "ANTARES"
+    # oder by alphabetical code
+    def sort_code_antares(
+        data_frame: pd.DataFrame, col_names: list[str], separator: str = "-"
+    ) -> pd.Series:
+        return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(
+            separator
+        )
+
+    df_transfer["ANTARES"] = sort_code_antares(
+        data_frame=df_transfer, col_names=["code_source", "code_destination"]
+    )
+
     # treatment for calendar year
     # filter with scenario and calendar year
     year_param = conf_input.calendar_year
@@ -161,7 +176,7 @@ def create_links_part(conf_input: LocalConfiguration) -> None:
         scenario_values = ref_scenario.loc[
             ref_scenario["YEAR"].isin([iyear])
         ].STUDY_SCENARIO.item()
-        df_transfer_year = scenario_filter(
+        df_transfer_year = tools.scenario_filter(
             df_input=df_transfer, filter_params=scenario_values
         )
         # filter by year
@@ -172,32 +187,7 @@ def create_links_part(conf_input: LocalConfiguration) -> None:
 
         d_df_year[str(iyear)] = df_transfer_year
 
-    print(d_df_year.keys())
+    return d_df_year
     # endregion
 
     # export part
-
-
-# TODO add in folder "tools" then + add tests
-def scenario_filter(
-    df_input: pd.DataFrame, filter_params: Optional[List[str]] = None
-) -> pd.DataFrame:
-    valid_choices: List[str] = ["ERAA", "TYNDP"]
-
-    # default: "ERAA"
-    if filter_params is None or len(filter_params) != 1:
-        filter_params = ["ERAA"]
-
-    fp: str = filter_params[0]
-
-    if fp not in valid_choices:
-        raise ValueError(f"filter_params must be in {valid_choices}")
-
-    filter_map: dict[str, str] = {
-        "ERAA": r"ERAA&TYNDP|ERAA",
-        "TYNDP": r"ERAA&TYNDP|TYNDP",
-    }
-
-    pattern: str = filter_map[fp]
-
-    return df_input[df_input["STUDY_SCENARIO"].str.contains(pattern, regex=True)]

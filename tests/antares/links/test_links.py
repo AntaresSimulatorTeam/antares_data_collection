@@ -30,11 +30,11 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
     data = {
         "PAYS": pd.DataFrame(
             {
-                "Nom_pays": ["Albanie", "Autriche"],
-                "code_pays": ["AL", "AT"],
-                "areas": ["Albanie", "Autriche"],
-                "market_node": ["AL00", "AT00"],
-                "code_antares": ["AL", "AT"],
+                "Nom_pays": ["Albanie", "Autriche", "Belgique", "France"],
+                "code_pays": ["AL", "AT", "BE", "FR"],
+                "areas": ["Albanie", "Autriche", "Belgique", "France"],
+                "market_node": ["AL00", "AT00", "BE00", "FR00"],
+                "code_antares": ["AL", "AT", "BE", "FR"],
             }
         ),
         "STUDY_SCENARIO": pd.DataFrame(
@@ -45,8 +45,8 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
         ),
         "LINKS": pd.DataFrame(
             {
-                "market_node": ["AL00", "AT00"],
-                "code_antares": ["AL", "AT"],
+                "market_node": ["AL00", "AT00", "BE00", "FR00"],
+                "code_antares": ["AL", "AT", "BE", "FR"],
             }
         ),
         "PEAK_PARAMS": pd.DataFrame(
@@ -153,7 +153,7 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
     )
     # then
     with pytest.raises(ValueError, match=re.escape("Input file does not exist: ")):
-        links.create_links_part(conf_input=local_conf)
+        links.links_data_management(conf_input=local_conf)
 
 
 ##
@@ -171,4 +171,4 @@ def test_links_read_data(
         data_references_path=mock_links_main_params_xlsx,
         calendar_year=[2030, 2060],
     )
-    links.create_links_part(conf_input=local_conf)
+    links.links_data_management(conf_input=local_conf)
