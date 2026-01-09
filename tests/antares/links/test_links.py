@@ -22,6 +22,26 @@ from antares.data_collection.tools.conf import LocalConfiguration
 
 # global
 ROOT_TEST = Path(__file__).resolve().parents[2]
+LINKS_DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
+
+
+# read parquet data test to write .csv
+@pytest.fixture
+def parquet_to_csv(tmp_path: Path) -> Path:
+    # read parquet files
+    df_tf = pd.read_parquet(LINKS_DATA_DIR / "transfer_links.parquet")
+    df_index = pd.read_parquet(LINKS_DATA_DIR / "ntc_index.parquet")
+    df_ntc = pd.read_parquet(LINKS_DATA_DIR / "ntc.parquet")
+
+    output_path = tmp_path / "links_data"
+    os.makedirs(output_path)
+
+    # write .csv files
+    df_tf.to_csv(output_path / "Transfer Links.csv", index=False)
+    df_index.to_csv(output_path / "NTCs Index.csv", index=False)
+    df_ntc.to_csv(output_path / "NTCs.csv", index=False)
+
+    return output_path
 
 
 ## mock referential MAIN_PARAMS
@@ -39,14 +59,23 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
         ),
         "STUDY_SCENARIO": pd.DataFrame(
             {
-                "YEAR": ["2030", "2060"],
-                "STUDY_SCENARIO": ["ERAA", "TYNDP"],
+                "YEAR": ["2030", "2040", "2060"],
+                "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
             }
         ),
         "LINKS": pd.DataFrame(
             {
-                "market_node": ["AL00", "AT00", "BE00", "FR00"],
-                "code_antares": ["AL", "AT", "BE", "FR"],
+                "market_node": [
+                    "AL00",
+                    "AT00",
+                    "BE00",
+                    "FR00",
+                    "LUG1",
+                    "LUV1",
+                    "DE00",
+                    "GR00",
+                ],
+                "code_antares": ["AL", "AT", "BE", "FR", "LU", "LU", "DE", "GR"],
             }
         ),
         "PEAK_PARAMS": pd.DataFrame(
@@ -75,7 +104,8 @@ def mock_links_data_csv(tmp_path: Path) -> Path:
     ## create one data frame by file
 
     # "Transfer Links.csv"
-    df_tf = pd.DataFrame(
+    # multi GRT minimal data
+    df_tf_multi = pd.DataFrame(
         {
             "ZONE": ["FR", "FR", "BE", "BE"],
             "MARKET_ZONE_SOURCE": ["BE00", "BE00", "FR00", "FR00"],
@@ -130,7 +160,11 @@ def mock_links_data_csv(tmp_path: Path) -> Path:
     )
 
     # dictionary
-    data_test = {"Transfer Links": df_tf, "NTCs Index": df_index, "NTCs": df_ntc_ts}
+    data_test = {
+        "Transfer Links": df_tf_multi,
+        "NTCs Index": df_index,
+        "NTCs": df_ntc_ts,
+    }
 
     output_path = tmp_path / "links_data"
     os.makedirs(output_path)
@@ -162,11 +196,11 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
 
 
 def test_links_read_data(
-    mock_links_main_params_xlsx: Path, mock_links_data_csv: Path
+    mock_links_main_params_xlsx: Path, parquet_to_csv: Path
 ) -> None:
     local_conf = LocalConfiguration(
-        input_path=mock_links_data_csv,
-        export_path=mock_links_data_csv,
+        input_path=parquet_to_csv,
+        export_path=parquet_to_csv,
         scenario_name="test",
         data_references_path=mock_links_main_params_xlsx,
         calendar_year=[2030, 2060],

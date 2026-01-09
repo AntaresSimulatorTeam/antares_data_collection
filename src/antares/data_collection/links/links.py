@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-import numpy as np
 
 from antares.data_collection.links import conf_links
 
@@ -150,17 +149,9 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     df_transfer.drop(columns=["market_node"], inplace=True)
     df_transfer.rename(columns={"code_antares": "code_destination"}, inplace=True)
 
-    # new column "ANTARES"
-    # oder by alphabetical code
-    def sort_code_antares(
-        data_frame: pd.DataFrame, col_names: list[str], separator: str = "-"
-    ) -> pd.Series:
-        return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(
-            separator
-        )
-
-    df_transfer["ANTARES"] = sort_code_antares(
-        data_frame=df_transfer, col_names=["code_source", "code_destination"]
+    # ADD new column "border" to combine code source + destination
+    df_transfer["border"] = (
+        df_transfer["code_source"] + "-" + df_transfer["code_destination"]
     )
 
     # treatment for calendar year
@@ -191,3 +182,18 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # endregion
 
     # export part
+
+
+# TODO code for futur export format part
+# # new column "ANTARES"
+# # oder by alphabetical code
+# def sort_code_antares(
+#     data_frame: pd.DataFrame, col_names: list[str], separator: str = "-"
+# ) -> pd.Series:
+#     return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(
+#         separator
+#     )
+#
+# df_transfer["ANTARES"] = sort_code_antares(
+#     data_frame=df_transfer, col_names=["code_source", "code_destination"]
+# )
