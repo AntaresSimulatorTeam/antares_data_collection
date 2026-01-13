@@ -9,57 +9,200 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import os
 import re
 
 import pytest
 from pathlib import Path
 
-from antares.data_collection.links import conf_links, links
+import pandas as pd
+
+from antares.data_collection.links import links
+from antares.data_collection.tools.conf import LocalConfiguration
+
+# global
+ROOT_TEST = Path(__file__).resolve().parents[2]
+LINKS_DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
 
 
-# -------------------
-# Fixture: temporary directory with fake links files
-# -------------------
+# read parquet data test to write .csv
 @pytest.fixture
-def tmp_dir_with_links_files(tmp_path: Path) -> Path:
-    names_files = conf_links.LinksFileNames().files
-    for filename in names_files:
-        file_path: Path = tmp_path / filename
-        file_path.touch()
+def parquet_to_csv(tmp_path: Path) -> Path:
+    # read parquet files
+    df_tf = pd.read_parquet(LINKS_DATA_DIR / "transfer_links.parquet")
+    df_index = pd.read_parquet(LINKS_DATA_DIR / "ntc_index.parquet")
+    df_ntc = pd.read_parquet(LINKS_DATA_DIR / "ntc.parquet")
 
-    return tmp_path
+    output_path = tmp_path / "links_data"
+    os.makedirs(output_path)
 
+    # write .csv files
+    df_tf.to_csv(output_path / "Transfer Links.csv", index=False)
+    df_index.to_csv(output_path / "NTCs Index.csv", index=False)
+    df_ntc.to_csv(output_path / "NTCs.csv", index=False)
 
-def test_links_dir_input_not_exists(tmp_path: Path) -> None:
-    # given
-    fake_path = tmp_path / "toto"
-
-    # then
-    with pytest.raises(
-        ValueError, match=re.escape(f"Input directory {fake_path} does not exist.")
-    ):
-        links.create_links_part(dir_input=fake_path, dir_output=fake_path)
+    return output_path
 
 
-def test_links_dir_output_not_exists(tmp_path: Path) -> None:
-    # given
-    fake_path = tmp_path / "toto"
+## mock referential MAIN_PARAMS
+@pytest.fixture
+def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
+    data = {
+        "PAYS": pd.DataFrame(
+            {
+                "Nom_pays": ["Albanie", "Autriche", "Belgique", "France"],
+                "code_pays": ["AL", "AT", "BE", "FR"],
+                "areas": ["Albanie", "Autriche", "Belgique", "France"],
+                "market_node": ["AL00", "AT00", "BE00", "FR00"],
+                "code_antares": ["AL", "AT", "BE", "FR"],
+            }
+        ),
+        "STUDY_SCENARIO": pd.DataFrame(
+            {
+                "YEAR": ["2030", "2040", "2060"],
+                "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
+            }
+        ),
+        "LINKS": pd.DataFrame(
+            {
+                "market_node": [
+                    "AL00",
+                    "AT00",
+                    "BE00",
+                    "FR00",
+                    "LUG1",
+                    "LUV1",
+                    "DE00",
+                    "GR00",
+                ],
+                "code_antares": ["AL", "AT", "BE", "FR", "LU", "LU", "DE", "GR"],
+            }
+        ),
+        "PEAK_PARAMS": pd.DataFrame(
+            {
+                "hour": [1, 2],
+                "period_hour": ["HC", "HP"],
+                "month": [1, 2],
+                "period_month": ["winter", "summer"],
+            }
+        ),
+    }
 
-    # then
-    with pytest.raises(
-        ValueError, match=re.escape(f"Output directory {fake_path} does not exist.")
-    ):
-        links.create_links_part(dir_input=tmp_path, dir_output=fake_path)
+    output_path = tmp_path / "MAIN_PARAMS.xlsx"
+
+    with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+        for sheet_name, df in data.items():
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+    return output_path
+
+
+# TODO add data test for index + TS
+## mock data LINKS
+@pytest.fixture
+def mock_links_data_csv(tmp_path: Path) -> Path:
+    ## create one data frame by file
+
+    # "Transfer Links.csv"
+    # multi GRT minimal data
+    df_tf_multi = pd.DataFrame(
+        {
+            "ZONE": ["FR", "FR", "BE", "BE"],
+            "MARKET_ZONE_SOURCE": ["BE00", "BE00", "FR00", "FR00"],
+            "MARKET_ZONE_DESTINATION": ["FR00", "FR00", "BE00", "BE00"],
+            "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
+            "STUDY_SCENARIO": [
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+            ],
+            "YEAR_VALID_START": [2031, 2024, 2032, 2025],
+            "YEAR_VALID_END": [2050, 2030, 2050, 2031],
+            "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
+            "NTC_LIMIT_CAPACITY_STATIC": ["", "", 5300.0, 4300.0],
+            "NTC_CURVE_ID": ["BE-FR_2031_2050", "BE-FR_2024_2030", "", ""],
+            "NO_POLES": [2, 2, 1, 1],
+            "FOR": ["", "", 0.06, 0.06],
+            "COMPL": ["Yes", "Yes", "No", "No"],
+            "FOR_DIRECTION": [
+                "Bi-directional",
+                "Bi-directional",
+                "Uni-directional",
+                "Uni-directional",
+            ],
+            "EXCHANGE_FLOW_CURVE_ID": ["", "", "", ""],
+        }
+    )
+
+    # "NTCs Index.csv"
+    df_index = pd.DataFrame(
+        {
+            "CURVE_UID": ["FR:NTCs_BE_FR_2024_2030", "FR:NTCs_BE_FR_2031_2050"],
+            "ZONE": ["FR", "FR"],
+            "ID": ["BE-FR_2031_2050", "BE-FR_2024_2030"],
+            "LABEL": ["xxx", "xxx"],
+            "COUNT": [1, 2],
+        }
+    )
+
+    # "NTCs.csv"
+    dates = pd.date_range(start="2023-01-01 00:00", end="2023-12-31 23:00", freq="h")
+
+    df_ntc_ts = pd.DataFrame(
+        {
+            "MONTH": dates.month,
+            "DAY": dates.day,
+            "HOUR": dates.hour + 1,
+            "FR:NTCs_BE_FR_2024_2030": pd.Series(range(1, 8760 + 1)),
+            "FR:NTCs_BE_FR_2031_2050": pd.Series(range(1, 8760 + 1)),
+        }
+    )
+
+    # dictionary
+    data_test = {
+        "Transfer Links": df_tf_multi,
+        "NTCs Index": df_index,
+        "NTCs": df_ntc_ts,
+    }
+
+    output_path = tmp_path / "links_data"
+    os.makedirs(output_path)
+
+    for file_name in data_test.keys():
+        df = data_test[file_name]
+        file_name = file_name + ".csv"
+        path_file = output_path / file_name
+        df.to_csv(path_file, index=False)
+
+    return output_path
 
 
 def test_links_files_not_exist(tmp_path: Path) -> None:
-    # when
-    with pytest.raises(ValueError, match="Input file does not exist:"):
-        links.create_links_part(dir_input=tmp_path, dir_output=tmp_path)
-
-
-def test_links_files_exist(tmp_dir_with_links_files: Path) -> None:
-    # when
-    links.create_links_part(
-        dir_input=tmp_dir_with_links_files, dir_output=tmp_dir_with_links_files
+    local_conf = LocalConfiguration(
+        input_path=tmp_path,
+        export_path=tmp_path,
+        scenario_name="test",
+        data_references_path=tmp_path,
     )
+    # then
+    with pytest.raises(ValueError, match=re.escape("Input file does not exist: ")):
+        links.links_data_management(conf_input=local_conf)
+
+
+##
+# data management tests
+##
+
+
+def test_links_read_data(
+    mock_links_main_params_xlsx: Path, parquet_to_csv: Path
+) -> None:
+    local_conf = LocalConfiguration(
+        input_path=parquet_to_csv,
+        export_path=parquet_to_csv,
+        scenario_name="test",
+        data_references_path=mock_links_main_params_xlsx,
+        calendar_year=[2030, 2060],
+    )
+    links.links_data_management(conf_input=local_conf)
