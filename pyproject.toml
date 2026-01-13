@@ -36,9 +36,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.coverage.run]
-relative_files = true
-
 [dependency-groups]
 dev = [
     "coverage>=7.11.3",
@@ -55,7 +52,7 @@ parquet = ["pyarrow"]
 
 [tool.mypy]
 mypy_path = "src"
-packages = ["antares", "tests"]
+packages = ["data_collection", "tests"]
 strict = true
 enable_error_code = ["explicit-override"]
 
