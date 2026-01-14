@@ -149,6 +149,9 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     df_transfer.drop(columns=["market_node"], inplace=True)
     df_transfer.rename(columns={"code_antares": "code_destination"}, inplace=True)
 
+    # delete row with NAN
+    df_transfer.dropna(subset=["code_source", "code_destination"], inplace=True)
+
     # ADD new column "border" to combine code source + destination
     df_transfer["border"] = (
         df_transfer["code_source"] + "-" + df_transfer["code_destination"]
@@ -171,13 +174,89 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             df_input=df_transfer, filter_params=scenario_values
         )
         # filter by year
-        df_transfer_year = df_transfer.loc[
-            (df_transfer["YEAR_VALID_START"] <= iyear)
-            & (df_transfer["YEAR_VALID_END"] >= iyear)
+        df_transfer_year = df_transfer_year.loc[
+            (df_transfer_year["YEAR_VALID_START"] <= iyear)
+            & (df_transfer_year["YEAR_VALID_END"] >= iyear)
         ]
 
-        d_df_year[str(iyear)] = df_transfer_year
+        # TODO special treatment for code who have multi market zone (GR, LU, NOs, PL) ?
 
+        ## multi GRT treatment
+
+        # identify
+        borders = (
+            df_transfer_year.groupby(["ZONE", "border"])
+            .size()
+            .reset_index(name="N")
+            .query("N < 2")["border"]
+        )
+
+        # keep target borders
+        df_multi_grt = df_transfer_year.loc[
+            df_transfer_year["border"].isin(borders.unique())
+        ]
+
+        # select one line group by border (one border = 2 lines/2 ZONE)
+        # RULES 1: IF no curve id => keep min of NTC_LIMIT_CAPACITY_STATIC
+        df_multi_grt["NTC_CURVE_ID"] = df_multi_grt["NTC_CURVE_ID"].astype("string")
+
+        mask = df_multi_grt["NTC_CURVE_ID"].isna()
+
+        df_multi_grt_1 = df_multi_grt[
+            mask.groupby(df_multi_grt["border"]).transform("all")
+        ]
+
+        df_multi_grt_1_min = df_multi_grt_1.loc[
+            df_multi_grt_1.groupby("border")["NTC_LIMIT_CAPACITY_STATIC"].idxmin()
+        ]
+
+        # RULES 2: IF curve id
+        # RULES 2.1: one curve id by border
+        # select values who are median columns <= to NTC_LIMIT_CAPACITY_STATIC
+        df_multi_grt_2_1 = df_multi_grt[
+            (mask.groupby(df_multi_grt["border"]).transform("any"))
+            & (~mask.groupby(df_multi_grt["border"]).transform("all"))
+        ]
+
+        ref_ntc_values = (
+            df_multi_grt_2_1.loc[df_multi_grt_2_1["NTC_CURVE_ID"].isna()]
+            .groupby("border")["NTC_LIMIT_CAPACITY_STATIC"]
+            .first()
+        )
+
+        cols = ["SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"]
+
+        df_multi_one_id = df_multi_grt_2_1.copy()
+
+        df_multi_one_id[cols] = df_multi_one_id[cols].clip(
+            upper=df_multi_one_id["border"].map(ref_ntc_values), axis=0
+        )
+
+        df_multi_one_id = df_multi_one_id.loc[~df_multi_one_id["NTC_CURVE_ID"].isna()]
+
+        # RULES 2.2 : one curve by line (2 max per border)
+        # keep minimal "MEDIAN" value
+        mask = (
+            df_multi_grt["NTC_CURVE_ID"]
+            .notna()
+            .groupby(df_multi_grt["border"])
+            .transform("all")
+        )
+
+        df_multi_grt_2_2 = df_multi_grt[mask]
+
+        df_multi_grt_2_2 = df_multi_grt_2_2.loc[
+            df_multi_grt_2_2.groupby("border")["MEDIAN"].idxmin()
+        ]
+
+        # concat all df
+        frames = [df_multi_grt_1_min, df_multi_one_id, df_multi_grt_2_2]
+
+        result = pd.concat(frames)
+
+        d_df_year[str(iyear)] = result
+
+    # named list of data frames
     return d_df_year
     # endregion
 
