@@ -198,7 +198,9 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
 
         # select one line group by border (one border = 2 lines/2 ZONE)
         # RULES 1: IF no curve id => keep min of NTC_LIMIT_CAPACITY_STATIC
-        df_multi_grt["NTC_CURVE_ID"] = df_multi_grt["NTC_CURVE_ID"].astype("string")
+        df_multi_grt.loc[:, "NTC_CURVE_ID"] = df_multi_grt["NTC_CURVE_ID"].astype(
+            "string"
+        )
 
         mask = df_multi_grt["NTC_CURVE_ID"].isna()
 
