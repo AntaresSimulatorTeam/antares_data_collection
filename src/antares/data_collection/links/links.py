@@ -179,7 +179,7 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             & (df_transfer_year["YEAR_VALID_END"] >= iyear)
         ]
 
-        # TODO special treatment for code who have multi market zone (GR, LU, NOs, PL) ?
+        # TODO if data frame is empty skip/pass the year of treatment
 
         ## multi GRT treatment
 
@@ -263,6 +263,21 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # endregion
 
     # export part
+
+
+def pegase_output_format(data_dict: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    # hamburger dict to one data frame
+    # apply new format
+    # split into dict with keys as "year"
+
+    # TODO special treatment for code who have multi market zone (GR, LU, NOs, PL) ?
+
+    if len(data_dict) == 0:
+        raise ValueError("No DATA for export")
+
+    df_concat = pd.concat(data_dict.values(), ignore_index=False, keys=data_dict.keys())
+
+    return {"dict": df_concat}
 
 
 # TODO code for futur export format part

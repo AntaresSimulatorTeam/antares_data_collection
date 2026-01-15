@@ -289,6 +289,84 @@ def mock_links_data_csv(tmp_path: Path) -> Path:
     return output_path
 
 
+## mock dictionnary of data frames for format test
+@pytest.fixture
+def mock_links_dict_data_frames() -> dict[str, pd.DataFrame]:
+    data_links_managed = {
+        "2030": pd.DataFrame(
+            {
+                "ZONE": ["GR", "GR", "RS", "RS"],
+                "MARKET_ZONE_SOURCE": ["AL00", "GR00", "AL00", "RS00"],
+                "MARKET_ZONE_DESTINATION": ["GR00", "AL00", "RS00", "AL00"],
+                "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
+                "STUDY_SCENARIO": ["ERAA", "ERAA", "ERAA&TYNDP", "ERAA&TYNDP"],
+                "YEAR_VALID_START": [2030, 2030, 2030, 2030],
+                "YEAR_VALID_END": [2100, 2100, 2100, 2100],
+                "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
+                "NTC_LIMIT_CAPACITY_STATIC": [600.0, 600.0, pd.NA, pd.NA],
+                "NTC_CURVE_ID": [pd.NA, pd.NA, "AL00-RS00-2", "RS00-AL00-2"],
+                "NO_POLES": [2, 2, 2, 2],
+                "FOR": [0.0, 0.0, pd.NA, pd.NA],
+                "COMPL": ["Yes", "Yes", "Yes", "Yes"],
+                "FOR_DIRECTION": [
+                    "Bi-directional",
+                    "Bi-directional",
+                    "Bi-directional",
+                    "Bi-directional",
+                ],
+                "EXCHANGE_FLOW_CURVE_ID": [pd.NA, pd.NA, pd.NA, pd.NA],
+                "SUMMER_HC": [pd.NA, pd.NA, 500.0, 500.0],
+                "WINTER_HC": [pd.NA, pd.NA, 500.0, 500.0],
+                "SUMMER_HP": [pd.NA, pd.NA, 500.0, 500.0],
+                "WINTER_HP": [pd.NA, pd.NA, 500.0, 500.0],
+                "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0],
+                "code_source": ["AL", "GR", "AL", "RS"],
+                "code_destination": ["GR", "AL", "RS", "AL"],
+                "border": ["AL-GR", "GR-AL", "AL-RS", "RS-AL"],
+            }
+        ),
+        "2040": pd.DataFrame(
+            {
+                "ZONE": ["GR", "GR", "RS", "RS"],
+                "MARKET_ZONE_SOURCE": ["AL00", "GR00", "AL00", "RS00"],
+                "MARKET_ZONE_DESTINATION": ["GR00", "AL00", "RS00", "AL00"],
+                "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
+                "STUDY_SCENARIO": ["ERAA", "ERAA", "ERAA&TYNDP", "ERAA&TYNDP"],
+                "YEAR_VALID_START": [2030, 2030, 2030, 2030],
+                "YEAR_VALID_END": [2100, 2100, 2100, 2100],
+                "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
+                "NTC_LIMIT_CAPACITY_STATIC": [600.0, 600.0, pd.NA, pd.NA],
+                "NTC_CURVE_ID": [pd.NA, pd.NA, "AL00-RS00-2", "RS00-AL00-2"],
+                "NO_POLES": [2, 2, 2, 2],
+                "FOR": [0.0, 0.0, pd.NA, pd.NA],
+                "COMPL": ["Yes", "Yes", "Yes", "Yes"],
+                "FOR_DIRECTION": [
+                    "Bi-directional",
+                    "Bi-directional",
+                    "Bi-directional",
+                    "Bi-directional",
+                ],
+                "EXCHANGE_FLOW_CURVE_ID": [pd.NA, pd.NA, pd.NA, pd.NA],
+                "SUMMER_HC": [pd.NA, pd.NA, 500.0, 500.0],
+                "WINTER_HC": [pd.NA, pd.NA, 500.0, 500.0],
+                "SUMMER_HP": [pd.NA, pd.NA, 500.0, 500.0],
+                "WINTER_HP": [pd.NA, pd.NA, 500.0, 500.0],
+                "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0],
+                "code_source": ["AL", "GR", "AL", "RS"],
+                "code_destination": ["GR", "AL", "RS", "AL"],
+                "border": ["AL-GR", "GR-AL", "AL-RS", "RS-AL"],
+            }
+        ),
+    }
+
+    return data_links_managed
+
+
+##
+# data management tests
+##
+
+
 def test_links_files_not_exist(tmp_path: Path) -> None:
     local_conf = LocalConfiguration(
         input_path=tmp_path,
@@ -301,12 +379,7 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
         links.links_data_management(conf_input=local_conf)
 
 
-##
-# data management tests
-##
-
-
-def test_links_read_data(
+def test_links_data_management_works(
     mock_links_main_params_xlsx: Path, parquet_to_csv: Path
 ) -> None:
     # given
@@ -325,3 +398,25 @@ def test_links_read_data(
     # then
     assert set(result.keys()) == {str(y) for y in year_param}
     assert all(isinstance(result[str(y)], pd.DataFrame) for y in year_param)
+
+
+##
+# data pegase format tests
+##
+
+
+def test_pegase_format_with_no_data() -> None:
+    # given
+    empty_dict: dict[str, pd.DataFrame] = {}
+    # then
+    with pytest.raises(ValueError, match="No DATA for export"):
+        links.pegase_output_format(data_dict=empty_dict)
+
+
+def test_pegase_format_works(
+    mock_links_dict_data_frames: dict[str, pd.DataFrame],
+) -> None:
+    # given
+    df_test = mock_links_dict_data_frames
+    # when
+    links.pegase_output_format(data_dict=df_test)
