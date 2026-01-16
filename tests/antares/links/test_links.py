@@ -410,7 +410,7 @@ def test_pegase_format_with_no_data() -> None:
     empty_dict: dict[str, pd.DataFrame] = {}
     # then
     with pytest.raises(ValueError, match="No DATA for export"):
-        links.pegase_output_format(data_dict=empty_dict)
+        links.links_columns_output_format(data_dict=empty_dict)
 
 
 def test_pegase_format_works(
@@ -419,4 +419,4 @@ def test_pegase_format_works(
     # given
     df_test = mock_links_dict_data_frames
     # when
-    links.pegase_output_format(data_dict=df_test)
+    links.links_columns_output_format(data_dict=df_test)

@@ -97,3 +97,25 @@ class NTCS(StrEnum):
     MONTH = "MONTH"
     DAY = "DAY"
     HOUR = "HOUR"
+
+# columns for export links file
+class ExportLinksColumnsNames(StrEnum):
+    NAME = "Name"
+
+    WINTER_HP_DIRECT_MW = "Winter_HP_Direct_MW"
+    WINTER_HP_INDIRECT_MW = "Winter_HP_Indirect_MW"
+    WINTER_HC_DIRECT_MW = "Winter_HC_Direct_MW"
+    WINTER_HC_INDIRECT_MW = "Winter_HC_Indirect_MW"
+
+    SUMMER_HP_DIRECT_MW = "Summer_HP_Direct_MW"
+    SUMMER_HP_INDIRECT_MW = "Summer_HP_Indirect_MW"
+    SUMMER_HC_DIRECT_MW = "Summer_HC_Direct_MW"
+    SUMMER_HC_INDIRECT_MW = "Summer_HC_Indirect_MW"
+
+    FLOWBASED_PERIMETER = "Flowbased_perimeter"
+
+    HVDC_DIRECT = "HVDC_Direct"
+    HVDC_INDIRECT = "HVDC_Indirect"
+
+    SPECIFIC_TS = "Specific_TS"
+    FORCED_OUTAGE_HVAC = "Forced_Outage_HVAC"

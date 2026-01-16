@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import numpy as np
 
 from antares.data_collection.links import conf_links
 
@@ -265,7 +266,7 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # export part
 
 
-def pegase_output_format(data_dict: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+def links_columns_output_format(data_dict: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     # hamburger dict to one data frame
     # apply new format
     # split into dict with keys as "year"
@@ -275,21 +276,82 @@ def pegase_output_format(data_dict: dict[str, pd.DataFrame]) -> dict[str, pd.Dat
     if len(data_dict) == 0:
         raise ValueError("No DATA for export")
 
-    df_concat = pd.concat(data_dict.values(), ignore_index=False, keys=data_dict.keys())
+    df_concat = (
+        pd.concat(
+            data_dict.values(),
+            keys=data_dict.keys(),
+            names=["key"]
+        )
+        .reset_index(level="key")
+    )
 
-    return {"dict": df_concat}
+    # order column with alphabetical
+    df_concat["ANTARES"] = sort_code_antares(
+        data_frame=df_concat, col_names=["code_source", "code_destination"]
+    )
+
+    # structure data with links way
+    df_concat["links_way"] = np.where(
+        df_concat["border"] == df_concat["ANTARES"],
+        "direct",
+        "indirect",
+    )
+
+    df_direct = df_concat.loc[df_concat["links_way"] == "direct"]
+    df_indirect = df_concat.loc[df_concat["links_way"] == "indirect"]
+
+    Col = conf_links.ExportLinksColumnsNames
+    df_direct_pegase = pd.DataFrame(
+        {
+            "key": df_direct["key"],
+            Col.NAME.value: df_direct["ZONE"],
+
+            Col.WINTER_HP_DIRECT_MW.value: df_direct["WINTER_HP"],
+            Col.WINTER_HC_DIRECT_MW.value: df_direct["WINTER_HC"],
+
+            Col.SUMMER_HP_DIRECT_MW.value: df_direct["SUMMER_HP"],
+            Col.SUMMER_HC_DIRECT_MW.value: df_direct["SUMMER_HC"],
+
+            Col.FLOWBASED_PERIMETER.value: False,
+
+            Col.HVDC_DIRECT.value: pd.NA,
+
+            Col.SPECIFIC_TS.value: False,
+            Col.FORCED_OUTAGE_HVAC.value: False
+        }
+    )
+
+    # TODO create indirect df + join direct/indirect (keys/ZONE)
+    # TODO arrange columns ordered for pegase
+    # TODO resplit in dict named by key with data frame
 
 
-# TODO code for futur export format part
-# # new column "ANTARES"
-# # oder by alphabetical code
-# def sort_code_antares(
-#     data_frame: pd.DataFrame, col_names: list[str], separator: str = "-"
-# ) -> pd.Series:
-#     return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(
-#         separator
-#     )
-#
-# df_transfer["ANTARES"] = sort_code_antares(
-#     data_frame=df_transfer, col_names=["code_source", "code_destination"]
-# )
+
+    return {"dict": df_direct_pegase}
+
+# Name : qui contiendra la zone au format Nœud 1 ANTARES - Nœud 2 ANTARES triés par ordre alphabétique. Contrairement au fichier actuel, il n'y a qu'une seule ligne par couple de nœud, il est donc important que l'ordre alphabétique soit respecté (le fichier sera rejeté par PEGASE si ce n'est pas le cas)
+# Winter_HP_Direct_MW : représente la capacité HVAC WINTER HP du nœud 1 vers le nœud 2
+# Winter_HP_Indirect_MW : représente la capacité HVAC WINTER HP du nœud 2 vers le nœud 1
+# Winter_HC_Direct_MW : représente la capacité HVAC WINTER HC du nœud 1 vers le nœud 2
+# Winter_HC_Indirect_MW : représente la capacité HVAC WINTER HC du nœud 2 vers le nœud 1
+# Summer_HP_Direct_MW : représente la capacité HVAC SUMMER HP du nœud 1 vers le nœud 2
+# Summer_HP_Indirect_MW : représente la capacité HVAC SUMMER HP du nœud 2 vers le nœud 1
+# Summer_HC_Direct_MW : représente la capacité HVAC SUMMER HC du nœud 1 vers le nœud 2
+# Summer_HC_Indirect_MW : représente la capacité HVAC SUMMER HC du nœud 2 vers le nœud 1
+# Flowbased_perimeter : FALSE
+# HVDC_Direct : non valorisé
+# HVDC_Indirect : non valorisé
+# Specific_TS : FALSE
+# Forced_Outage_HVAC : FALSE
+
+
+# new column "ANTARES"
+# oder by alphabetical code
+def sort_code_antares(
+    data_frame: pd.DataFrame, col_names: list[str], separator: str = "-"
+) -> pd.Series:
+    return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(
+        separator
+    )
+
+
