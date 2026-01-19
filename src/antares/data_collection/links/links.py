@@ -209,9 +209,18 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             mask.groupby(df_multi_grt["border"]).transform("all")
         ]
 
+        # keep row with min
         df_multi_grt_1_min = df_multi_grt_1.loc[
             df_multi_grt_1.groupby("border")["NTC_LIMIT_CAPACITY_STATIC"].idxmin()
         ]
+
+        # dispatch value of "NTC_LIMIT_CAPACITY_STATIC" on columns "SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"
+        cols = ["SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"]
+
+        df_multi_grt_1_min[cols] = np.tile(
+            df_multi_grt_1_min["NTC_LIMIT_CAPACITY_STATIC"].to_numpy()[:, None],
+            (1, len(cols)),
+        )
 
         # RULES 2: IF curve id
         # RULES 2.1: one curve id by border
@@ -266,24 +275,19 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # export part
 
 
-def links_columns_output_format(data_dict: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+def links_columns_output_format(
+    data_dict: dict[str, pd.DataFrame],
+) -> dict[str, pd.DataFrame]:
     # hamburger dict to one data frame
     # apply new format
     # split into dict with keys as "year"
 
-    # TODO special treatment for code who have multi market zone (GR, LU, NOs, PL) ?
-
     if len(data_dict) == 0:
         raise ValueError("No DATA for export")
 
-    df_concat = (
-        pd.concat(
-            data_dict.values(),
-            keys=data_dict.keys(),
-            names=["key"]
-        )
-        .reset_index(level="key")
-    )
+    df_concat = pd.concat(
+        data_dict.values(), keys=data_dict.keys(), names=["key"]
+    ).reset_index(level="key")
 
     # order column with alphabetical
     df_concat["ANTARES"] = sort_code_antares(
@@ -304,47 +308,65 @@ def links_columns_output_format(data_dict: dict[str, pd.DataFrame]) -> dict[str,
     df_direct_pegase = pd.DataFrame(
         {
             "key": df_direct["key"],
-            Col.NAME.value: df_direct["ZONE"],
-
+            Col.NAME.value: df_direct["ANTARES"],
             Col.WINTER_HP_DIRECT_MW.value: df_direct["WINTER_HP"],
             Col.WINTER_HC_DIRECT_MW.value: df_direct["WINTER_HC"],
-
             Col.SUMMER_HP_DIRECT_MW.value: df_direct["SUMMER_HP"],
             Col.SUMMER_HC_DIRECT_MW.value: df_direct["SUMMER_HC"],
-
-            Col.FLOWBASED_PERIMETER.value: False,
-
-            Col.HVDC_DIRECT.value: pd.NA,
-
-            Col.SPECIFIC_TS.value: False,
-            Col.FORCED_OUTAGE_HVAC.value: False
         }
     )
 
-    # TODO create indirect df + join direct/indirect (keys/ZONE)
-    # TODO arrange columns ordered for pegase
-    # TODO resplit in dict named by key with data frame
+    df_indirect_pegase = pd.DataFrame(
+        {
+            "key": df_indirect["key"],
+            Col.NAME.value: df_indirect["ANTARES"],
+            Col.WINTER_HP_INDIRECT_MW.value: df_indirect["WINTER_HP"],
+            Col.WINTER_HC_INDIRECT_MW.value: df_indirect["WINTER_HC"],
+            Col.SUMMER_HP_INDIRECT_MW.value: df_indirect["SUMMER_HP"],
+            Col.SUMMER_HC_INDIRECT_MW.value: df_indirect["SUMMER_HC"],
+        }
+    )
 
+    # merge direct/indirect by key/ZONE
+    df_direct_indirect = pd.merge(
+        df_direct_pegase,
+        df_indirect_pegase,
+        on=["key", "Name"],
+        how="inner",
+    )
 
+    # concat columns and global values for the export file
+    df_static_columns_values = pd.DataFrame(
+        {
+            Col.FLOWBASED_PERIMETER.value: [False],
+            Col.HVDC_DIRECT.value: [pd.NA],
+            Col.HVDC_INDIRECT.value: [pd.NA],
+            Col.SPECIFIC_TS.value: [False],
+            Col.FORCED_OUTAGE_HVAC.value: [False],
+        }
+    )
 
-    return {"dict": df_direct_pegase}
+    # add static values
+    df_direct_indirect["_tmp"] = 1
+    df_static_columns_values["_tmp"] = 1
 
-# Name : qui contiendra la zone au format Nœud 1 ANTARES - Nœud 2 ANTARES triés par ordre alphabétique. Contrairement au fichier actuel, il n'y a qu'une seule ligne par couple de nœud, il est donc important que l'ordre alphabétique soit respecté (le fichier sera rejeté par PEGASE si ce n'est pas le cas)
-# Winter_HP_Direct_MW : représente la capacité HVAC WINTER HP du nœud 1 vers le nœud 2
-# Winter_HP_Indirect_MW : représente la capacité HVAC WINTER HP du nœud 2 vers le nœud 1
-# Winter_HC_Direct_MW : représente la capacité HVAC WINTER HC du nœud 1 vers le nœud 2
-# Winter_HC_Indirect_MW : représente la capacité HVAC WINTER HC du nœud 2 vers le nœud 1
-# Summer_HP_Direct_MW : représente la capacité HVAC SUMMER HP du nœud 1 vers le nœud 2
-# Summer_HP_Indirect_MW : représente la capacité HVAC SUMMER HP du nœud 2 vers le nœud 1
-# Summer_HC_Direct_MW : représente la capacité HVAC SUMMER HC du nœud 1 vers le nœud 2
-# Summer_HC_Indirect_MW : représente la capacité HVAC SUMMER HC du nœud 2 vers le nœud 1
-# Flowbased_perimeter : FALSE
-# HVDC_Direct : non valorisé
-# HVDC_Indirect : non valorisé
-# Specific_TS : FALSE
-# Forced_Outage_HVAC : FALSE
+    df_direct_indirect = df_direct_indirect.merge(
+        df_static_columns_values, on="_tmp", how="left"
+    ).drop(columns="_tmp")
 
+    # order columns to export
+    cols = [c.value for c in Col]
+    df_direct_indirect = df_direct_indirect.loc[:, ["key"] + cols]
 
+    # convert to dict of DataFrame
+    dfs_by_year: dict[str, pd.DataFrame] = {
+        str(year): g.drop(columns="key").reset_index(drop=True)
+        for year, g in df_direct_indirect.groupby("key")
+    }
+
+    return dfs_by_year
+
+# TODO add tests and rename function "links_..."
 # new column "ANTARES"
 # oder by alphabetical code
 def sort_code_antares(
@@ -353,5 +375,3 @@ def sort_code_antares(
     return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(
         separator
     )
-
-

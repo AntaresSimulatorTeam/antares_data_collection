@@ -315,10 +315,10 @@ def mock_links_dict_data_frames() -> dict[str, pd.DataFrame]:
                     "Bi-directional",
                 ],
                 "EXCHANGE_FLOW_CURVE_ID": [pd.NA, pd.NA, pd.NA, pd.NA],
-                "SUMMER_HC": [pd.NA, pd.NA, 500.0, 500.0],
-                "WINTER_HC": [pd.NA, pd.NA, 500.0, 500.0],
-                "SUMMER_HP": [pd.NA, pd.NA, 500.0, 500.0],
-                "WINTER_HP": [pd.NA, pd.NA, 500.0, 500.0],
+                "SUMMER_HC": [600.0, 600.0, 500.0, 500.0],
+                "WINTER_HC": [600.0, 600.0, 500.0, 500.0],
+                "SUMMER_HP": [600.0, 600.0, 500.0, 500.0],
+                "WINTER_HP": [600.0, 600.0, 500.0, 500.0],
                 "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0],
                 "code_source": ["AL", "GR", "AL", "RS"],
                 "code_destination": ["GR", "AL", "RS", "AL"],
@@ -347,10 +347,10 @@ def mock_links_dict_data_frames() -> dict[str, pd.DataFrame]:
                     "Bi-directional",
                 ],
                 "EXCHANGE_FLOW_CURVE_ID": [pd.NA, pd.NA, pd.NA, pd.NA],
-                "SUMMER_HC": [pd.NA, pd.NA, 500.0, 500.0],
-                "WINTER_HC": [pd.NA, pd.NA, 500.0, 500.0],
-                "SUMMER_HP": [pd.NA, pd.NA, 500.0, 500.0],
-                "WINTER_HP": [pd.NA, pd.NA, 500.0, 500.0],
+                "SUMMER_HC": [600.0, 600.0, 500.0, 500.0],
+                "WINTER_HC": [600.0, 600.0, 500.0, 500.0],
+                "SUMMER_HP": [600.0, 600.0, 500.0, 500.0],
+                "WINTER_HP": [600.0, 600.0, 500.0, 500.0],
                 "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0],
                 "code_source": ["AL", "GR", "AL", "RS"],
                 "code_destination": ["GR", "AL", "RS", "AL"],
@@ -396,7 +396,7 @@ def test_links_data_management_works(
     result = links.links_data_management(conf_input=local_conf)
 
     # then
-    assert set(result.keys()) == {str(y) for y in year_param}
+    assert result.keys() == {str(y) for y in year_param}
     assert all(isinstance(result[str(y)], pd.DataFrame) for y in year_param)
 
 
@@ -419,4 +419,12 @@ def test_pegase_format_works(
     # given
     df_test = mock_links_dict_data_frames
     # when
-    links.links_columns_output_format(data_dict=df_test)
+    final_dict_result = links.links_columns_output_format(data_dict=df_test)
+
+    # then
+    # type
+    assert isinstance(final_dict_result, dict)
+    # type keys
+    assert all(isinstance(k, str) for k in mock_links_dict_data_frames.keys())
+    # type content
+    assert all(isinstance(v, pd.DataFrame) for v in final_dict_result.values())
