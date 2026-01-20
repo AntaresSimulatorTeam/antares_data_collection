@@ -9,11 +9,17 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
-
+from pathlib import Path
 from typing import Optional, List
 
 import pandas as pd
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.workbook.workbook import Workbook
+
+
+##
+# Data management
+##
 
 
 # TODO add tests
@@ -39,3 +45,57 @@ def scenario_filter(
     pattern: str = filter_map[fp]
 
     return df_input[df_input["STUDY_SCENARIO"].str.contains(pattern, regex=True)]
+
+
+##
+# Export : Excel workbook
+##
+
+
+def create_xlsx_workbook(
+    path_dir: Path,
+    workbook_name: str,
+    sheet_name: str,
+    data_df: Optional[pd.DataFrame] = None,
+    index: bool = False,
+    header: bool = True,
+    overwrite: bool = False,
+) -> None:
+    if not path_dir.exists():
+        raise FileNotFoundError(f"Input directory does not exist: {path_dir}")
+
+    wb = Workbook()
+    ws = wb.active
+    assert ws is not None  # to prevent error with mypy and "types-openpyxl"
+
+    ws.title = sheet_name
+
+    wb_name = workbook_name + ".xlsx"
+
+    # empty workbook
+    if data_df is None:
+        wb.save(path_dir / wb_name)
+
+    # workbook with data
+    if data_df is not None:
+        for r in dataframe_to_rows(data_df, index=index, header=header):
+            ws.append(r)
+
+        wb.save(path_dir / wb_name)
+
+
+# TODO manage editing mode
+def edit_xlsx_workbook(
+    path_file: Path,
+    sheet_name: str,
+    data_df: Optional[pd.DataFrame] = None,
+    index: bool = False,
+    header: bool = True,
+    overwrite: bool = False,
+) -> None:
+    if not path_file.exists():
+        raise FileNotFoundError(f"This Excel file does not exist: {path_file}")
+
+    # wb = load_workbook(filename=path_file)
+    # wb.get_sheet_names()
+    # ws = wb[sheet_name]

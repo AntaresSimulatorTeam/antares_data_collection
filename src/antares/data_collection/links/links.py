@@ -31,6 +31,20 @@ from antares.data_collection.tools import tools
 
 
 def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFrame]:
+    """
+    Manage links data (Transfer capacity, NTC TS + INDEX).
+
+    Parameters
+    ----------
+    conf_input : LocalConfiguration
+        Configuration object.
+
+    Returns
+    -------
+    dict[str, pd.DataFrame]
+        Empty dict if no data.
+    """
+
     # check files required
     conf_links_files = conf_links.LinksFileConfig()
     for file_name in conf_links_files.all_names():
@@ -290,7 +304,7 @@ def links_columns_output_format(
     ).reset_index(level="key")
 
     # order column with alphabetical
-    df_concat["ANTARES"] = sort_code_antares(
+    df_concat["ANTARES"] = links_sort_borders_code(
         data_frame=df_concat, col_names=["code_source", "code_destination"]
     )
 
@@ -366,10 +380,11 @@ def links_columns_output_format(
 
     return dfs_by_year
 
+
 # TODO add tests and rename function "links_..."
 # new column "ANTARES"
 # oder by alphabetical code
-def sort_code_antares(
+def links_sort_borders_code(
     data_frame: pd.DataFrame, col_names: list[str], separator: str = "-"
 ) -> pd.Series:
     return pd.Series(np.sort(data_frame[col_names], axis=1).tolist()).str.join(

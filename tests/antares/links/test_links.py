@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.links import links
+from antares.data_collection.links import links, conf_links
 from antares.data_collection.tools.conf import LocalConfiguration
 
 # global
@@ -379,6 +379,30 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
         links.links_data_management(conf_input=local_conf)
 
 
+# test with mocked data to simulate no data with margin year
+# for 2060 scenario ref => "TYNDP" => no DATA
+def test_links_no_data_year(
+    mock_links_data_csv: Path, mock_links_main_params_xlsx: Path
+) -> None:
+    # given
+    year_param = [2030, 2060]
+    local_conf = LocalConfiguration(
+        input_path=mock_links_data_csv,
+        export_path=mock_links_data_csv,
+        scenario_name="test",
+        data_references_path=mock_links_main_params_xlsx,
+        calendar_year=year_param,
+    )
+
+    # when
+    result = links.links_data_management(conf_input=local_conf)
+
+    # then
+    assert result["2030"].shape[0] > 0
+    assert result["2060"].shape[0] == 0
+
+
+# with all DATA parquet
 def test_links_data_management_works(
     mock_links_main_params_xlsx: Path, parquet_to_csv: Path
 ) -> None:
@@ -425,6 +449,14 @@ def test_pegase_format_works(
     # type
     assert isinstance(final_dict_result, dict)
     # type keys
-    assert all(isinstance(k, str) for k in mock_links_dict_data_frames.keys())
+    assert all(isinstance(k, str) for k in df_test.keys())
+    # named keys matching
+    assert set(final_dict_result.keys()) == set(df_test.keys())
     # type content
     assert all(isinstance(v, pd.DataFrame) for v in final_dict_result.values())
+    # col names order
+    Col = conf_links.ExportLinksColumnsNames
+    expected_cols = [c.value for c in Col]
+
+    for df in final_dict_result.values():
+        assert list(df.columns) == expected_cols
