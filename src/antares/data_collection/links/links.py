@@ -33,6 +33,10 @@ from antares.data_collection.tools import tools
 def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFrame]:
     """
     Manage links data (Transfer capacity, NTC TS + INDEX).
+    Treatments are applied to the data:
+     - NTC TS + INDEX: median group by HP/HC & Winter/Summer
+     - Pre treatments for Transfer capacity: global filter `TRANSFER_TYPE` = NTC + `TRANSFER_TECHNOLOGY` = HVAC
+     - Treatments for every year: multi GRT treatment
 
     Parameters
     ----------
@@ -42,7 +46,7 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     Returns
     -------
     dict[str, pd.DataFrame]
-        Empty dict if no data.
+        If there is no data for a specific year, `DataFrame` is empty.
     """
 
     # check files required
@@ -381,7 +385,7 @@ def links_columns_output_format(
     return dfs_by_year
 
 
-# TODO add tests and rename function "links_..."
+# TODO add tests
 # new column "ANTARES"
 # oder by alphabetical code
 def links_sort_borders_code(

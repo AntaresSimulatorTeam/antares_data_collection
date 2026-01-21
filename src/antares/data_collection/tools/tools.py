@@ -64,6 +64,11 @@ def create_xlsx_workbook(
     if not path_dir.exists():
         raise FileNotFoundError(f"Input directory does not exist: {path_dir}")
 
+    if not overwrite:
+        name_file = workbook_name + ".xlsx"
+        if (path_dir / name_file).exists():
+            raise ValueError(f"This Workbook already exist: {name_file}")
+
     wb = Workbook()
     ws = wb.active
     assert ws is not None  # to prevent error with mypy and "types-openpyxl"

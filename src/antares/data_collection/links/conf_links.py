@@ -98,6 +98,7 @@ class NTCS(StrEnum):
     DAY = "DAY"
     HOUR = "HOUR"
 
+
 # columns for export links file
 class ExportLinksColumnsNames(StrEnum):
     NAME = "Name"

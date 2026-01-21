@@ -86,6 +86,90 @@ def test_create_workbook_with_data(tmp_path: Path) -> None:
     assert df_to_test.equals(df_pandaset)
 
 
+def test_create_workbook_overwrite_false(tmp_path: Path) -> None:
+    dir_export_path = tmp_path / "links_data_export"
+    os.makedirs(dir_export_path)
+
+    # given
+    df_pandaset = pd.DataFrame(
+        {
+            "YEAR": ["2030", "2040", "2060"],
+            "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
+        }
+    )
+
+    # when
+    create_xlsx_workbook(
+        path_dir=dir_export_path,
+        workbook_name="test_workbook_overwrite",
+        sheet_name="data_sheet",
+        data_df=df_pandaset,
+    )
+
+    # then
+    name_file = "test_workbook_overwrite" + ".xlsx"
+    with pytest.raises(
+        ValueError,
+        match=f"This Workbook already exist: {name_file}",
+    ):
+        create_xlsx_workbook(
+            path_dir=dir_export_path,
+            workbook_name="test_workbook_overwrite",
+            sheet_name="data_sheet",
+            data_df=df_pandaset,
+        )
+
+
+def test_create_workbook_overwrite_true(tmp_path: Path) -> None:
+    dir_export_path = tmp_path / "links_data_export"
+    os.makedirs(dir_export_path)
+
+    # given
+    df_pandaset = pd.DataFrame(
+        {
+            "YEAR": ["2030", "2040", "2060"],
+            "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
+        }
+    )
+
+    df_pandaset_overwrite = pd.DataFrame(
+        {
+            "YEAR": ["2030", "2040", "2060"],
+            "STUDY_SCENARIO_NEW": ["ERAA", "ERAA", "TYNDP"],
+        }
+    )
+
+    # when
+    create_xlsx_workbook(
+        path_dir=dir_export_path,
+        workbook_name="test_workbook_overwrite",
+        sheet_name="data_sheet",
+        data_df=df_pandaset,
+    )
+
+    # overwrite
+    create_xlsx_workbook(
+        path_dir=dir_export_path,
+        workbook_name="test_workbook_overwrite",
+        sheet_name="data_sheet_overwrite",
+        data_df=df_pandaset_overwrite,
+        overwrite=True,
+    )
+
+    # then
+    wb = load_workbook(filename=dir_export_path / ("test_workbook_overwrite" + ".xlsx"))
+    assert wb.sheetnames == ["data_sheet_overwrite"]
+
+    dtype = {"YEAR": object, "STUDY_SCENARIO_NEW": object}
+    df_to_test = pd.read_excel(
+        dir_export_path / ("test_workbook_overwrite" + ".xlsx"), dtype=dtype
+    )
+
+    assert list(df_to_test.columns) == list(df_pandaset_overwrite.columns)
+    assert df_to_test.shape == df_pandaset_overwrite.shape
+    assert df_to_test.equals(df_pandaset_overwrite)
+
+
 ##
 # Edition
 ##
