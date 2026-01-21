@@ -109,7 +109,7 @@ def test_create_workbook_overwrite_false(tmp_path: Path) -> None:
     # then
     name_file = "test_workbook_overwrite" + ".xlsx"
     with pytest.raises(
-        ValueError,
+        FileExistsError,
         match=f"This Workbook already exist: {name_file}",
     ):
         create_xlsx_workbook(
@@ -183,11 +183,78 @@ def test_edit_workbook_file_not_exist(tmp_path: Path) -> None:
         FileNotFoundError,
         match=re.escape(f"This Excel file does not exist: {dir_export_path}"),
     ):
-        edit_xlsx_workbook(path_file=dir_export_path, sheet_name="sheet")
+        edit_xlsx_workbook(
+            path_file=dir_export_path, sheet_name="sheet", data_df=pd.DataFrame()
+        )
 
 
-def test_edit_workbook_file_exist(mock_links_main_params_xlsx: Path) -> None:
+def test_edit_workbook_overwrite_false(mock_links_main_params_xlsx: Path) -> None:
+    # given
+    name_sheet = "STUDY_SCENARIO"
+    # then
+    with pytest.raises(KeyError, match=f"This sheet already exists: {name_sheet}"):
+        edit_xlsx_workbook(
+            path_file=mock_links_main_params_xlsx,
+            sheet_name=name_sheet,
+            data_df=pd.DataFrame(),
+        )
+
+
+def test_edit_workbook_overwrite_sheet_not_exist(
+    mock_links_main_params_xlsx: Path,
+) -> None:
+    # given
+    name_sheet = "STUDY_SCENARIOX"
+    # then
+    with pytest.raises(KeyError, match=f"Sheet '{name_sheet}' not found"):
+        edit_xlsx_workbook(
+            path_file=mock_links_main_params_xlsx,
+            sheet_name=name_sheet,
+            data_df=pd.DataFrame(),
+            overwrite_sheet=True,
+        )
+
+
+def test_edit_workbook_overwrite_sheet_exist(mock_links_main_params_xlsx: Path) -> None:
+    # given
+    name_sheet = "STUDY_SCENARIO"
+    new_data = pd.DataFrame({"YEAR": ["2030", "2040", "2060"]})
+
     # when
     edit_xlsx_workbook(
-        path_file=mock_links_main_params_xlsx, sheet_name="STUDY_SCENARIO"
+        path_file=mock_links_main_params_xlsx,
+        sheet_name=name_sheet,
+        data_df=new_data,
+        overwrite_sheet=True,
     )
+
+    # then
+    dtype = {"YEAR": object}
+    df_to_test = pd.read_excel(
+        mock_links_main_params_xlsx, dtype=dtype, sheet_name=name_sheet
+    )
+
+    assert list(new_data.columns) == list(df_to_test.columns)
+    assert df_to_test.shape == df_to_test.shape
+    assert df_to_test.equals(df_to_test)
+
+
+def test_edit_workbook_add_new_sheet(mock_links_main_params_xlsx: Path) -> None:
+    # given
+    name_sheet = "STUDY_SCENARIO_BIS"
+    new_data = pd.DataFrame({"YEAR": ["2030", "2040", "2060"]})
+
+    # when
+    edit_xlsx_workbook(
+        path_file=mock_links_main_params_xlsx, sheet_name=name_sheet, data_df=new_data
+    )
+
+    # then
+    dtype = {"YEAR": object}
+    df_to_test = pd.read_excel(
+        mock_links_main_params_xlsx, dtype=dtype, sheet_name=name_sheet
+    )
+
+    assert list(new_data.columns) == list(df_to_test.columns)
+    assert df_to_test.shape == df_to_test.shape
+    assert df_to_test.equals(df_to_test)

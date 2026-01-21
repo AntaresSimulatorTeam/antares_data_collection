@@ -15,6 +15,7 @@ from typing import Optional, List
 import pandas as pd
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.workbook.workbook import Workbook
+from openpyxl.reader.excel import load_workbook
 
 
 ##
@@ -61,20 +62,45 @@ def create_xlsx_workbook(
     header: bool = True,
     overwrite: bool = False,
 ) -> None:
+    """
+    Create an Excel workbook and write a DataFrame to a worksheet.
+
+    Parameters
+    ----------
+    path_dir : Path
+        Directory where the Excel workbook will be created.
+    workbook_name : str
+        Workbook name **without** the `.xlsx` extension.
+    sheet_name : str
+        Worksheet name to create in the workbook.
+    data_df : pd.DataFrame, optional
+        DataFrame to write into the worksheet. If None, the worksheet is created
+        without writing data.
+    index : bool, default False
+        Whether to write the DataFrame index.
+    header : bool, default True
+        Whether to write the DataFrame column names.
+    overwrite : bool, default False
+        If True, overwrite the existing Excel workbook. If False and the file
+        already exists, raise a FileExistsError.
+
+    Raises
+    ------
+    FileExistsError
+        If the Excel workbook already exists and overwrite is False.
+    """
     if not path_dir.exists():
         raise FileNotFoundError(f"Input directory does not exist: {path_dir}")
 
     if not overwrite:
         name_file = workbook_name + ".xlsx"
         if (path_dir / name_file).exists():
-            raise ValueError(f"This Workbook already exist: {name_file}")
+            raise FileExistsError(f"This Workbook already exist: {name_file}")
 
     wb = Workbook()
     ws = wb.active
     assert ws is not None  # to prevent error with mypy and "types-openpyxl"
-
     ws.title = sheet_name
-
     wb_name = workbook_name + ".xlsx"
 
     # empty workbook
@@ -89,18 +115,61 @@ def create_xlsx_workbook(
         wb.save(path_dir / wb_name)
 
 
-# TODO manage editing mode
 def edit_xlsx_workbook(
     path_file: Path,
     sheet_name: str,
-    data_df: Optional[pd.DataFrame] = None,
+    data_df: pd.DataFrame,
     index: bool = False,
     header: bool = True,
-    overwrite: bool = False,
+    overwrite_sheet: bool = False,
 ) -> None:
+    """
+    Edit an existing Excel workbook and write a DataFrame to a new worksheet (or append to an existing one).
+
+    Parameters
+    ----------
+    path_file : Path
+        Complete path to the Excel workbook to edit.
+    sheet_name : str
+        Worksheet name to create in the workbook.
+    data_df : pd.DataFrame
+        DataFrame to write into the worksheet.
+    index : bool, default False
+        Whether to write the DataFrame index.
+    header : bool, default True
+        Whether to write the DataFrame column names.
+    overwrite_sheet : bool, default False
+        If True, overwrite the existing worksheet. If False and the file
+        already exists, raise a KeyError.
+
+    Raises
+    ------
+    KeyError
+        If the worksheet already exists and overwrite is False.
+    """
     if not path_file.exists():
         raise FileNotFoundError(f"This Excel file does not exist: {path_file}")
 
-    # wb = load_workbook(filename=path_file)
-    # wb.get_sheet_names()
-    # ws = wb[sheet_name]
+    wb = load_workbook(filename=path_file)
+    if not overwrite_sheet:
+        if sheet_name in wb.sheetnames:
+            raise KeyError(f"This sheet already exists: {sheet_name}")
+
+    if overwrite_sheet:
+        if sheet_name not in wb.sheetnames:
+            raise KeyError(f"Sheet '{sheet_name}' not found")
+        # purge to use append() then
+        ws = wb[sheet_name]
+        ws.delete_rows(1, ws.max_row)
+        wb.save(path_file)
+
+    # add new sheet
+    if sheet_name not in wb.sheetnames:
+        wb.create_sheet(sheet_name)
+        ws = wb[sheet_name]
+
+    # edit workbook in sheet
+    for r in dataframe_to_rows(data_df, index=index, header=header):
+        ws.append(r)
+
+    wb.save(path_file)
