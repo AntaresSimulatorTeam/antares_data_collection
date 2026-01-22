@@ -9,6 +9,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import os
+from pathlib import Path
+
 import numpy as np
 
 from antares.data_collection.links import conf_links
@@ -19,7 +22,7 @@ from antares.data_collection.tools.conf import LocalConfiguration
 
 # Data referential
 from antares.data_collection.links.conf_links import (
-    ReferentialSheetNames as RefSheetNames,
+    ReferentialSheetNames as RefSheetNames, LinksExportParameters,
 )
 from antares.data_collection.links.conf_links import PeakParamsColumnsNames as RefPeak
 
@@ -28,6 +31,7 @@ from antares.data_collection.links.conf_links import NTCS
 
 # internal function(s)
 from antares.data_collection.tools import tools
+from antares.data_collection.tools.tools import create_xlsx_workbook, edit_xlsx_workbook
 
 
 def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFrame]:
@@ -386,8 +390,45 @@ def links_manage_output_format(
 
 
 # TODO
-def links_manage_export() -> None:
-    raise NotImplementedError("Not implemented yet")
+def links_manage_export(dict_of_df: dict[str, pd.DataFrame], root_dir_export: Path, links_dir: list[str] = "link",
+                        scenario_name: str | None = None) -> None:
+    if len(dict_of_df) == 0:
+        raise ValueError("No DATA to export")
+    if not root_dir_export.exists():
+        raise ValueError(f"Path of root directory {root_dir_export} does not exist")
+
+    # create dir from root dir
+    links_export_path_dir = root_dir_export / links_dir
+    os.makedirs(links_export_path_dir, exist_ok=True)
+
+    if scenario_name is not None:
+        workbook_name = f"links_{scenario_name}"
+
+    # export every element of the dictionary
+    for year in dict_of_df.keys():
+        # the first sheet is for parameters
+        year_param = [str(int(year) -1), year]
+        parameter_col_name = str(year_param[0]+"-"+year_param[1])
+        data = {
+            parameter_col_name: LinksExportParameters.HURDLE_COSTS.default
+        }
+
+        index = [LinksExportParameters.HURDLE_COSTS.label]
+
+        df_of_parameters = pd.DataFrame(data, index=index)
+
+        # write file
+        create_xlsx_workbook(
+            path_dir=links_export_path_dir,
+            workbook_name=workbook_name+"_"+year,
+            sheet_name="parameters",
+            data_df=df_of_parameters, index=True
+        )
+
+        # the second sheet is for data
+        edit_xlsx_workbook(path_file=links_export_path_dir / f"{workbook_name}_{year}.xlsx",
+                           sheet_name=parameter_col_name,
+                           data_df=dict_of_df[year])
 
 
 # TODO
