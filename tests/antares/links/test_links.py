@@ -429,21 +429,21 @@ def test_links_data_management_works(
 ##
 
 
-def test_pegase_format_with_no_data() -> None:
+def test_links_output_format_with_no_data() -> None:
     # given
     empty_dict: dict[str, pd.DataFrame] = {}
     # then
     with pytest.raises(ValueError, match="No DATA for export"):
-        links.links_columns_output_format(data_dict=empty_dict)
+        links.links_manage_output_format(data_dict=empty_dict)
 
 
-def test_pegase_format_works(
+def test_links_output_format_works(
     mock_links_dict_data_frames: dict[str, pd.DataFrame],
 ) -> None:
     # given
     df_test = mock_links_dict_data_frames
     # when
-    final_dict_result = links.links_columns_output_format(data_dict=df_test)
+    final_dict_result = links.links_manage_output_format(data_dict=df_test)
 
     # then
     # type

@@ -154,8 +154,8 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
         right_on="market_node",
         how="left",
     )
-    df_transfer.drop(columns=["market_node"], inplace=True)
-    df_transfer.rename(columns={"code_antares": "code_source"}, inplace=True)
+    df_transfer = df_transfer.drop(columns=["market_node"])
+    df_transfer = df_transfer.rename(columns={"code_antares": "code_source"})
 
     # destination
     df_transfer = pd.merge(
@@ -165,11 +165,11 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
         right_on="market_node",
         how="left",
     )
-    df_transfer.drop(columns=["market_node"], inplace=True)
-    df_transfer.rename(columns={"code_antares": "code_destination"}, inplace=True)
+    df_transfer = df_transfer.drop(columns=["market_node"])
+    df_transfer = df_transfer.rename(columns={"code_antares": "code_destination"})
 
     # delete row with NAN
-    df_transfer.dropna(subset=["code_source", "code_destination"], inplace=True)
+    df_transfer = df_transfer.dropna(subset=["code_source", "code_destination"])
 
     # ADD new column "border" to combine code source + destination
     df_transfer["border"] = (
@@ -293,7 +293,7 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # export part
 
 
-def links_columns_output_format(
+def links_manage_output_format(
     data_dict: dict[str, pd.DataFrame],
 ) -> dict[str, pd.DataFrame]:
     # hamburger dict to one data frame
@@ -322,26 +322,26 @@ def links_columns_output_format(
     df_direct = df_concat.loc[df_concat["links_way"] == "direct"]
     df_indirect = df_concat.loc[df_concat["links_way"] == "indirect"]
 
-    Col = conf_links.ExportLinksColumnsNames
+    export_columns = conf_links.ExportLinksColumnsNames
     df_direct_pegase = pd.DataFrame(
         {
             "key": df_direct["key"],
-            Col.NAME.value: df_direct["ANTARES"],
-            Col.WINTER_HP_DIRECT_MW.value: df_direct["WINTER_HP"],
-            Col.WINTER_HC_DIRECT_MW.value: df_direct["WINTER_HC"],
-            Col.SUMMER_HP_DIRECT_MW.value: df_direct["SUMMER_HP"],
-            Col.SUMMER_HC_DIRECT_MW.value: df_direct["SUMMER_HC"],
+            export_columns.NAME.value: df_direct["ANTARES"],
+            export_columns.WINTER_HP_DIRECT_MW.value: df_direct["WINTER_HP"],
+            export_columns.WINTER_HC_DIRECT_MW.value: df_direct["WINTER_HC"],
+            export_columns.SUMMER_HP_DIRECT_MW.value: df_direct["SUMMER_HP"],
+            export_columns.SUMMER_HC_DIRECT_MW.value: df_direct["SUMMER_HC"],
         }
     )
 
     df_indirect_pegase = pd.DataFrame(
         {
             "key": df_indirect["key"],
-            Col.NAME.value: df_indirect["ANTARES"],
-            Col.WINTER_HP_INDIRECT_MW.value: df_indirect["WINTER_HP"],
-            Col.WINTER_HC_INDIRECT_MW.value: df_indirect["WINTER_HC"],
-            Col.SUMMER_HP_INDIRECT_MW.value: df_indirect["SUMMER_HP"],
-            Col.SUMMER_HC_INDIRECT_MW.value: df_indirect["SUMMER_HC"],
+            export_columns.NAME.value: df_indirect["ANTARES"],
+            export_columns.WINTER_HP_INDIRECT_MW.value: df_indirect["WINTER_HP"],
+            export_columns.WINTER_HC_INDIRECT_MW.value: df_indirect["WINTER_HC"],
+            export_columns.SUMMER_HP_INDIRECT_MW.value: df_indirect["SUMMER_HP"],
+            export_columns.SUMMER_HC_INDIRECT_MW.value: df_indirect["SUMMER_HC"],
         }
     )
 
@@ -356,11 +356,11 @@ def links_columns_output_format(
     # concat columns and global values for the export file
     df_static_columns_values = pd.DataFrame(
         {
-            Col.FLOWBASED_PERIMETER.value: [False],
-            Col.HVDC_DIRECT.value: [pd.NA],
-            Col.HVDC_INDIRECT.value: [pd.NA],
-            Col.SPECIFIC_TS.value: [False],
-            Col.FORCED_OUTAGE_HVAC.value: [False],
+            export_columns.FLOWBASED_PERIMETER.value: [False],
+            export_columns.HVDC_DIRECT.value: [pd.NA],
+            export_columns.HVDC_INDIRECT.value: [pd.NA],
+            export_columns.SPECIFIC_TS.value: [False],
+            export_columns.FORCED_OUTAGE_HVAC.value: [False],
         }
     )
 
@@ -373,7 +373,7 @@ def links_columns_output_format(
     ).drop(columns="_tmp")
 
     # order columns to export
-    cols = [c.value for c in Col]
+    cols = [c.value for c in export_columns]
     df_direct_indirect = df_direct_indirect.loc[:, ["key"] + cols]
 
     # convert to dict of DataFrame
@@ -383,6 +383,16 @@ def links_columns_output_format(
     }
 
     return dfs_by_year
+
+
+# TODO
+def links_manage_export() -> None:
+    raise NotImplementedError("Not implemented yet")
+
+
+# TODO
+def create_links_outputs() -> None:
+    raise NotImplementedError("Not implemented yet")
 
 
 # TODO add tests

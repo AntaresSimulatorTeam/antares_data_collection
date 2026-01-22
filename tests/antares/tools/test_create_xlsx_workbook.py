@@ -19,7 +19,6 @@ import pandas as pd
 from openpyxl.reader.excel import load_workbook
 
 from antares.data_collection.tools.tools import create_xlsx_workbook, edit_xlsx_workbook
-# from tests.antares.links.test_links import mock_links_main_params_xlsx
 
 
 ##
@@ -64,7 +63,7 @@ def test_create_workbook_with_data(tmp_path: Path) -> None:
     # given
     df_pandaset = pd.DataFrame(
         {
-            "YEAR": ["2030", "2040", "2060"],
+            "YEAR": [2030, 2040, 2060],
             "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
         }
     )
@@ -78,12 +77,13 @@ def test_create_workbook_with_data(tmp_path: Path) -> None:
     )
 
     # then
-    dtype = {"YEAR": object, "STUDY_SCENARIO": object}
-    df_to_test = pd.read_excel(dir_export_path / "test_workbook.xlsx", dtype=dtype)
+    df_to_test = pd.read_excel(dir_export_path / "test_workbook.xlsx")
 
     assert list(df_to_test.columns) == list(df_pandaset.columns)
     assert df_to_test.shape == df_pandaset.shape
-    assert df_to_test.equals(df_pandaset)
+    pd.testing.assert_frame_equal(
+        df_to_test, df_pandaset, check_dtype=False, check_like=True
+    )
 
 
 def test_create_workbook_overwrite_false(tmp_path: Path) -> None:
@@ -93,7 +93,7 @@ def test_create_workbook_overwrite_false(tmp_path: Path) -> None:
     # given
     df_pandaset = pd.DataFrame(
         {
-            "YEAR": ["2030", "2040", "2060"],
+            "YEAR": [2030, 2040, 2060],
             "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
         }
     )
@@ -127,14 +127,14 @@ def test_create_workbook_overwrite_true(tmp_path: Path) -> None:
     # given
     df_pandaset = pd.DataFrame(
         {
-            "YEAR": ["2030", "2040", "2060"],
+            "YEAR": [2030, 2040, 2060],
             "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
         }
     )
 
     df_pandaset_overwrite = pd.DataFrame(
         {
-            "YEAR": ["2030", "2040", "2060"],
+            "YEAR": [2030, 2040, 2060],
             "STUDY_SCENARIO_NEW": ["ERAA", "ERAA", "TYNDP"],
         }
     )
@@ -160,14 +160,13 @@ def test_create_workbook_overwrite_true(tmp_path: Path) -> None:
     wb = load_workbook(filename=dir_export_path / ("test_workbook_overwrite" + ".xlsx"))
     assert wb.sheetnames == ["data_sheet_overwrite"]
 
-    dtype = {"YEAR": object, "STUDY_SCENARIO_NEW": object}
-    df_to_test = pd.read_excel(
-        dir_export_path / ("test_workbook_overwrite" + ".xlsx"), dtype=dtype
-    )
+    df_to_test = pd.read_excel(dir_export_path / ("test_workbook_overwrite" + ".xlsx"))
 
     assert list(df_to_test.columns) == list(df_pandaset_overwrite.columns)
     assert df_to_test.shape == df_pandaset_overwrite.shape
-    assert df_to_test.equals(df_pandaset_overwrite)
+    pd.testing.assert_frame_equal(
+        df_to_test, df_pandaset_overwrite, check_dtype=False, check_like=True
+    )
 
 
 ##
@@ -218,7 +217,7 @@ def test_edit_workbook_overwrite_sheet_not_exist(
 def test_edit_workbook_overwrite_sheet_exist(mock_links_main_params_xlsx: Path) -> None:
     # given
     name_sheet = "STUDY_SCENARIO"
-    new_data = pd.DataFrame({"YEAR": ["2030", "2040", "2060"]})
+    new_data = pd.DataFrame({"YEAR": [2030, 2040, 2060]})
 
     # when
     edit_xlsx_workbook(
@@ -229,20 +228,20 @@ def test_edit_workbook_overwrite_sheet_exist(mock_links_main_params_xlsx: Path) 
     )
 
     # then
-    dtype = {"YEAR": object}
-    df_to_test = pd.read_excel(
-        mock_links_main_params_xlsx, dtype=dtype, sheet_name=name_sheet
-    )
+    # dtype = {"YEAR": object}
+    df_to_test = pd.read_excel(mock_links_main_params_xlsx, sheet_name=name_sheet)
 
     assert list(new_data.columns) == list(df_to_test.columns)
-    assert df_to_test.shape == df_to_test.shape
-    assert df_to_test.equals(df_to_test)
+    assert new_data.shape == df_to_test.shape
+    pd.testing.assert_frame_equal(
+        df_to_test, new_data, check_dtype=False, check_like=True
+    )
 
 
 def test_edit_workbook_add_new_sheet(mock_links_main_params_xlsx: Path) -> None:
     # given
     name_sheet = "STUDY_SCENARIO_BIS"
-    new_data = pd.DataFrame({"YEAR": ["2030", "2040", "2060"]})
+    new_data = pd.DataFrame({"YEAR": [2030, 2040, 2060]})
 
     # when
     edit_xlsx_workbook(
@@ -250,11 +249,10 @@ def test_edit_workbook_add_new_sheet(mock_links_main_params_xlsx: Path) -> None:
     )
 
     # then
-    dtype = {"YEAR": object}
-    df_to_test = pd.read_excel(
-        mock_links_main_params_xlsx, dtype=dtype, sheet_name=name_sheet
-    )
+    df_to_test = pd.read_excel(mock_links_main_params_xlsx, sheet_name=name_sheet)
 
     assert list(new_data.columns) == list(df_to_test.columns)
     assert df_to_test.shape == df_to_test.shape
-    assert df_to_test.equals(df_to_test)
+    pd.testing.assert_frame_equal(
+        df_to_test, new_data, check_dtype=False, check_like=True
+    )
