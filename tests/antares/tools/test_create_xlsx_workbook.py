@@ -169,6 +169,40 @@ def test_create_workbook_overwrite_true(tmp_path: Path) -> None:
     )
 
 
+def test_create_workbook_df_index_header_true(tmp_path: Path) -> None:
+    dir_export_path = tmp_path / "links_data_export"
+    os.makedirs(dir_export_path)
+
+    # given df + explicit index
+    df_pandaset = pd.DataFrame(
+        {
+            "YEAR": [2030, 2040, 2060],
+            "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
+        },
+    )
+
+    # when
+    create_xlsx_workbook(
+        path_dir=dir_export_path,
+        workbook_name="test_workbook_header_index",
+        sheet_name="data_sheet",
+        data_df=df_pandaset,
+        index=True,
+        header=True,
+    )
+
+    # then
+    df_to_test = pd.read_excel(
+        dir_export_path / ("test_workbook_header_index" + ".xlsx")
+    )
+    expected_cols = ["Unnamed: 0", *df_pandaset.columns.to_list()]
+
+    assert df_to_test.columns.to_list() == expected_cols
+    rows, cols = df_pandaset.shape
+    assert df_to_test.shape == (rows, cols + 1)
+    assert all(df_to_test.index.values) == all(df_pandaset.index.values)
+
+
 ##
 # Edition
 ##
@@ -256,3 +290,27 @@ def test_edit_workbook_add_new_sheet(mock_links_main_params_xlsx: Path) -> None:
     pd.testing.assert_frame_equal(
         df_to_test, new_data, check_dtype=False, check_like=True
     )
+
+
+def test_edit_workbook_df_index_header_true(mock_links_main_params_xlsx: Path) -> None:
+    # given
+    name_sheet = "STUDY_SCENARIO_BIS"
+    new_data = pd.DataFrame({"YEAR": [2030, 2040, 2060]})
+
+    # when
+    edit_xlsx_workbook(
+        path_file=mock_links_main_params_xlsx,
+        sheet_name=name_sheet,
+        data_df=new_data,
+        index=True,
+        header=True,
+    )
+
+    # then
+    df_to_test = pd.read_excel(mock_links_main_params_xlsx, sheet_name=name_sheet)
+    expected_cols = ["Unnamed: 0", *new_data.columns.to_list()]
+
+    assert df_to_test.columns.to_list() == expected_cols
+    rows, cols = new_data.shape
+    assert df_to_test.shape == (rows, cols + 1)
+    assert all(df_to_test.index.values) == all(new_data.index.values)

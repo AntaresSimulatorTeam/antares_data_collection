@@ -110,7 +110,8 @@ def create_xlsx_workbook(
     # workbook with data
     if data_df is not None:
         for r in dataframe_to_rows(data_df, index=index, header=header):
-            ws.append(r)
+            if not all(cell is None for cell in r):
+                ws.append(r)
 
         wb.save(path_dir / wb_name)
 
@@ -170,6 +171,7 @@ def edit_xlsx_workbook(
 
     # edit workbook in sheet
     for r in dataframe_to_rows(data_df, index=index, header=header):
-        ws.append(r)
+        if not all(cell is None for cell in r):
+            ws.append(r)
 
     wb.save(path_file)

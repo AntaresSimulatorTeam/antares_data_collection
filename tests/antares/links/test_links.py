@@ -463,22 +463,29 @@ def test_links_output_format_works(
     for df in final_dict_result.values():
         assert list(df.columns) == expected_cols
 
+
 ##
 # exports processing
 ##
+
 
 def test_links_manage_export_empty_data(tmp_path: Path) -> None:
     # then
     with pytest.raises(ValueError, match="No DATA to export"):
         links_manage_export(dict_of_df=dict({}), root_dir_export=tmp_path)
 
+
 def test_links_manage_export_root_dir_not_exist(tmp_path: Path) -> None:
     # given
     fake_dir_path = tmp_path / "not_exist"
-    df_minimal = pd.DataFrame({"ZONE": ["FR", "FR"]})
+    df_minimal = {"2030": pd.DataFrame({"ZONE": ["FR", "FR"]})}
     # then
-    with pytest.raises(ValueError, match=re.escape(f"Path of root directory {fake_dir_path} does not exist")):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(f"Path of root directory {fake_dir_path} does not exist"),
+    ):
         links_manage_export(dict_of_df=df_minimal, root_dir_export=fake_dir_path)
+
 
 def test_links_manage_export_works(tmp_path: Path) -> None:
     # given
@@ -486,22 +493,17 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
     df_test = pd.DataFrame(
         {
             columns_export.NAME.value: ["AL-GR", "AL-RS"],
-
             columns_export.WINTER_HP_DIRECT_MW.value: [600.0, 500.0],
             columns_export.WINTER_HP_INDIRECT_MW.value: [600.0, 500.0],
             columns_export.WINTER_HC_DIRECT_MW.value: [600.0, 500.0],
             columns_export.WINTER_HC_INDIRECT_MW.value: [600.0, 500.0],
-
             columns_export.SUMMER_HP_DIRECT_MW.value: [600.0, 500.0],
             columns_export.SUMMER_HP_INDIRECT_MW.value: [600.0, 500.0],
             columns_export.SUMMER_HC_DIRECT_MW.value: [600.0, 500.0],
             columns_export.SUMMER_HC_INDIRECT_MW.value: [600.0, 500.0],
-
             columns_export.FLOWBASED_PERIMETER.value: [False, False],
-
             columns_export.HVDC_DIRECT.value: [None, None],
             columns_export.HVDC_INDIRECT.value: [None, None],
-
             columns_export.SPECIFIC_TS.value: [False, False],
             columns_export.FORCED_OUTAGE_HVAC.value: [False, False],
         }
@@ -509,4 +511,8 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
 
     dict_of_export_df = {"2030": df_test, "2040": df_test}
 
-    links_manage_export(dict_of_df=dict_of_export_df, root_dir_export=tmp_path, scenario_name="export_test")
+    links_manage_export(
+        dict_of_df=dict_of_export_df,
+        root_dir_export=tmp_path,
+        scenario_name="export_test",
+    )

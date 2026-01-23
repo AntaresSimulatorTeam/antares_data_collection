@@ -22,7 +22,8 @@ from antares.data_collection.tools.conf import LocalConfiguration
 
 # Data referential
 from antares.data_collection.links.conf_links import (
-    ReferentialSheetNames as RefSheetNames, LinksExportParameters,
+    ReferentialSheetNames as RefSheetNames,
+    LinksExportParameters,
 )
 from antares.data_collection.links.conf_links import PeakParamsColumnsNames as RefPeak
 
@@ -389,46 +390,74 @@ def links_manage_output_format(
     return dfs_by_year
 
 
-# TODO
-def links_manage_export(dict_of_df: dict[str, pd.DataFrame], root_dir_export: Path, links_dir: list[str] = "link",
-                        scenario_name: str | None = None) -> None:
+def links_manage_export(
+    dict_of_df: dict[str, pd.DataFrame],
+    root_dir_export: Path,
+    links_dir: list[str] = ["link"],
+    scenario_name: str | None = None,
+) -> None:
     if len(dict_of_df) == 0:
         raise ValueError("No DATA to export")
     if not root_dir_export.exists():
         raise ValueError(f"Path of root directory {root_dir_export} does not exist")
 
     # create dir from root dir
-    links_export_path_dir = root_dir_export / links_dir
+    links_specific_dir = Path(*links_dir)
+    links_export_path_dir = root_dir_export / links_specific_dir
     os.makedirs(links_export_path_dir, exist_ok=True)
 
     if scenario_name is not None:
         workbook_name = f"links_{scenario_name}"
 
     # export every element of the dictionary
-    for year in dict_of_df.keys():
-        # the first sheet is for parameters
-        year_param = [str(int(year) -1), year]
-        parameter_col_name = str(year_param[0]+"-"+year_param[1])
-        data = {
-            parameter_col_name: LinksExportParameters.HURDLE_COSTS.default
+    # one year data result by sheet + one sheet "parameters" at first
+
+    def transform_year_to_straddling_year(year_list: list[int]) -> list[str]:
+        result_list = []
+        for year in year_list:
+            result_list.append(str(year - 1) + "-" + str(year))
+        return result_list
+
+    years_int: list[int] = [int(k) for k in dict_of_df.keys()]
+    all_straddling_years = transform_year_to_straddling_year(years_int)
+
+    df_parameters = pd.DataFrame(
+        {
+            "year": all_straddling_years,
+            LinksExportParameters.HURDLE_COSTS.label: LinksExportParameters.HURDLE_COSTS.default,
         }
+    )
 
-        index = [LinksExportParameters.HURDLE_COSTS.label]
+    df_parameters_out = pd.DataFrame(
+        data=[
+            df_parameters[LinksExportParameters.HURDLE_COSTS.label].values
+        ],
+        columns=df_parameters["year"],
+        index=[LinksExportParameters.HURDLE_COSTS.label],
+    )
 
-        df_of_parameters = pd.DataFrame(data, index=index)
+    df_parameters_out.columns.name = None
 
-        # write file
-        create_xlsx_workbook(
-            path_dir=links_export_path_dir,
-            workbook_name=workbook_name+"_"+year,
-            sheet_name="parameters",
-            data_df=df_of_parameters, index=True
-        )
+    # write file (with index=True especially for this sheet only)
+    create_xlsx_workbook(
+        path_dir=links_export_path_dir,
+        workbook_name=workbook_name,
+        sheet_name="parameters",
+        data_df=df_parameters_out,
+        index=True,
+    )
+
+    for year in dict_of_df.keys():
+        # # the first sheet is for parameters
+        year_param = [str(int(year) - 1), year]
+        parameter_col_name = str(year_param[0] + "-" + year_param[1])
 
         # the second sheet is for data
-        edit_xlsx_workbook(path_file=links_export_path_dir / f"{workbook_name}_{year}.xlsx",
-                           sheet_name=parameter_col_name,
-                           data_df=dict_of_df[year])
+        edit_xlsx_workbook(
+            path_file=links_export_path_dir / f"{workbook_name}.xlsx",
+            sheet_name=parameter_col_name,
+            data_df=dict_of_df[year],
+        )
 
 
 # TODO
