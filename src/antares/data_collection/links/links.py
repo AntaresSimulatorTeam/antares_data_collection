@@ -308,9 +308,12 @@ def links_manage_output_format(
     if len(data_dict) == 0:
         raise ValueError("No DATA for export")
 
-    df_concat = pd.concat(
-        data_dict.values(), keys=data_dict.keys(), names=["key"]
-    ).reset_index(level="key")
+    # concat and a create a col with dict.key() then drop index
+    df_concat = (
+        pd.concat(data_dict.values(), keys=data_dict.keys(), names=["key"])
+        .reset_index(level=0)
+        .reset_index(drop=True)
+    )
 
     # order column with alphabetical
     df_concat["ANTARES"] = links_sort_borders_code(
@@ -458,9 +461,20 @@ def links_manage_export(
         )
 
 
-# TODO
-def create_links_outputs() -> None:
-    raise NotImplementedError("Not implemented yet")
+# main function to process links files
+def create_links_outputs(links_conf_input: LocalConfiguration) -> None:
+    # data management with specific links files
+    dict_managed = links_data_management(conf_input=links_conf_input)
+
+    # manage formats of data frames for export
+    dict_of_formated_df = links_manage_output_format(data_dict=dict_managed)
+
+    # exports part
+    links_manage_export(
+        dict_of_df=dict_of_formated_df,
+        root_dir_export=links_conf_input.export_path,
+        scenario_name=links_conf_input.scenario_name,
+    )
 
 
 # TODO add tests

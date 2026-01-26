@@ -63,8 +63,8 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
         ),
         "STUDY_SCENARIO": pd.DataFrame(
             {
-                "YEAR": ["2030", "2040", "2060"],
-                "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP"],
+                "YEAR": ["2030", "2040", "2060", "2200"],
+                "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP", "TYNDP"],
             }
         ),
         "LINKS": pd.DataFrame(
@@ -549,3 +549,34 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
     pd.testing.assert_frame_equal(
         df_to_test, df_test, check_dtype=False, check_like=True
     )
+
+
+##
+# main function to process all treatment for links files
+##
+
+
+def test_links_part_works(
+    mock_links_main_params_xlsx: Path, parquet_to_csv: Path, tmp_path: Path
+) -> None:
+    # given
+    path_export_links = tmp_path / "link"
+
+    year_param = [2030, 2040, 2060, 2200]
+    local_conf = LocalConfiguration(
+        input_path=parquet_to_csv,
+        export_path=tmp_path,
+        scenario_name="test_links",
+        data_references_path=mock_links_main_params_xlsx,
+        calendar_year=year_param,
+    )
+
+    # when
+    links.create_links_outputs(links_conf_input=local_conf)
+
+    # then
+    path_export_links_file = path_export_links / ("links_" + "test_links" + ".xlsx")
+    wb = load_workbook(filename=path_export_links_file)
+
+    assert path_export_links_file.exists()
+    assert wb.sheetnames == ["parameters", "2029-2030", "2039-2040", "2059-2060"]

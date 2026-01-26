@@ -109,7 +109,11 @@ def create_xlsx_workbook(
 
     # workbook with data
     if data_df is not None:
-        for r in dataframe_to_rows(data_df, index=index, header=header):
+        # --- NORMALISATION PANDAS -> EXCEL ---
+        df_excel = data_df.astype(object)
+        df_excel = df_excel.mask(pd.isna(df_excel), None)
+
+        for r in dataframe_to_rows(df_excel, index=index, header=header):
             if not all(cell is None for cell in r):
                 ws.append(r)
 
@@ -170,7 +174,11 @@ def edit_xlsx_workbook(
         ws = wb[sheet_name]
 
     # edit workbook in sheet
-    for r in dataframe_to_rows(data_df, index=index, header=header):
+    if data_df is not None:
+        # --- NORMALISATION PANDAS -> EXCEL ---
+        df_excel = data_df.astype(object)
+        df_excel = df_excel.mask(pd.isna(df_excel), None)
+    for r in dataframe_to_rows(df_excel, index=index, header=header):
         if not all(cell is None for cell in r):
             ws.append(r)
 
