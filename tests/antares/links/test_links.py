@@ -22,6 +22,8 @@ from antares.data_collection.links.conf_links import ExportLinksColumnsNames
 from antares.data_collection.links.links import links_manage_export
 from antares.data_collection.tools.conf import LocalConfiguration
 
+from openpyxl.reader.excel import load_workbook
+
 # global
 ROOT_TEST = Path(__file__).resolve().parents[2]
 LINKS_DATA_DIR = ROOT_TEST / "antares" / "links" / "data_test"
@@ -489,6 +491,8 @@ def test_links_manage_export_root_dir_not_exist(tmp_path: Path) -> None:
 
 def test_links_manage_export_works(tmp_path: Path) -> None:
     # given
+    path_export_links = tmp_path / "link"
+
     columns_export = ExportLinksColumnsNames
     df_test = pd.DataFrame(
         {
@@ -502,8 +506,8 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
             columns_export.SUMMER_HC_DIRECT_MW.value: [600.0, 500.0],
             columns_export.SUMMER_HC_INDIRECT_MW.value: [600.0, 500.0],
             columns_export.FLOWBASED_PERIMETER.value: [False, False],
-            columns_export.HVDC_DIRECT.value: [None, None],
-            columns_export.HVDC_INDIRECT.value: [None, None],
+            columns_export.HVDC_DIRECT.value: ["", ""],
+            columns_export.HVDC_INDIRECT.value: ["", ""],
             columns_export.SPECIFIC_TS.value: [False, False],
             columns_export.FORCED_OUTAGE_HVAC.value: [False, False],
         }
@@ -511,8 +515,37 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
 
     dict_of_export_df = {"2030": df_test, "2040": df_test}
 
+    # when
     links_manage_export(
         dict_of_df=dict_of_export_df,
         root_dir_export=tmp_path,
         scenario_name="export_test",
+    )
+
+    # then
+    path_export_links_file = path_export_links / ("links_" + "export_test" + ".xlsx")
+    wb = load_workbook(filename=path_export_links_file)
+
+    assert path_export_links_file.exists()
+    assert wb.sheetnames == ["parameters", "2029-2030", "2039-2040"]
+
+    # read first sheet (default "parameters")
+    df_to_test = pd.read_excel(path_export_links_file)
+
+    expected_cols = ["Unnamed: 0", "2029-2030", "2039-2040"]
+    assert df_to_test.columns.to_list() == expected_cols
+
+    # read every sheet of data
+    df_to_test = pd.read_excel(
+        path_export_links_file, sheet_name="2029-2030", keep_default_na=False
+    )
+    pd.testing.assert_frame_equal(
+        df_to_test, df_test, check_dtype=False, check_like=True
+    )
+
+    df_to_test = pd.read_excel(
+        path_export_links_file, sheet_name="2039-2040", keep_default_na=False
+    )
+    pd.testing.assert_frame_equal(
+        df_to_test, df_test, check_dtype=False, check_like=True
     )

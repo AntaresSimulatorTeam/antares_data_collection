@@ -122,6 +122,7 @@ class ExportLinksColumnsNames(StrEnum):
     SPECIFIC_TS = "Specific_TS"
     FORCED_OUTAGE_HVAC = "Forced_Outage_HVAC"
 
+
 # list of parameters for exports
 class LinksExportParameters(Enum):
     HURDLE_COSTS = ("Hurdle Costs", 0.5)
@@ -129,5 +130,3 @@ class LinksExportParameters(Enum):
     def __init__(self, label: str, default: Any):
         self.label = label
         self.default = default
-
-

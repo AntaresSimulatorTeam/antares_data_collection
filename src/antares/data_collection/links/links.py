@@ -429,9 +429,7 @@ def links_manage_export(
     )
 
     df_parameters_out = pd.DataFrame(
-        data=[
-            df_parameters[LinksExportParameters.HURDLE_COSTS.label].values
-        ],
+        data=[df_parameters[LinksExportParameters.HURDLE_COSTS.label].values],
         columns=df_parameters["year"],
         index=[LinksExportParameters.HURDLE_COSTS.label],
     )
