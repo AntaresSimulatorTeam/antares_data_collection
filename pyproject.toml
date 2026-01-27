@@ -1,16 +1,20 @@
 [project]
 name = "antares-data-collection"
 version = "0.1.0"
-description = "Add your description here"
+description = "Import and manage data from ENTSOE/pemmdb then format and export for Pegase"
 readme = "README.md"
 authors = [
-    { name = "berthetclement", email = "clement.berthet013@gmail.com" }
+    { name = "Tatiana Vargas", email = "tatiana.vargas@rte-france.com" },
+    { name = "Clement Berthet", email = "clement.berthet_externe@rte-france.com" }
 ]
 requires-python = ">=3.11"
 
 # click is used as runtime with the package to add header with license information
 dependencies = [
     "click>=8.3.1",
+    "openpyxl>=3.1.5",
+    "pandas",
+    "types-openpyxl>=3.1.5.20250919",
 ]
 
 classifiers = [
@@ -41,10 +45,15 @@ relative_files = true
 dev = [
     "coverage>=7.11.3",
     "mypy>=1.18.2",
+    "pandas-stubs>=2.3.3.251201",
+    "pyarrow>=22.0.0",
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.5",
 ]
+
+[project.optional-dependencies]
+parquet = ["pyarrow"]
 
 [tool.mypy]
 mypy_path = "src"
