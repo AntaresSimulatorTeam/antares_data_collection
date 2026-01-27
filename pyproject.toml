@@ -1,10 +1,11 @@
 [project]
 name = "antares-data-collection"
 version = "0.1.0"
-description = "Add your description here"
+description = "Import and manage data from ENTSOE/pemmdb then format and export for Pegase"
 readme = "README.md"
 authors = [
-    { name = "berthetclement", email = "clement.berthet013@gmail.com" }
+    { name = "Tatiana Vargas", email = "tatiana.vargas@rte-france.com" },
+    { name = "Clement Berthet", email = "clement.berthet_externe@rte-france.com" }
 ]
 requires-python = ">=3.11"
 
