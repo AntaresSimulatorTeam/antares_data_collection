@@ -299,20 +299,6 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             & (~mask.groupby(df_multi_grt["border"]).transform("all"))
         ]
 
-        # ref_ntc_values = (
-        #     df_multi_grt_2_1.loc[df_multi_grt_2_1["NTC_CURVE_ID"].isna()]
-        #     .groupby("border")["NTC_LIMIT_CAPACITY_STATIC"]
-        #     .first()
-        # )
-        #
-        # cols = ["SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"]
-        #
-        # df_multi_one_id = df_multi_grt_2_1.copy()
-        #
-        # df_multi_one_id[cols] = df_multi_one_id[cols].clip(
-        #     upper=df_multi_one_id["border"].map(ref_ntc_values), axis=0
-        # )
-
         df_multi_one_id = df_multi_grt_2_1.loc[
             ~df_multi_grt_2_1[TransferLinks.NTC_CURVE_ID].isna()
         ]
