@@ -1,6 +1,6 @@
 [project]
 name = "antares-data-collection"
-version = "0.1.0"
+version = "0.1.1"
 description = "Import and manage data from ENTSOE/pemmdb then format and export for Pegase"
 readme = "README.md"
 authors = [

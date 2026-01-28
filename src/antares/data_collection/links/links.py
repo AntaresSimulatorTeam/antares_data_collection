@@ -11,6 +11,7 @@
 # This file is part of the Antares project.
 import os
 from pathlib import Path
+from typing import Sequence, Hashable
 
 import numpy as np
 
@@ -23,12 +24,18 @@ from antares.data_collection.tools.conf import LocalConfiguration
 # Data referential
 from antares.data_collection.links.conf_links import (
     ReferentialSheetNames as RefSheetNames,
+    LinksColumnsNames,
     LinksExportParameters,
 )
 from antares.data_collection.links.conf_links import PeakParamsColumnsNames as RefPeak
 
 # Data Links
-from antares.data_collection.links.conf_links import NTCS
+from antares.data_collection.links.conf_links import (
+    NTCS,
+    NTCsIndex,
+    TransferLinks,
+    StudyScenarioColumnsNames,
+)
 
 # internal function(s)
 from antares.data_collection.tools import tools
@@ -87,32 +94,46 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     )
 
     df_ts_ntc = pd.merge(
-        df_ts_ntc, ref_months, left_on="MONTH", right_on="month", how="left"
+        df_ts_ntc,
+        ref_months,
+        left_on=NTCS.MONTH,
+        right_on=RefPeak.MONTH.value,
+        how="left",
     )
-    df_ts_ntc = df_ts_ntc.drop(columns=["hour", "month", "MONTH", "DAY", "HOUR"])
+    df_ts_ntc = df_ts_ntc.drop(
+        columns=[
+            RefPeak.HOUR.value,
+            RefPeak.MONTH.value,
+            NTCS.MONTH,
+            NTCS.DAY,
+            NTCS.HOUR,
+        ]
+    )
 
     # compute median hours/saison
     df_median_grouped = df_ts_ntc.groupby(
-        by=["period_hour", "period_month"], as_index=False
+        by=[RefPeak.PERIOD_HOUR.value, RefPeak.PERIOD_MONTH.value], as_index=False
     ).median()
     series_median = df_ts_ntc.median(numeric_only=True)
 
     # retreatment + pivot to merge
     df_median_tot = pd.DataFrame(
-        {"CURVE_UID": series_median.index, "MEDIAN": series_median.values}
+        {NTCsIndex.CURVE_UID: series_median.index, "MEDIAN": series_median.values}
     )
     df_median_grouped["colname"] = (
-        df_median_grouped["period_month"]
+        df_median_grouped[RefPeak.PERIOD_MONTH.value]
         .astype(str)
-        .str.cat(df_median_grouped["period_hour"].astype(str), sep="_")
+        .str.cat(df_median_grouped[RefPeak.PERIOD_HOUR.value].astype(str), sep="_")
     )
     df_median_grouped["colname"] = df_median_grouped["colname"].str.upper()
-    df_median_grouped = df_median_grouped.drop(columns=["period_month", "period_hour"])
+    df_median_grouped = df_median_grouped.drop(
+        columns=[RefPeak.PERIOD_MONTH.value, RefPeak.PERIOD_HOUR.value]
+    )
 
     df_pivot = (
         df_median_grouped.set_index("colname")
         .T.reset_index()
-        .rename(columns={"index": "CURVE_UID"})
+        .rename(columns={"index": NTCsIndex.CURVE_UID})
     )
 
     # df with all computed medians by curve_id
@@ -120,10 +141,12 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
 
     # merge median with ntc index
     df_ts_ntc_index = (
-        results[conf_links_files.NTC_INDEX].copy().drop(columns=["LABEL", "COUNT"])
+        results[conf_links_files.NTC_INDEX]
+        .copy()
+        .drop(columns=[NTCsIndex.LABEL, NTCsIndex.COUNT])
     )
     df_ts_ntc_index = pd.merge(
-        df_ts_ntc_index, df_ts_median, on="CURVE_UID", how="left"
+        df_ts_ntc_index, df_ts_median, on=NTCsIndex.CURVE_UID, how="left"
     )
     # endregion
 
@@ -132,46 +155,63 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # global filter `TRANSFER_TYPE` = NTC + `TRANSFER_TECHNOLOGY` = HVAC
     df_transfer = results[conf_links_files.TRANSFER_LINKS].copy()
     df_transfer = df_transfer.loc[
-        (df_transfer["TRANSFER_TYPE"] == "NTC")
-        & (df_transfer["TRANSFER_TECHNOLOGY"] == "HVAC")
+        (df_transfer[TransferLinks.TRANSFER_TYPE] == "NTC")
+        & (df_transfer[TransferLinks.TRANSFER_TECHNOLOGY] == "HVAC")
     ]
 
     # merge data with computed median
+    # NOTE:
+    # mypy cannot infer that list[StrEnum] satisfies Sequence[Hashable]
+    # for pandas.merge(left_on/right_on). We must pre-type the sequences.
+    left_keys: Sequence[Hashable] = [
+        TransferLinks.ZONE,
+        TransferLinks.NTC_CURVE_ID,
+    ]
+
+    right_keys: Sequence[Hashable] = [
+        NTCsIndex.ZONE,
+        NTCsIndex.ID,
+    ]
+
     df_transfer = pd.merge(
         df_transfer,
         df_ts_ntc_index,
-        left_on=["ZONE", "NTC_CURVE_ID"],
-        right_on=["ZONE", "ID"],
+        left_on=left_keys,
+        right_on=right_keys,
         how="left",
-    ).drop(columns=["ID", "CURVE_UID"])
+    ).drop(columns=[NTCsIndex.ID, NTCsIndex.CURVE_UID])
 
     # merge column 'code_antares' :
     # for market zone source and market zone destination
     ref_country_links = pd.read_excel(
-        conf_input.data_references_path, sheet_name="LINKS"
+        conf_input.data_references_path, sheet_name=RefSheetNames.LINKS.value
     )
 
     # source
     df_transfer = pd.merge(
         df_transfer,
         ref_country_links,
-        left_on="MARKET_ZONE_SOURCE",
-        right_on="market_node",
+        left_on=TransferLinks.MARKET_ZONE_SOURCE,
+        right_on=LinksColumnsNames.MARKET_NODE.value,
         how="left",
     )
-    df_transfer = df_transfer.drop(columns=["market_node"])
-    df_transfer = df_transfer.rename(columns={"code_antares": "code_source"})
+    df_transfer = df_transfer.drop(columns=[LinksColumnsNames.MARKET_NODE.value])
+    df_transfer = df_transfer.rename(
+        columns={LinksColumnsNames.CODE_ANTARES.value: "code_source"}
+    )
 
     # destination
     df_transfer = pd.merge(
         df_transfer,
         ref_country_links,
-        left_on="MARKET_ZONE_DESTINATION",
-        right_on="market_node",
+        left_on=TransferLinks.MARKET_ZONE_DESTINATION,
+        right_on=LinksColumnsNames.MARKET_NODE.value,
         how="left",
     )
-    df_transfer = df_transfer.drop(columns=["market_node"])
-    df_transfer = df_transfer.rename(columns={"code_antares": "code_destination"})
+    df_transfer = df_transfer.drop(columns=[LinksColumnsNames.MARKET_NODE.value])
+    df_transfer = df_transfer.rename(
+        columns={LinksColumnsNames.CODE_ANTARES.value: "code_destination"}
+    )
 
     # delete row with NAN
     df_transfer = df_transfer.dropna(subset=["code_source", "code_destination"])
@@ -185,22 +225,24 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # filter with scenario and calendar year
     year_param = conf_input.calendar_year
     ref_scenario = pd.read_excel(
-        conf_input.data_references_path, sheet_name="STUDY_SCENARIO"
+        conf_input.data_references_path, sheet_name=RefSheetNames.STUDY_SCENARIO.value
     )
 
     d_df_year = {}
     for iyear in year_param:
         # filter scenario
         scenario_values = ref_scenario.loc[
-            ref_scenario["YEAR"].isin([iyear])
+            ref_scenario[StudyScenarioColumnsNames.YEAR.value].isin([iyear])
         ].STUDY_SCENARIO.item()
+
         df_transfer_year = tools.scenario_filter(
             df_input=df_transfer, filter_params=scenario_values
         )
+
         # filter by year
         df_transfer_year = df_transfer_year.loc[
-            (df_transfer_year["YEAR_VALID_START"] <= iyear)
-            & (df_transfer_year["YEAR_VALID_END"] >= iyear)
+            (df_transfer_year[TransferLinks.YEAR_VALID_START] <= iyear)
+            & (df_transfer_year[TransferLinks.YEAR_VALID_END] >= iyear)
         ]
 
         # TODO if data frame is empty skip/pass the year of treatment
@@ -209,7 +251,7 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
 
         # identify
         borders = (
-            df_transfer_year.groupby(["ZONE", "border"])
+            df_transfer_year.groupby([TransferLinks.ZONE, "border"])
             .size()
             .reset_index(name="N")
             .query("N < 2")["border"]
@@ -222,11 +264,11 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
 
         # select one line group by border (one border = 2 lines/2 ZONE)
         # RULES 1: IF no curve id => keep min of NTC_LIMIT_CAPACITY_STATIC
-        df_multi_grt.loc[:, "NTC_CURVE_ID"] = df_multi_grt["NTC_CURVE_ID"].astype(
-            "string"
-        )
+        df_multi_grt.loc[:, TransferLinks.NTC_CURVE_ID] = df_multi_grt[
+            TransferLinks.NTC_CURVE_ID
+        ].astype("string")
 
-        mask = df_multi_grt["NTC_CURVE_ID"].isna()
+        mask = df_multi_grt[TransferLinks.NTC_CURVE_ID].isna()
 
         df_multi_grt_1 = df_multi_grt[
             mask.groupby(df_multi_grt["border"]).transform("all")
@@ -234,14 +276,18 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
 
         # keep row with min
         df_multi_grt_1_min = df_multi_grt_1.loc[
-            df_multi_grt_1.groupby("border")["NTC_LIMIT_CAPACITY_STATIC"].idxmin()
+            df_multi_grt_1.groupby("border")[
+                TransferLinks.NTC_LIMIT_CAPACITY_STATIC
+            ].idxmin()
         ]
 
         # dispatch value of "NTC_LIMIT_CAPACITY_STATIC" on columns "SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"
         cols = ["SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"]
 
         df_multi_grt_1_min[cols] = np.tile(
-            df_multi_grt_1_min["NTC_LIMIT_CAPACITY_STATIC"].to_numpy()[:, None],
+            df_multi_grt_1_min[TransferLinks.NTC_LIMIT_CAPACITY_STATIC].to_numpy()[
+                :, None
+            ],
             (1, len(cols)),
         )
 
@@ -253,26 +299,28 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             & (~mask.groupby(df_multi_grt["border"]).transform("all"))
         ]
 
-        ref_ntc_values = (
-            df_multi_grt_2_1.loc[df_multi_grt_2_1["NTC_CURVE_ID"].isna()]
-            .groupby("border")["NTC_LIMIT_CAPACITY_STATIC"]
-            .first()
-        )
+        # ref_ntc_values = (
+        #     df_multi_grt_2_1.loc[df_multi_grt_2_1["NTC_CURVE_ID"].isna()]
+        #     .groupby("border")["NTC_LIMIT_CAPACITY_STATIC"]
+        #     .first()
+        # )
+        #
+        # cols = ["SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"]
+        #
+        # df_multi_one_id = df_multi_grt_2_1.copy()
+        #
+        # df_multi_one_id[cols] = df_multi_one_id[cols].clip(
+        #     upper=df_multi_one_id["border"].map(ref_ntc_values), axis=0
+        # )
 
-        cols = ["SUMMER_HC", "WINTER_HC", "SUMMER_HP", "WINTER_HP"]
-
-        df_multi_one_id = df_multi_grt_2_1.copy()
-
-        df_multi_one_id[cols] = df_multi_one_id[cols].clip(
-            upper=df_multi_one_id["border"].map(ref_ntc_values), axis=0
-        )
-
-        df_multi_one_id = df_multi_one_id.loc[~df_multi_one_id["NTC_CURVE_ID"].isna()]
+        df_multi_one_id = df_multi_grt_2_1.loc[
+            ~df_multi_grt_2_1[TransferLinks.NTC_CURVE_ID].isna()
+        ]
 
         # RULES 2.2 : one curve by line (2 max per border)
         # keep minimal "MEDIAN" value
         mask = (
-            df_multi_grt["NTC_CURVE_ID"]
+            df_multi_grt[TransferLinks.NTC_CURVE_ID]
             .notna()
             .groupby(df_multi_grt["border"])
             .transform("all")
