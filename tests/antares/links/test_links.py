@@ -506,8 +506,7 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
             columns_export.SUMMER_HC_DIRECT_MW.value: [600.0, 500.0],
             columns_export.SUMMER_HC_INDIRECT_MW.value: [600.0, 500.0],
             columns_export.FLOWBASED_PERIMETER.value: [False, False],
-            columns_export.HVDC_DIRECT.value: ["", ""],
-            columns_export.HVDC_INDIRECT.value: ["", ""],
+            columns_export.HVDC.value: [False, False],
             columns_export.SPECIFIC_TS.value: [False, False],
             columns_export.FORCED_OUTAGE_HVAC.value: [False, False],
         }

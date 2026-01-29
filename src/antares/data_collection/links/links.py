@@ -399,8 +399,7 @@ def links_manage_output_format(
     df_static_columns_values = pd.DataFrame(
         {
             export_columns.FLOWBASED_PERIMETER.value: [False],
-            export_columns.HVDC_DIRECT.value: [pd.NA],
-            export_columns.HVDC_INDIRECT.value: [pd.NA],
+            export_columns.HVDC.value: [False],
             export_columns.SPECIFIC_TS.value: [False],
             export_columns.FORCED_OUTAGE_HVAC.value: [False],
         }
@@ -417,6 +416,9 @@ def links_manage_output_format(
     # order columns to export
     cols = [c.value for c in export_columns]
     df_direct_indirect = df_direct_indirect.loc[:, ["key"] + cols]
+
+    # alphabetical order for border by year
+    df_direct_indirect = df_direct_indirect.sort_values(by=["key", "Name"])
 
     # convert to dict of DataFrame
     dfs_by_year: dict[str, pd.DataFrame] = {
@@ -449,6 +451,7 @@ def links_manage_export(
     # export every element of the dictionary
     # one year data result by sheet + one sheet "parameters" at first
 
+    # preparation of data of first sheet "parameters"
     def transform_year_to_straddling_year(year_list: list[int]) -> list[str]:
         result_list = []
         for year in year_list:
@@ -483,11 +486,10 @@ def links_manage_export(
     )
 
     for year in dict_of_df.keys():
-        # # the first sheet is for parameters
+        # the second sheet is for data
         year_param = [str(int(year) - 1), year]
         parameter_col_name = str(year_param[0] + "-" + year_param[1])
 
-        # the second sheet is for data
         edit_xlsx_workbook(
             path_file=links_export_path_dir / f"{workbook_name}.xlsx",
             sheet_name=parameter_col_name,
@@ -497,6 +499,14 @@ def links_manage_export(
 
 # main function to process links files
 def create_links_outputs(links_conf_input: LocalConfiguration) -> None:
+    """
+    Processes input configuration, manages links data, formats data frames, and handles
+    export operations.
+
+    :param links_conf_input: Argument that holds the input configurations for processing.
+    :type links_conf_input: LocalConfiguration
+    :return: None
+    """
     # data management with specific links files
     dict_managed = links_data_management(conf_input=links_conf_input)
 
