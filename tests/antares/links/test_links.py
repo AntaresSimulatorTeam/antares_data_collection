@@ -296,72 +296,58 @@ def mock_links_data_csv(tmp_path: Path) -> Path:
 ## mock dictionnary of data frames for format test
 @pytest.fixture
 def mock_links_dict_data_frames() -> dict[str, pd.DataFrame]:
-    data_links_managed = {
-        "2030": pd.DataFrame(
-            {
-                "ZONE": ["GR", "GR", "RS", "RS"],
-                "MARKET_ZONE_SOURCE": ["AL00", "GR00", "AL00", "RS00"],
-                "MARKET_ZONE_DESTINATION": ["GR00", "AL00", "RS00", "AL00"],
-                "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
-                "STUDY_SCENARIO": ["ERAA", "ERAA", "ERAA&TYNDP", "ERAA&TYNDP"],
-                "YEAR_VALID_START": [2030, 2030, 2030, 2030],
-                "YEAR_VALID_END": [2100, 2100, 2100, 2100],
-                "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
-                "NTC_LIMIT_CAPACITY_STATIC": [600.0, 600.0, pd.NA, pd.NA],
-                "NTC_CURVE_ID": [pd.NA, pd.NA, "AL00-RS00-2", "RS00-AL00-2"],
-                "NO_POLES": [2, 2, 2, 2],
-                "FOR": [0.0, 0.0, pd.NA, pd.NA],
-                "COMPL": ["Yes", "Yes", "Yes", "Yes"],
-                "FOR_DIRECTION": [
-                    "Bi-directional",
-                    "Bi-directional",
-                    "Bi-directional",
-                    "Bi-directional",
-                ],
-                "EXCHANGE_FLOW_CURVE_ID": [pd.NA, pd.NA, pd.NA, pd.NA],
-                "SUMMER_HC": [600.0, 600.0, 500.0, 500.0],
-                "WINTER_HC": [600.0, 600.0, 500.0, 500.0],
-                "SUMMER_HP": [600.0, 600.0, 500.0, 500.0],
-                "WINTER_HP": [600.0, 600.0, 500.0, 500.0],
-                "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0],
-                "code_source": ["AL", "GR", "AL", "RS"],
-                "code_destination": ["GR", "AL", "RS", "AL"],
-                "border": ["AL-GR", "GR-AL", "AL-RS", "RS-AL"],
-            }
-        ),
-        "2040": pd.DataFrame(
-            {
-                "ZONE": ["GR", "GR", "RS", "RS"],
-                "MARKET_ZONE_SOURCE": ["AL00", "GR00", "AL00", "RS00"],
-                "MARKET_ZONE_DESTINATION": ["GR00", "AL00", "RS00", "AL00"],
-                "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC"],
-                "STUDY_SCENARIO": ["ERAA", "ERAA", "ERAA&TYNDP", "ERAA&TYNDP"],
-                "YEAR_VALID_START": [2030, 2030, 2030, 2030],
-                "YEAR_VALID_END": [2100, 2100, 2100, 2100],
-                "TRANSFER_TECHNOLOGY": ["HVAC", "HVAC", "HVAC", "HVAC"],
-                "NTC_LIMIT_CAPACITY_STATIC": [600.0, 600.0, pd.NA, pd.NA],
-                "NTC_CURVE_ID": [pd.NA, pd.NA, "AL00-RS00-2", "RS00-AL00-2"],
-                "NO_POLES": [2, 2, 2, 2],
-                "FOR": [0.0, 0.0, pd.NA, pd.NA],
-                "COMPL": ["Yes", "Yes", "Yes", "Yes"],
-                "FOR_DIRECTION": [
-                    "Bi-directional",
-                    "Bi-directional",
-                    "Bi-directional",
-                    "Bi-directional",
-                ],
-                "EXCHANGE_FLOW_CURVE_ID": [pd.NA, pd.NA, pd.NA, pd.NA],
-                "SUMMER_HC": [600.0, 600.0, 500.0, 500.0],
-                "WINTER_HC": [600.0, 600.0, 500.0, 500.0],
-                "SUMMER_HP": [600.0, 600.0, 500.0, 500.0],
-                "WINTER_HP": [600.0, 600.0, 500.0, 500.0],
-                "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0],
-                "code_source": ["AL", "GR", "AL", "RS"],
-                "code_destination": ["GR", "AL", "RS", "AL"],
-                "border": ["AL-GR", "GR-AL", "AL-RS", "RS-AL"],
-            }
-        ),
-    }
+    df_test_links_format = pd.DataFrame(
+        {
+            "ZONE": ["GR", "GR", "RS", "RS", "CZ", "CZ", "PL"],
+            "TRANSFER_TYPE": ["NTC", "NTC", "NTC", "NTC", "NTC", "NTC", "NTC"],
+            "STUDY_SCENARIO": [
+                "ERAA",
+                "ERAA",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+                "ERAA&TYNDP",
+            ],
+            "TRANSFER_TECHNOLOGY": [
+                "HVAC",
+                "HVAC",
+                "HVAC",
+                "HVAC",
+                "HVAC",
+                "HVAC",
+                "HVAC",
+            ],
+            "NTC_LIMIT_CAPACITY_STATIC": [
+                600.0,
+                600.0,
+                pd.NA,
+                pd.NA,
+                1000.0,
+                1000.0,
+                666.0,
+            ],
+            "NTC_CURVE_ID": [
+                pd.NA,
+                pd.NA,
+                "AL00-RS00-2",
+                "RS00-AL00-2",
+                pd.NA,
+                pd.NA,
+                pd.NA,
+            ],
+            "SUMMER_HC": [600.0, 600.0, 500.0, 500.0, 1000.0, 1000.0, 666.0],
+            "WINTER_HC": [600.0, 600.0, 500.0, 500.0, 1000.0, 1000.0, 666.0],
+            "SUMMER_HP": [600.0, 600.0, 500.0, 500.0, 1000.0, 1000.0, 666.0],
+            "WINTER_HP": [600.0, 600.0, 500.0, 500.0, 1000.0, 1000.0, 666.0],
+            "MEDIAN": [pd.NA, pd.NA, 500.0, 500.0, 1000.0, 1000.0, 666.0],
+            "code_source": ["AL", "GR", "AL", "RS", "CZ", "PL", "PL"],
+            "code_destination": ["GR", "AL", "RS", "AL", "PL", "CZ", "PL"],
+            "border": ["AL-GR", "GR-AL", "AL-RS", "RS-AL", "CZ-PL", "PL-CZ", "PL-PL"],
+        }
+    )
+
+    data_links_managed = {"2030": df_test_links_format, "2040": df_test_links_format}
 
     return data_links_managed
 

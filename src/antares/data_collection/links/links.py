@@ -154,6 +154,23 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
     # Transfer capacity
     # global filter `TRANSFER_TYPE` = NTC + `TRANSFER_TECHNOLOGY` = HVAC
     df_transfer = results[conf_links_files.TRANSFER_LINKS].copy()
+
+    # select only usefully columns
+    list_col_to_keep = [
+        TransferLinks.ZONE,
+        TransferLinks.MARKET_ZONE_SOURCE,
+        TransferLinks.MARKET_ZONE_DESTINATION,
+        TransferLinks.TRANSFER_TYPE,
+        TransferLinks.STUDY_SCENARIO,
+        TransferLinks.YEAR_VALID_START,
+        TransferLinks.YEAR_VALID_END,
+        TransferLinks.TRANSFER_TECHNOLOGY,
+        TransferLinks.NTC_LIMIT_CAPACITY_STATIC,
+        TransferLinks.NTC_CURVE_ID,
+    ]
+
+    df_transfer = df_transfer[list_col_to_keep]
+
     df_transfer = df_transfer.loc[
         (df_transfer[TransferLinks.TRANSFER_TYPE] == "NTC")
         & (df_transfer[TransferLinks.TRANSFER_TECHNOLOGY] == "HVAC")
@@ -245,11 +262,19 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             & (df_transfer_year[TransferLinks.YEAR_VALID_END] >= iyear)
         ]
 
-        # TODO if data frame is empty skip/pass the year of treatment
+        # drop columns with market_zon code + year columns
+        df_transfer_year = df_transfer_year.drop(
+            columns=[
+                TransferLinks.MARKET_ZONE_SOURCE,
+                TransferLinks.MARKET_ZONE_DESTINATION,
+            ]
+        ).drop(columns=[TransferLinks.YEAR_VALID_START, TransferLinks.YEAR_VALID_END])
 
-        ## multi GRT treatment
+        ##
+        # multi GRT treatment
+        ##
 
-        # identify
+        # identify multi grt only
         borders = (
             df_transfer_year.groupby([TransferLinks.ZONE, "border"])
             .size()
@@ -257,10 +282,39 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
             .query("N < 2")["border"]
         )
 
-        # keep target borders
+        # NO multi grt (other)
+        df_no_multi_grt = df_transfer_year.loc[
+            ~df_transfer_year["border"].isin(borders.unique())
+        ]
+
+        # aggregation one more time for country with multi market zone
+        key_cols = [
+            TransferLinks.ZONE.value,
+            TransferLinks.TRANSFER_TYPE.value,
+            TransferLinks.STUDY_SCENARIO.value,
+            TransferLinks.TRANSFER_TECHNOLOGY.value,
+            TransferLinks.NTC_CURVE_ID.value,
+            "border",
+            "code_destination",
+            "code_source",
+        ]
+
+        # group by "key_cols" and keep NA with MEDIAN WINTER/SUMMER with parameter `min_count=1`
+        df_no_multi_grt = df_no_multi_grt.groupby(
+            key_cols, dropna=False, as_index=False
+        ).sum(numeric_only=True, min_count=1)
+
+        # NOTE : df contains MONO GRT too but not a pb for the treatments
+
+        # keep target borders multi GRT
         df_multi_grt = df_transfer_year.loc[
             df_transfer_year["border"].isin(borders.unique())
         ]
+
+        # combine/integrate reaggregate grt with multi grt
+        frames = [df_multi_grt, df_no_multi_grt]
+
+        df_multi_grt = pd.concat(frames).reset_index(drop=True)
 
         # select one line group by border (one border = 2 lines/2 ZONE)
         # RULES 1: IF no curve id => keep min of NTC_LIMIT_CAPACITY_STATIC
@@ -320,9 +374,9 @@ def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFr
 
         # concat all df
         frames = [df_multi_grt_1_min, df_multi_one_id, df_multi_grt_2_2]
-
         result = pd.concat(frames)
 
+        # build named dictionary
         d_df_year[str(iyear)] = result
 
     # named list of data frames
@@ -361,6 +415,10 @@ def links_manage_output_format(
         "indirect",
     )
 
+    # delete row with source==destination
+    df_concat = df_concat.loc[df_concat["code_source"] != df_concat["code_destination"]]
+
+    # mapping columns for df direct/indirect
     df_direct = df_concat.loc[df_concat["links_way"] == "direct"]
     df_indirect = df_concat.loc[df_concat["links_way"] == "indirect"]
 
