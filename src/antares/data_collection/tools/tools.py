@@ -65,29 +65,19 @@ def create_xlsx_workbook(
     """
     Create an Excel workbook and write a DataFrame to a worksheet.
 
-    Parameters
-    ----------
-    path_dir : Path
-        Directory where the Excel workbook will be created.
-    workbook_name : str
-        Workbook name **without** the `.xlsx` extension.
-    sheet_name : str
-        Worksheet name to create in the workbook.
-    data_df : pd.DataFrame, optional
-        DataFrame to write into the worksheet. If None, the worksheet is created
-        without writing data.
-    index : bool, default False
-        Whether to write the DataFrame index.
-    header : bool, default True
-        Whether to write the DataFrame column names.
-    overwrite : bool, default False
-        If True, overwrite the existing Excel workbook. If False and the file
-        already exists, raise a FileExistsError.
+    Parameters:
+        path_dir: Directory where the Excel workbook will be created.
+        workbook_name: Workbook name without the `.xlsx` extension.
+        sheet_name: Worksheet name to create in the workbook.
+        data_df: DataFrame to write into the worksheet. If None, the worksheet
+            is created without writing data.
+        index: Whether to write the DataFrame index. Defaults to False.
+        header: Whether to write the DataFrame column names. Defaults to True.
+        overwrite: If True, overwrite the existing Excel workbook. If False
+            and the file already exists, raise a FileExistsError.
 
-    Raises
-    ------
-    FileExistsError
-        If the Excel workbook already exists and overwrite is False.
+    Raises:
+        FileExistsError: If the Excel workbook already exists and `overwrite` is False.
     """
     if not path_dir.exists():
         raise FileNotFoundError(f"Input directory does not exist: {path_dir}")
@@ -129,28 +119,20 @@ def edit_xlsx_workbook(
     overwrite_sheet: bool = False,
 ) -> None:
     """
-    Edit an existing Excel workbook and write a DataFrame to a new worksheet (or append to an existing one).
+    Edit an existing Excel workbook and write a DataFrame to a new worksheet
+    or append to an existing one.
 
-    Parameters
-    ----------
-    path_file : Path
-        Complete path to the Excel workbook to edit.
-    sheet_name : str
-        Worksheet name to create in the workbook.
-    data_df : pd.DataFrame
-        DataFrame to write into the worksheet.
-    index : bool, default False
-        Whether to write the DataFrame index.
-    header : bool, default True
-        Whether to write the DataFrame column names.
-    overwrite_sheet : bool, default False
-        If True, overwrite the existing worksheet. If False and the file
-        already exists, raise a KeyError.
+    Parameters:
+        path_file: Complete path to the Excel workbook to edit.
+        sheet_name: Worksheet name to create in the workbook.
+        data_df: DataFrame to write into the worksheet.
+        index: Whether to write the DataFrame index. Defaults to False.
+        header: Whether to write the DataFrame column names. Defaults to True.
+        overwrite_sheet: If True, overwrite the existing worksheet. If False
+            and the worksheet already exists, raise a KeyError.
 
-    Raises
-    ------
-    KeyError
-        If the worksheet already exists and overwrite is False.
+    Raises:
+        KeyError: If the worksheet already exists and `overwrite_sheet` is False.
     """
     if not path_file.exists():
         raise FileNotFoundError(f"This Excel file does not exist: {path_file}")

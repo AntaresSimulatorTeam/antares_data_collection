@@ -10,3 +10,11 @@
 #
 # This file is part of the Antares project.
 
+from antares.data_collection.links.links import create_links_outputs
+from antares.data_collection.tools.tools import create_xlsx_workbook, edit_xlsx_workbook
+
+__all__ = [
+    "create_links_outputs",
+    "create_xlsx_workbook",
+    "edit_xlsx_workbook",
+]

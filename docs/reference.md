@@ -1,3 +1,3 @@
-# Référence
+# Reference
 
-::: antares.data_collection.links.links
+::: antares.data_collection
