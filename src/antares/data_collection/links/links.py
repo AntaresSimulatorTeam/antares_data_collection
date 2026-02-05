@@ -45,20 +45,19 @@ from antares.data_collection.tools.tools import create_xlsx_workbook, edit_xlsx_
 def links_data_management(conf_input: LocalConfiguration) -> dict[str, pd.DataFrame]:
     """
     Manage links data (Transfer capacity, NTC TS + INDEX).
-    Treatments are applied to the data:
-     - NTC TS + INDEX: median group by HP/HC & Winter/Summer
-     - Pre treatments for Transfer capacity: global filter `TRANSFER_TYPE` = NTC + `TRANSFER_TECHNOLOGY` = HVAC
-     - Treatments for every year: multi GRT treatment
 
-    Parameters
-    ----------
-    conf_input : LocalConfiguration
-        Configuration object.
+    The following treatments are applied:
+    - NTC TS + INDEX: median grouped by HP/HC and Winter/Summer.
+    - Transfer capacity pre-treatments: global filters
+      `TRANSFER_TYPE = NTC` and `TRANSFER_TECHNOLOGY = HVAC`.
+    - Yearly treatments: multi GRT processing.
 
-    Returns
-    -------
-    dict[str, pd.DataFrame]
-        If there is no data for a specific year, `DataFrame` is empty.
+    Parameters:
+        conf_input: Configuration object.
+
+    Returns:
+        A dictionary mapping years to pandas DataFrames. If there is no data
+        for a specific year, the corresponding DataFrame is empty.
     """
 
     # check files required
@@ -558,12 +557,15 @@ def links_manage_export(
 # main function to process links files
 def create_links_outputs(links_conf_input: LocalConfiguration) -> None:
     """
-    Processes input configuration, manages links data, formats data frames, and handles
-    export operations.
+    Processes input configuration, manages links data, formats data frames,
+    and handles export operations.
 
-    :param links_conf_input: Argument that holds the input configurations for processing.
-    :type links_conf_input: LocalConfiguration
-    :return: None
+    Parameters:
+        links_conf_input:
+            Input configuration used for processing links and exports.
+
+    Returns:
+        A new Excel workbook named "links_{scenario_name}.xlsx", created in the root directory of the PEMMDB gateway.
     """
     # data management with specific links files
     dict_managed = links_data_management(conf_input=links_conf_input)
