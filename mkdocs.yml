@@ -1,0 +1,11 @@
+site_name: Antares Data Collection
+repo_url: https://github.com/AntaresSimulatorTeam/antares_data_collection
+theme:
+   name: material
+nav:
+  - Home: index.md
+  - Reference: reference.md
+
+plugins:
+  - search
+  - mkdocstrings
