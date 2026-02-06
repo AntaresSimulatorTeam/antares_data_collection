@@ -14,6 +14,22 @@ from pathlib import Path
 
 
 class LocalConfiguration:
+    """
+    Handles configuration for processing local data.
+
+    The LocalConfiguration class manages the paths and settings required
+    to process and export local data. It validates the existence of the
+    provided paths and ensures that all required configuration parameters
+    are present.
+
+    Parameters:
+        input_path: Path to the input data directory.
+        export_path: Path where processed data will be exported.
+        scenario_name: Name of the scenario being processed.
+        data_references_path: Path to the data references file.
+        calendar_year: List of years representing the calendar range.
+    """
+
     def __init__(
         self,
         input_path: Path,
