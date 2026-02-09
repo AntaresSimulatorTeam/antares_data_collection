@@ -9,10 +9,11 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
+from enum import Enum
 from pathlib import Path
 
 
+# File names and dir structure
 class ThermalLayout:
     INPUT_DATA_STEM = "Thermal"
     INPUT_DATA_SUFFIX = ".csv"
@@ -28,3 +29,18 @@ class ThermalLayout:
     @property
     def output_dir_thermal_country(self) -> Path:
         return Path(self.DIR_OUTPUT_THERMAL) / self.SUB_DIR_OUTPUT_THERMAL_COUNTRY
+
+
+# structure of data "Thermal.csv"
+# only columns necessary for power/number processing
+class ThermalDataColumns(Enum):
+    ZONE = "ZONE"
+    STUDY_SCENARIO = "STUDY_SCENARIO"
+    MARKET_NODE = "MARKET_NODE"
+    DECOMMISSIONING_DATE_OFFICIAL = "DECOMMISSIONING_DATE_OFFICIAL"
+    DECOMMISSIONING_DATE_EXPECTED = "DECOMMISSIONING_DATE_EXPECTED"
+    OP_STAT = "OP_STAT"
+    SCND_FUEL = "SCND_FUEL"
+    SCND_FUEL_RT = "SCND_FUEL_RT"
+    NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
+    PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"

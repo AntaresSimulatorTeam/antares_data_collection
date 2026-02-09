@@ -24,46 +24,7 @@ class LinksFileConfig:
         return [self.NTC_INDEX, self.NTC_TS, self.TRANSFER_LINKS]
 
 
-# structure Referential
-
-
-# sheet names
-class ReferentialSheetNames(Enum):
-    PAYS = "PAYS"
-    STUDY_SCENARIO = "STUDY_SCENARIO"
-    LINKS = "LINKS"
-    PEAK_PARAMS = "PEAK_PARAMS"
-
-
-# sheet "PAYS"
-class CountryColumnsNames(Enum):
-    NOM_PAYS = "Nom_pays"
-    CODE_PAYS = "code_pays"
-    AREAS = "areas"
-    MARKET_NODE = "market_node"
-    CODE_ANTARES = "code_antares"
-
-
-# sheet "STUDY_SCENARIO"
-class StudyScenarioColumnsNames(Enum):
-    YEAR = "YEAR"
-    STUDY_SCENARIO = "STUDY_SCENARIO"
-
-
-# sheet "LINKS"
-class LinksColumnsNames(Enum):
-    MARKET_NODE = "market_node"
-    CODE_ANTARES = "code_antares"
-
-
-# "PEAK_PARAMS"
-class PeakParamsColumnsNames(Enum):
-    HOUR = "hour"
-    PERIOD_HOUR = "period_hour"
-    MONTH = "month"
-    PERIOD_MONTH = "period_month"
-
-
+# structure of data files
 class StrEnum(str, Enum):
     pass
 
