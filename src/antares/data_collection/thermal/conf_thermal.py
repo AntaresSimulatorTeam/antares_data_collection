@@ -30,6 +30,10 @@ class ThermalLayout:
     def output_dir_thermal_country(self) -> Path:
         return Path(self.DIR_OUTPUT_THERMAL) / self.SUB_DIR_OUTPUT_THERMAL_COUNTRY
 
+    @property
+    def default_values_column_op_stat(self) -> list[str]:
+        return ["Available on market", "Inelastic supply / fixed profile"]
+
 
 # structure of data "Thermal.csv"
 # only columns necessary for power/number processing
@@ -44,3 +48,9 @@ class ThermalDataColumns(Enum):
     SCND_FUEL_RT = "SCND_FUEL_RT"
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"
+
+
+# new columns computed
+class ThermalComputedColumns(Enum):
+    BIO_MAX_GENERATION_MW = "BIO_MAX_GENERATION_MW"
+    FOSSIL_MAX_GENERATION_MW = "FOSSIL_MAX_GENERATION_MW"

@@ -9,13 +9,17 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
+import numpy as np
 import pandas as pd
 
 from antares.data_collection import LocalConfiguration
+from antares.data_collection.referential_data.struct_main_params import (
+    CountryColumnsNames,
+)
 from antares.data_collection.thermal.conf_thermal import (
     ThermalLayout,
     ThermalDataColumns,
+    ThermalComputedColumns,
 )
 
 
@@ -43,8 +47,53 @@ def thermal_import(conf_input: LocalConfiguration) -> pd.DataFrame:
 
 
 # TODO next steps
-def thermal_pre_treatments() -> None:
-    raise NotImplementedError("Not implemented yet")
+
+
+# add code_antares from ref
+# filter code antares with NA
+# additional filter: columns "op_stat"
+# add new columns: "BIO_MAX_GENERATION_MW" / "FOSSIL_MAX_GENERATION_MW"
+def thermal_pre_treatments(
+    df_thermal: pd.DataFrame,
+    df_ref_pays: pd.DataFrame,
+    op_stat: list[str] = ThermalLayout().default_values_column_op_stat,
+) -> pd.DataFrame:
+    # merge with referential country
+    df_thermal_updated = pd.merge(
+        df_thermal,
+        df_ref_pays,
+        left_on=ThermalDataColumns.MARKET_NODE.value,
+        right_on=CountryColumnsNames.MARKET_NODE.value,
+        how="left",
+        validate="1:1",
+    ).drop(
+        columns=[
+            CountryColumnsNames.NOM_PAYS.value,
+            CountryColumnsNames.CODE_PAYS.value,
+            CountryColumnsNames.AREAS.value,
+            CountryColumnsNames.MARKET_NODE.value,
+        ]
+    )
+
+    # filter on op_stat
+    df_thermal_updated = df_thermal_updated[
+        df_thermal_updated[ThermalDataColumns.OP_STAT.value].isin(op_stat)
+    ]
+
+    # add new columns FOSSIL_MAX_GENERATION_MW / BIO_MAX_GENERATION_MW
+    df_thermal_updated = df_thermal_updated.assign(
+        **{
+            ThermalComputedColumns.BIO_MAX_GENERATION_MW.value: lambda d: np.where(
+                d["SCND_FUEL"].eq("Bio"), d["SCND_FUEL_RT"] * d["NET_MAX_GEN_CAP"], 0
+            ),
+            ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value: lambda d: (
+                d["NET_MAX_GEN_CAP"]
+                - d[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value]
+            ),
+        }
+    )
+
+    return df_thermal_updated
 
 
 def thermal_treatments_year() -> None:
