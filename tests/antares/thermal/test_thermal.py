@@ -93,12 +93,27 @@ def mock_thermal_data_pre_treatment_df() -> pd.DataFrame:
             "SCND_FUEL": ["Bio"],
             "SCND_FUEL_RT": [0.5],
             "NET_MAX_GEN_CAP": [100],
+            "PEMMDB_TECHNOLOGY": ["Gas/CCGT CCS/CHP"],
+        }
+    )
+
+    df_thermal_pre_treat_no_code = pd.DataFrame(
+        {
+            "ZONE": ["BZZ"],
+            "STUDY_SCENARIO": ["TYNDP"],
+            "MARKET_NODE": ["BZZ00"],
+            "DECOMMISSIONING_DATE_OFFICIAL": ["2020-01-01"],
+            "DECOMMISSIONING_DATE_EXPECTED": ["2040-01-01"],
+            "OP_STAT": ["Available on market"],
+            "SCND_FUEL": ["Bio"],
+            "SCND_FUEL_RT": [0.5],
+            "NET_MAX_GEN_CAP": [100],
             "PEMMDB_TECHNOLOGY": ["Gas/CCGT CCS"],
         }
     )
 
     df_thermal_pre_treat_full = pd.concat(
-        [df_thermal_pre_treat, df_thermal_pre_treat_bio]
+        [df_thermal_pre_treat, df_thermal_pre_treat_bio, df_thermal_pre_treat_no_code]
     )
 
     return df_thermal_pre_treat_full
@@ -118,6 +133,23 @@ def mock_thermal_ref_pays() -> pd.DataFrame:
     )
 
     return ref_pays
+
+## mock referential MAIN_PARAMS/CLUSTER Data Frame
+@pytest.fixture
+def mock_thermal_ref_cluster() -> pd.DataFrame:
+    ref_cluster = pd.DataFrame(
+        {
+            "TYPE": ["Thermal", "Thermal", "Thermal"],
+            "CLUSTER_PEMMDB": [
+                "Gas/CCGT CCS",
+                "OtherNon-RES/Gas/CCGT CCS",
+                "Gas/CCGT CCS/CHP",
+            ],
+            "CLUSTER_BP": ["CCGT CCS", "CCGT CCS", "CCGT CCS CHP"],
+        }
+    )
+
+    return ref_cluster
 
 
 ##
@@ -229,13 +261,15 @@ def test_thermal_import_works(tmp_path: Path) -> None:
 def test_thermal_pre_treatments_default_works(
     mock_thermal_data_pre_treatment_df: pd.DataFrame,
     mock_thermal_ref_pays: pd.DataFrame,
+        mock_thermal_ref_cluster: pd.DataFrame
 ) -> None:
     # given
     ref_pays = mock_thermal_ref_pays
+    ref_cluster = mock_thermal_ref_cluster
 
     # when
     df_pre_treat = thermal_pre_treatments(
-        df_thermal=mock_thermal_data_pre_treatment_df, df_ref_pays=ref_pays
+        df_thermal=mock_thermal_data_pre_treatment_df, df_ref_pays=ref_pays, df_ref_cluster=ref_cluster
     )
 
     assert isinstance(df_pre_treat, pd.DataFrame)
