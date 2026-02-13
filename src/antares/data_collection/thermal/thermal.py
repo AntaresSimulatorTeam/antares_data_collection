@@ -14,7 +14,8 @@ import pandas as pd
 
 from antares.data_collection import LocalConfiguration
 from antares.data_collection.referential_data.struct_main_params import (
-    CountryColumnsNames, ClusterColumnsNames,
+    CountryColumnsNames,
+    ClusterColumnsNames,
 )
 from antares.data_collection.thermal.conf_thermal import (
     ThermalLayout,
@@ -56,6 +57,15 @@ def thermal_pre_treatments(
     df_ref_cluster: pd.DataFrame,
     op_stat: list[str] = ThermalLayout().default_values_column_op_stat,
 ) -> pd.DataFrame:
+    assert isinstance(df_thermal, pd.DataFrame)
+    assert isinstance(df_ref_pays, pd.DataFrame)
+    assert isinstance(df_ref_cluster, pd.DataFrame)
+
+    # filter NA and keep only thermal cluster
+    df_ref_cluster_filtered = df_ref_cluster[
+        df_ref_cluster[ClusterColumnsNames.TYPE.value].eq("Thermal")
+    ].dropna(subset=[ClusterColumnsNames.CLUSTER_PEMMDB.value])
+
     # merge with referential country
     df_thermal_updated = (
         pd.merge(
@@ -78,15 +88,18 @@ def thermal_pre_treatments(
     )
 
     # merge with the referential cluster to bring CLUSTER_BP
-    df_thermal_updated = (
-        pd.merge(
-            df_thermal_updated,
-            df_ref_cluster,
-            left_on=ThermalDataColumns.PEMMDB_TECHNOLOGY.value,
-            right_on=ClusterColumnsNames.CLUSTER_PEMMDB.value,
-            how="left",
-            validate="many_to_one")
-        .drop(columns=[ClusterColumnsNames.TYPE.value])
+    df_thermal_updated = pd.merge(
+        df_thermal_updated,
+        df_ref_cluster_filtered,
+        left_on=ThermalDataColumns.PEMMDB_TECHNOLOGY.value,
+        right_on=ClusterColumnsNames.CLUSTER_PEMMDB.value,
+        how="left",
+        validate="many_to_one",
+    ).drop(
+        columns=[
+            ClusterColumnsNames.TYPE.value,
+            ClusterColumnsNames.CLUSTER_PEMMDB.value,
+        ]
     )
 
     # filter on op_stat
@@ -98,32 +111,59 @@ def thermal_pre_treatments(
     df_thermal_updated = df_thermal_updated.assign(
         **{
             ThermalComputedColumns.BIO_MAX_GENERATION_MW.value: lambda d: np.where(
-                d["SCND_FUEL"].eq("Bio"), d["SCND_FUEL_RT"] * d["NET_MAX_GEN_CAP"], 0
+                d[ThermalDataColumns.SCND_FUEL.value].eq("Bio"),
+                d[ThermalDataColumns.SCND_FUEL_RT.value]
+                * d[ThermalDataColumns.NET_MAX_GEN_CAP.value],
+                0,
             ),
             ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value: lambda d: (
-                d["NET_MAX_GEN_CAP"]
+                d[ThermalDataColumns.NET_MAX_GEN_CAP.value]
                 - d[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value]
             ),
         }
     )
 
     # split to keep df BIO and df FOSSIL to keep only capacity on "NET_MAX_GEN_CAP"
-    mask_bio = df_thermal_updated["BIO_MAX_GENERATION_MW"] > 0
+    mask_bio = (
+        df_thermal_updated[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value] > 0
+    )
 
     # tag bio to add a new cluster
     df_thermal_bio = (
         df_thermal_updated.loc[mask_bio]
-        .drop(columns=["NET_MAX_GEN_CAP", "FOSSIL_MAX_GENERATION_MW"])
-        .rename(columns={"BIO_MAX_GENERATION_MW": "NET_MAX_GEN_CAP"})
+        .drop(
+            columns=[
+                ThermalDataColumns.NET_MAX_GEN_CAP.value,
+                ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value,
+            ]
+        )
+        .rename(
+            columns={
+                ThermalComputedColumns.BIO_MAX_GENERATION_MW.value: ThermalDataColumns.NET_MAX_GEN_CAP.value
+            }
+        )
     )
-    df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] = df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] + " bio"
+    df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] = (
+        df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] + " bio"
+    )
 
     # manage FOSSIL
-    mask_fossil = df_thermal_updated["FOSSIL_MAX_GENERATION_MW"] > 0
+    mask_fossil = (
+        df_thermal_updated[ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value] > 0
+    )
     df_thermal_fossil = (
         df_thermal_updated.loc[mask_fossil]
-        .drop(columns=["NET_MAX_GEN_CAP", "BIO_MAX_GENERATION_MW"])
-        .rename(columns={"FOSSIL_MAX_GENERATION_MW": "NET_MAX_GEN_CAP"})
+        .drop(
+            columns=[
+                ThermalDataColumns.NET_MAX_GEN_CAP.value,
+                ThermalComputedColumns.BIO_MAX_GENERATION_MW.value,
+            ]
+        )
+        .rename(
+            columns={
+                ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value: ThermalDataColumns.NET_MAX_GEN_CAP.value
+            }
+        )
     )
 
     # concat
@@ -131,10 +171,16 @@ def thermal_pre_treatments(
     df_thermal_pre_treated = pd.concat(frames).reset_index(drop=True)
 
     # keep only useful columns
-    return df_thermal_pre_treated
+    list_cols_to_keep = [
+        CountryColumnsNames.CODE_ANTARES.value,
+        ThermalDataColumns.STUDY_SCENARIO.value,
+        ThermalDataColumns.DECOMMISSIONING_DATE_OFFICIAL.value,
+        ThermalDataColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        ClusterColumnsNames.CLUSTER_BP.value,
+        ThermalDataColumns.NET_MAX_GEN_CAP.value,
+    ]
 
-
-
+    return df_thermal_pre_treated[list_cols_to_keep]
 
 
 # TODO next steps

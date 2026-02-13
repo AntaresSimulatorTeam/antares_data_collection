@@ -17,6 +17,11 @@ import pandas as pd
 import pytest
 
 from antares.data_collection import LocalConfiguration
+from antares.data_collection.referential_data.struct_main_params import (
+    CountryColumnsNames,
+    ClusterColumnsNames,
+)
+from antares.data_collection.thermal.conf_thermal import ThermalDataColumns
 from antares.data_collection.thermal.thermal import (
     thermal_import,
     thermal_pre_treatments,
@@ -261,7 +266,7 @@ def test_thermal_import_works(tmp_path: Path) -> None:
 def test_thermal_pre_treatments_default_works(
     mock_thermal_data_pre_treatment_df: pd.DataFrame,
     mock_thermal_ref_pays: pd.DataFrame,
-        mock_thermal_ref_cluster: pd.DataFrame
+    mock_thermal_ref_cluster: pd.DataFrame,
 ) -> None:
     # given
     ref_pays = mock_thermal_ref_pays
@@ -269,7 +274,20 @@ def test_thermal_pre_treatments_default_works(
 
     # when
     df_pre_treat = thermal_pre_treatments(
-        df_thermal=mock_thermal_data_pre_treatment_df, df_ref_pays=ref_pays, df_ref_cluster=ref_cluster
+        df_thermal=mock_thermal_data_pre_treatment_df,
+        df_ref_pays=ref_pays,
+        df_ref_cluster=ref_cluster,
     )
 
+    list_cols_expected = [
+        CountryColumnsNames.CODE_ANTARES.value,
+        ThermalDataColumns.STUDY_SCENARIO.value,
+        ThermalDataColumns.DECOMMISSIONING_DATE_OFFICIAL.value,
+        ThermalDataColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        ClusterColumnsNames.CLUSTER_BP.value,
+        ThermalDataColumns.NET_MAX_GEN_CAP.value,
+    ]
+
     assert isinstance(df_pre_treat, pd.DataFrame)
+    assert list_cols_expected == list(df_pre_treat.columns)
+    assert not df_pre_treat.empty
