@@ -77,7 +77,7 @@ def mock_thermal_data_pre_treatment_df() -> pd.DataFrame:
             "ZONE": ["AL", "AT"],
             "STUDY_SCENARIO": ["ERAA&TYNDP", "ERAA&TYNDP"],
             "MARKET_NODE": ["AL00", "AT00"],
-            "DECOMMISSIONING_DATE_OFFICIAL": ["2020-01-01", "2020-01-01"],
+            "COMMISSIONING_DATE": ["2020-01-01", "2020-01-01"],
             "DECOMMISSIONING_DATE_EXPECTED": ["2040-01-01", "2040-01-01"],
             "OP_STAT": ["None", "Available on market"],
             "SCND_FUEL": ["Heavy oil", "Natural gas"],
@@ -92,7 +92,7 @@ def mock_thermal_data_pre_treatment_df() -> pd.DataFrame:
             "ZONE": ["BE"],
             "STUDY_SCENARIO": ["TYNDP"],
             "MARKET_NODE": ["BE00"],
-            "DECOMMISSIONING_DATE_OFFICIAL": ["2020-01-01"],
+            "COMMISSIONING_DATE": ["2020-01-01"],
             "DECOMMISSIONING_DATE_EXPECTED": ["2040-01-01"],
             "OP_STAT": ["Available on market"],
             "SCND_FUEL": ["Bio"],
@@ -107,7 +107,7 @@ def mock_thermal_data_pre_treatment_df() -> pd.DataFrame:
             "ZONE": ["BZZ"],
             "STUDY_SCENARIO": ["TYNDP"],
             "MARKET_NODE": ["BZZ00"],
-            "DECOMMISSIONING_DATE_OFFICIAL": ["2020-01-01"],
+            "COMMISSIONING_DATE": ["2020-01-01"],
             "DECOMMISSIONING_DATE_EXPECTED": ["2040-01-01"],
             "OP_STAT": ["Available on market"],
             "SCND_FUEL": ["Bio"],
@@ -139,6 +139,7 @@ def mock_thermal_ref_pays() -> pd.DataFrame:
 
     return ref_pays
 
+
 ## mock referential MAIN_PARAMS/CLUSTER Data Frame
 @pytest.fixture
 def mock_thermal_ref_cluster() -> pd.DataFrame:
@@ -155,6 +156,65 @@ def mock_thermal_ref_cluster() -> pd.DataFrame:
     )
 
     return ref_cluster
+
+
+## mock referential MAIN_PARAMS/STUDY_SCENARIO Data Frame
+@pytest.fixture
+def mock_thermal_ref_study_scenario() -> pd.DataFrame:
+    ref_study_scenario = pd.DataFrame(
+        {
+            "YEAR": ["2030", "2040", "2060", "2200"],
+            "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP", "TYNDP"],
+        }
+    )
+    return ref_study_scenario
+
+
+## mock DATA thermal pre treated (with cluster bio, code_antares, cluster_bp)
+@pytest.fixture
+def mock_thermal_data_pre_treated_df() -> pd.DataFrame:
+    # columns necessary: ['code_antares', 'STUDY_SCENARIO', 'COMMISSIONING_DATE',
+    #        'DECOMMISSIONING_DATE_EXPECTED', 'CLUSTER_BP', 'NET_MAX_GEN_CAP']
+    # values are compatible with value of mock
+
+    list_code_antares = ["BE", "FR"]
+    df_cluster_2030 = pd.DataFrame(
+        {
+            "STUDY_SCENARIO": ["ERAA&TYNDP", "ERAA", "TYNDP"],
+            "COMMISSIONING_DATE": ["2020-01-01", "2020-01-01", "2020-01-01"],
+            "DECOMMISSIONING_DATE_EXPECTED": ["2030-01-01", "2030-01-01", "2030-01-01"],
+            "CLUSTER_BP": ["CCGT CCS", "CCGT CCS", "CCGT CCS CHP"],
+            "NET_MAX_GEN_CAP": [100, 120, 100],
+        }
+    )
+
+    df_cluster_2040 = pd.DataFrame(
+        {
+            "STUDY_SCENARIO": ["ERAA&TYNDP", "ERAA", "TYNDP"],
+            "COMMISSIONING_DATE": ["2031-01-01", "2031-01-01", "2031-01-01"],
+            "DECOMMISSIONING_DATE_EXPECTED": ["2040-01-01", "2040-01-01", "2040-01-01"],
+            "CLUSTER_BP": ["CCGT CCS bio", "CCGT CCS bio", "CCGT CCS CHP"],
+            "NET_MAX_GEN_CAP": [100, 120, 100],
+        }
+    )
+
+    df_cluster_2060 = pd.DataFrame(
+        {
+            "STUDY_SCENARIO": ["ERAA&TYNDP", "ERAA", "TYNDP"],
+            "COMMISSIONING_DATE": ["2051-01-01", "2051-01-01", "2051-01-01"],
+            "DECOMMISSIONING_DATE_EXPECTED": ["2060-01-01", "2060-01-01", "2060-01-01"],
+            "CLUSTER_BP": ["CCGT CCS bio", "CCGT CCS bio", "CCGT CCS CHP"],
+            "NET_MAX_GEN_CAP": [100, 120, 100],
+        }
+    )
+
+    concat_df = pd.concat([df_cluster_2030, df_cluster_2040, df_cluster_2060])
+
+    df_pre_treated_full = pd.merge(
+        pd.Series(list_code_antares, name="code_antares"), concat_df, how="cross"
+    )
+
+    return df_pre_treated_full
 
 
 ##
@@ -206,7 +266,7 @@ def test_thermal_import_empty_file(tmp_path: Path) -> None:
             "ZONE",
             "STUDY_SCENARIO",
             "MARKET_NODE",
-            "DECOMMISSIONING_DATE_OFFICIAL",
+            "COMMISSIONING_DATE",
             "DECOMMISSIONING_DATE_EXPECTED",
             "OP_STAT",
             "SCND_FUEL",
@@ -240,7 +300,7 @@ def test_thermal_import_works(tmp_path: Path) -> None:
             "ZONE",
             "STUDY_SCENARIO",
             "MARKET_NODE",
-            "DECOMMISSIONING_DATE_OFFICIAL",
+            "COMMISSIONING_DATE",
             "DECOMMISSIONING_DATE_EXPECTED",
             "OP_STAT",
             "SCND_FUEL",
@@ -282,7 +342,7 @@ def test_thermal_pre_treatments_default_works(
     list_cols_expected = [
         CountryColumnsNames.CODE_ANTARES.value,
         ThermalDataColumns.STUDY_SCENARIO.value,
-        ThermalDataColumns.DECOMMISSIONING_DATE_OFFICIAL.value,
+        ThermalDataColumns.COMMISSIONING_DATE.value,
         ThermalDataColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         ClusterColumnsNames.CLUSTER_BP.value,
         ThermalDataColumns.NET_MAX_GEN_CAP.value,
@@ -291,3 +351,9 @@ def test_thermal_pre_treatments_default_works(
     assert isinstance(df_pre_treat, pd.DataFrame)
     assert list_cols_expected == list(df_pre_treat.columns)
     assert not df_pre_treat.empty
+    # TODO test modality " bio"
+
+
+##
+# treatments by year
+##

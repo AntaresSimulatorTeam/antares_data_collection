@@ -37,6 +37,7 @@ def thermal_import(conf_input: LocalConfiguration) -> pd.DataFrame:
     if not path_file.exists():
         raise ValueError(f"Input file does not exist: {path_file}")
 
+    # TODO specify columns to be read as date
     # read a file with only columns used
     list_col_to_use = [col.value for col in ThermalDataColumns]
     df = pd.read_csv(filepath_or_buffer=path_file, usecols=list_col_to_use)
@@ -174,7 +175,7 @@ def thermal_pre_treatments(
     list_cols_to_keep = [
         CountryColumnsNames.CODE_ANTARES.value,
         ThermalDataColumns.STUDY_SCENARIO.value,
-        ThermalDataColumns.DECOMMISSIONING_DATE_OFFICIAL.value,
+        ThermalDataColumns.COMMISSIONING_DATE.value,
         ThermalDataColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         ClusterColumnsNames.CLUSTER_BP.value,
         ThermalDataColumns.NET_MAX_GEN_CAP.value,
@@ -184,7 +185,18 @@ def thermal_pre_treatments(
 
 
 # TODO next steps
-def thermal_treatments_year() -> None:
+def thermal_treatments_year(
+    df_thermal_pre_treated: pd.DataFrame, year_input: int, filter_scenario_input: str
+) -> pd.DataFrame:
+    # filter by year/month (Cutting years into months with overlapping format)
+    # filter scenario by year
+    # aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
+    # add new col date to tag year (int)
+
+    assert isinstance(df_thermal_pre_treated, pd.DataFrame)
+    assert isinstance(year_input, int)
+    assert isinstance(filter_scenario_input, str)
+
     raise NotImplementedError("Not implemented yet")
 
 

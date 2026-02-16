@@ -48,6 +48,20 @@ def scenario_filter(
     return df_input[df_input["STUDY_SCENARIO"].str.contains(pattern, regex=True)]
 
 
+def thermal_filter_active_years_commissioning(
+    df_input: pd.DataFrame,
+    name_col_start_date: str,
+    name_col_end_date: str,
+    year_date: pd.Timestamp,
+) -> pd.DataFrame:
+    # filter by year
+    df_input = df_input.loc[
+        (df_input[name_col_start_date] <= year_date)
+        & (df_input[name_col_end_date] >= year_date)
+    ]
+    return df_input
+
+
 ##
 # Export : Excel workbook
 ##
