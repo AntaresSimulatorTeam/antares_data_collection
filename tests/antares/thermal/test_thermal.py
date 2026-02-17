@@ -12,7 +12,6 @@
 from pathlib import Path
 import re
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -25,6 +24,7 @@ from antares.data_collection.thermal.conf_thermal import ThermalDataColumns
 from antares.data_collection.thermal.thermal import (
     thermal_import,
     thermal_pre_treatments,
+    thermal_treatments_year,
 )
 
 
@@ -294,21 +294,22 @@ def test_thermal_import_works(tmp_path: Path) -> None:
     )
 
     path_file = local_conf.input_path / "Thermal.csv"
+
     df_test = pd.DataFrame(
-        data=np.array([["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]]),
-        columns=[
-            "ZONE",
-            "STUDY_SCENARIO",
-            "MARKET_NODE",
-            "COMMISSIONING_DATE",
-            "DECOMMISSIONING_DATE_EXPECTED",
-            "OP_STAT",
-            "SCND_FUEL",
-            "SCND_FUEL_RT",
-            "NET_MAX_GEN_CAP",
-            "PEMMDB_TECHNOLOGY",
-        ],
+        {
+            "ZONE": ["1"],
+            "STUDY_SCENARIO": ["2"],
+            "MARKET_NODE": ["3"],
+            "COMMISSIONING_DATE": "2024-01-01",
+            "DECOMMISSIONING_DATE_EXPECTED": "2030-12-31",
+            "OP_STAT": ["6"],
+            "SCND_FUEL": ["7"],
+            "SCND_FUEL_RT": ["8"],
+            "NET_MAX_GEN_CAP": ["9"],
+            "PEMMDB_TECHNOLOGY": ["10"],
+        }
     )
+
     df_test.to_csv(path_file, index=False)
 
     # when
@@ -316,6 +317,12 @@ def test_thermal_import_works(tmp_path: Path) -> None:
     # then
     assert isinstance(df_imported, pd.DataFrame)
     assert not df_imported.empty
+
+    # type datetime for columns treated as date
+    assert all(
+        pd.api.types.is_datetime64_any_dtype(df_imported[col])
+        for col in ["COMMISSIONING_DATE", "DECOMMISSIONING_DATE_EXPECTED"]
+    )
 
 
 ##
@@ -351,9 +358,32 @@ def test_thermal_pre_treatments_default_works(
     assert isinstance(df_pre_treat, pd.DataFrame)
     assert list_cols_expected == list(df_pre_treat.columns)
     assert not df_pre_treat.empty
-    # TODO test modality " bio"
+
+    # test columns CLUSTER_BP is updated with line containing bio
+    assert (
+        df_pre_treat.loc[df_pre_treat.code_antares == "BE", "CLUSTER_BP"].iloc[0]
+        == "CCGT CCS CHP bio"
+    )
 
 
 ##
 # treatments by year
 ##
+
+
+def test_thermal_treatments_by_year_works(
+    mock_thermal_data_pre_treated_df: pd.DataFrame,
+) -> None:
+    # given
+    year_tested = 2030
+    filter_scenario_input_value = "ERAA"
+    df_test = mock_thermal_data_pre_treated_df
+
+    # when
+    df_treated = thermal_treatments_year(
+        df_thermal_pre_treated=df_test,
+        year_input=year_tested,
+        filter_scenario_input=filter_scenario_input_value,
+    )
+
+    assert isinstance(df_treated, pd.DataFrame)

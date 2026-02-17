@@ -62,6 +62,10 @@ def thermal_filter_active_years_commissioning(
     return df_input
 
 
+def thermal_year_to_overlapping_datetime(year_input: int) -> pd.DatetimeIndex:
+    return pd.date_range(f"{year_input - 1}-07-01", f"{year_input}-06-01", freq="MS")
+
+
 ##
 # Export : Excel workbook
 ##

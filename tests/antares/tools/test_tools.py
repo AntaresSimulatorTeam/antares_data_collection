@@ -13,6 +13,7 @@
 import pandas as pd
 from antares.data_collection.tools.tools import (
     thermal_filter_active_years_commissioning,
+    thermal_year_to_overlapping_datetime,
 )
 
 
@@ -39,3 +40,11 @@ def test_thermal_filter_active_years_commissioning() -> None:
 
     expected = df_input_data.iloc[[1]]
     pd.testing.assert_frame_equal(expected, df_test)
+
+
+def test_thermal_year_to_overlapping_datetime() -> None:
+    result = thermal_year_to_overlapping_datetime(2024)
+    assert isinstance(result, pd.DatetimeIndex)
+    assert result[0] == pd.Timestamp("2023-07-01")
+    assert result[-1] == pd.Timestamp("2024-06-01")
+    assert len(result) == 12

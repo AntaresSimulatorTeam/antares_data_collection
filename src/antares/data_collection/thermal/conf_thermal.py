@@ -54,3 +54,9 @@ class ThermalDataColumns(Enum):
 class ThermalComputedColumns(Enum):
     BIO_MAX_GENERATION_MW = "BIO_MAX_GENERATION_MW"
     FOSSIL_MAX_GENERATION_MW = "FOSSIL_MAX_GENERATION_MW"
+
+
+# columns to import with type datetime
+class ThermalDatetimeColumns(Enum):
+    COMMISSIONING_DATE = "COMMISSIONING_DATE"
+    DECOMMISSIONING_DATE_EXPECTED = "DECOMMISSIONING_DATE_EXPECTED"

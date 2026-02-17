@@ -21,6 +21,7 @@ from antares.data_collection.thermal.conf_thermal import (
     ThermalLayout,
     ThermalDataColumns,
     ThermalComputedColumns,
+    ThermalDatetimeColumns,
 )
 
 
@@ -37,10 +38,16 @@ def thermal_import(conf_input: LocalConfiguration) -> pd.DataFrame:
     if not path_file.exists():
         raise ValueError(f"Input file does not exist: {path_file}")
 
-    # TODO specify columns to be read as date
-    # read a file with only columns used
+    # read a file with only columns used + datetime columns
     list_col_to_use = [col.value for col in ThermalDataColumns]
-    df = pd.read_csv(filepath_or_buffer=path_file, usecols=list_col_to_use)
+    df = pd.read_csv(
+        filepath_or_buffer=path_file,
+        usecols=list_col_to_use,
+        parse_dates=[
+            ThermalDatetimeColumns.COMMISSIONING_DATE.value,
+            ThermalDatetimeColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        ],
+    )
 
     if df.empty:
         raise ValueError(f"Input file is empty: {path_file}")
@@ -197,7 +204,7 @@ def thermal_treatments_year(
     assert isinstance(year_input, int)
     assert isinstance(filter_scenario_input, str)
 
-    raise NotImplementedError("Not implemented yet")
+    return df_thermal_pre_treated
 
 
 def thermal_export() -> None:
