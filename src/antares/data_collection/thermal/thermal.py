@@ -23,6 +23,10 @@ from antares.data_collection.thermal.conf_thermal import (
     ThermalComputedColumns,
     ThermalDatetimeColumns,
 )
+from antares.data_collection.tools.tools import (
+    thermal_filter_active_years_commissioning,
+    scenario_filter,
+)
 
 
 # TODO steps of thermal process
@@ -193,7 +197,9 @@ def thermal_pre_treatments(
 
 # TODO next steps
 def thermal_treatments_year(
-    df_thermal_pre_treated: pd.DataFrame, year_input: int, filter_scenario_input: str
+    df_thermal_pre_treated: pd.DataFrame,
+    year_input: pd.Timestamp,
+    filter_scenario_input: str,
 ) -> pd.DataFrame:
     # filter by year/month (Cutting years into months with overlapping format)
     # filter scenario by year
@@ -201,10 +207,39 @@ def thermal_treatments_year(
     # add new col date to tag year (int)
 
     assert isinstance(df_thermal_pre_treated, pd.DataFrame)
-    assert isinstance(year_input, int)
+    assert isinstance(year_input, pd.Timestamp)
     assert isinstance(filter_scenario_input, str)
 
+    # filter on date
+    df_filtered = thermal_filter_active_years_commissioning(
+        df_input=df_thermal_pre_treated,
+        name_col_start_date=ThermalDatetimeColumns.COMMISSIONING_DATE.value,
+        name_col_end_date=ThermalDatetimeColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        year_date=year_input,
+    )
+
+    # filter on scenario
+    df_filtered = scenario_filter(
+        df_input=df_filtered, filter_params=filter_scenario_input
+    )
+
+    # TODO sum aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
+
     return df_thermal_pre_treated
+
+
+def thermal_compute_power_number_capacity(
+    df_input: pd.DataFrame, name_cols_index: list[str], name_capacity_col: str
+) -> pd.DataFrame:
+    assert isinstance(df_input, pd.DataFrame)
+    assert isinstance(name_cols_index, list)
+    assert isinstance(name_capacity_col, str)
+
+    df_aggregate = df_input.groupby(name_cols_index, as_index=False).agg(
+        {name_capacity_col: np.sum}
+    )
+
+    return df_aggregate
 
 
 def thermal_export() -> None:
