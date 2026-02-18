@@ -10,7 +10,3 @@
 #
 # This file is part of the Antares project.
 
-from tests.antares.links.test_links import mock_links_main_params_xlsx
-
-# forced to be used and not deleted by ruff
-__all__ = ["mock_links_main_params_xlsx"]

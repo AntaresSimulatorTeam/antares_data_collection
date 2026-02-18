@@ -22,19 +22,19 @@ import pandas as pd
 from antares.data_collection.tools.conf import LocalConfiguration
 
 # Data referential
-from antares.data_collection.links.conf_links import (
+from antares.data_collection.referential_data.struct_main_params import (
     ReferentialSheetNames as RefSheetNames,
+    PeakParamsColumnsNames as RefPeak,
+    StudyScenarioColumnsNames,
     LinksColumnsNames,
-    LinksExportParameters,
 )
-from antares.data_collection.links.conf_links import PeakParamsColumnsNames as RefPeak
 
 # Data Links
 from antares.data_collection.links.conf_links import (
     NTCS,
     NTCsIndex,
     TransferLinks,
-    StudyScenarioColumnsNames,
+    LinksExportParameters,
 )
 
 # internal function(s)
