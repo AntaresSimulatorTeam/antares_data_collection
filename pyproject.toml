@@ -1,6 +1,6 @@
 [project]
 name = "antares-data-collection"
-version = "0.1.1"
+version = "0.1.0"
 description = "Import and manage data from ENTSOE/pemmdb then format and export for Pegase"
 readme = "README.md"
 authors = [
@@ -9,12 +9,9 @@ authors = [
 ]
 requires-python = ">=3.11"
 
-# click is used as runtime with the package to add header with license information
 dependencies = [
-    "click>=8.3.1",
     "openpyxl>=3.1.5",
-    "pandas",
-    "types-openpyxl>=3.1.5.20250919",
+    "pandas"
 ]
 
 classifiers = [
@@ -27,9 +24,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Typing :: Typed"
 ]
-
-[project.scripts]
-license-checker = "antares.data_collection.cli.license_checker_and_adder:cli"
 
 [build-system]
 requires = ["setuptools>=61.0"]
