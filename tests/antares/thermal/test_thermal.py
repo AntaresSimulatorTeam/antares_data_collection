@@ -393,6 +393,9 @@ def test_thermal_compute_power_number_capacity() -> None:
         }
     )
 
+    # to test limit of "count" at max 100
+    df_test = pd.concat([df_test] * 120, ignore_index=True)
+
     # when
     res = thermal_compute_power_number_capacity(
         df_input=df_test,
@@ -402,7 +405,12 @@ def test_thermal_compute_power_number_capacity() -> None:
 
     # then
     df_expected = pd.DataFrame(
-        {"col_index_1": ["A", "B"], "col_index_2": ["C", "D"], "numeric_col": [30, 30]}
+        {
+            "col_index_1": ["A", "B"],
+            "col_index_2": ["C", "D"],
+            "power": [3600, 3600],
+            "number": [100, 100],
+        }
     )
 
     pd.testing.assert_frame_equal(df_expected, res)
@@ -424,3 +432,41 @@ def test_thermal_treatments_by_year_2030_eraa(
     )
 
     assert isinstance(df_treated, pd.DataFrame)
+
+    df_expected = pd.DataFrame(
+        {
+            "code_antares": ["BE", "FR"],
+            "CLUSTER_BP": ["CCGT CCS", "CCGT CCS"],
+            "power": [220, 220],
+            "number": [2, 2],
+        }
+    )
+    pd.testing.assert_frame_equal(df_expected, df_treated)
+
+
+def test_thermal_treatments_by_year_2040(
+    mock_thermal_data_pre_treated_df: pd.DataFrame,
+) -> None:
+    # given
+    year_tested = pd.Timestamp("2040-01-01")
+    filter_scenario_input_value = "ERAA"
+    df_test = mock_thermal_data_pre_treated_df
+
+    # when
+    df_treated = thermal_treatments_year(
+        df_thermal_pre_treated=df_test,
+        year_input=year_tested,
+        filter_scenario_input=filter_scenario_input_value,
+    )
+
+    # then
+    assert isinstance(df_treated, pd.DataFrame)
+    df_expected = pd.DataFrame(
+        {
+            "code_antares": ["BE", "FR"],
+            "CLUSTER_BP": ["CCGT CCS bio", "CCGT CCS bio"],
+            "power": [220, 220],
+            "number": [2, 2],
+        }
+    )
+    pd.testing.assert_frame_equal(df_expected, df_treated)

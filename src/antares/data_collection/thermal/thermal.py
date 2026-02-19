@@ -223,9 +223,17 @@ def thermal_treatments_year(
         df_input=df_filtered, filter_params=filter_scenario_input
     )
 
-    # TODO sum aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
+    # compute sum aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
+    df_computed = thermal_compute_power_number_capacity(
+        df_input=df_filtered,
+        name_cols_index=[
+            CountryColumnsNames.CODE_ANTARES.value,
+            ClusterColumnsNames.CLUSTER_BP.value,
+        ],
+        name_capacity_col=ThermalDataColumns.NET_MAX_GEN_CAP.value,
+    )
 
-    return df_thermal_pre_treated
+    return df_computed
 
 
 def thermal_compute_power_number_capacity(
@@ -236,11 +244,22 @@ def thermal_compute_power_number_capacity(
     assert isinstance(name_capacity_col, str)
 
     df_aggregate = df_input.groupby(name_cols_index, as_index=False).agg(
-        {name_capacity_col: np.sum}
+        power=(name_capacity_col, "sum"), number=(name_capacity_col, "count")
     )
+
+    df_aggregate["number"] = df_aggregate["number"].clip(upper=100)
 
     return df_aggregate
 
 
+def thermal_manage_output_format() -> None:
+    raise NotImplementedError("Not implemented yet")
+
+
 def thermal_export() -> None:
+    raise NotImplementedError("Not implemented yet")
+
+
+# user function
+def create_thermal_outputs() -> None:
     raise NotImplementedError("Not implemented yet")
