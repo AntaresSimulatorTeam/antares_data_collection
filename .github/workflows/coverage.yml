@@ -21,9 +21,6 @@ jobs:
       - name: Install tox + tox-uv
         run: uv tool install tox --with tox-uv
 
-      - name: Install project dependencies
-        run: uv sync --locked --all-extras --dev
-
       - name: Run tests and generate coverage
         run: tox -e coverage
 
