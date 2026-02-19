@@ -23,6 +23,9 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install tox + tox-uv
+        run: uv tool install tox --with tox-uv
+
       - name: Performs tests and linting
         run: |
           tox -e lint-ci
