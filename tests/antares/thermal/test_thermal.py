@@ -9,16 +9,18 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-from pathlib import Path
+import pytest
+
 import re
 
+from pathlib import Path
+
 import pandas as pd
-import pytest
 
 from antares.data_collection import LocalConfiguration
 from antares.data_collection.referential_data.struct_main_params import (
-    CountryColumnsNames,
     ClusterColumnsNames,
+    CountryColumnsNames,
 )
 from antares.data_collection.thermal.conf_thermal import ThermalDataColumns
 from antares.data_collection.thermal.thermal import (
@@ -210,9 +212,7 @@ def mock_thermal_data_pre_treated_df() -> pd.DataFrame:
 
     concat_df = pd.concat([df_cluster_2030, df_cluster_2040, df_cluster_2060])
 
-    df_pre_treated_full = pd.merge(
-        pd.Series(list_code_antares, name="code_antares"), concat_df, how="cross"
-    )
+    df_pre_treated_full = pd.merge(pd.Series(list_code_antares, name="code_antares"), concat_df, how="cross")
 
     return df_pre_treated_full
 
@@ -278,9 +278,7 @@ def test_thermal_import_empty_file(tmp_path: Path) -> None:
     df_empty.to_csv(path_file, index=False)
 
     # then
-    with pytest.raises(
-        ValueError, match=re.escape(f"Input file is empty: {path_file}")
-    ):
+    with pytest.raises(ValueError, match=re.escape(f"Input file is empty: {path_file}")):
         thermal_import(conf_input=local_conf)
 
 
@@ -360,10 +358,7 @@ def test_thermal_pre_treatments_default_works(
     assert not df_pre_treat.empty
 
     # test columns CLUSTER_BP is updated with line containing bio
-    assert (
-        df_pre_treat.loc[df_pre_treat.code_antares == "BE", "CLUSTER_BP"].iloc[0]
-        == "CCGT CCS CHP bio"
-    )
+    assert df_pre_treat.loc[df_pre_treat.code_antares == "BE", "CLUSTER_BP"].iloc[0] == "CCGT CCS CHP bio"
 
 
 ##

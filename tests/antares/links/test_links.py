@@ -9,20 +9,21 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import pytest
+
 import os
 import re
 
-import pytest
 from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.links import links, conf_links
+from openpyxl.reader.excel import load_workbook
+
+from antares.data_collection.links import conf_links, links
 from antares.data_collection.links.conf_links import ExportLinksColumnsNames
 from antares.data_collection.links.links import links_manage_export
 from antares.data_collection.tools.conf import LocalConfiguration
-
-from openpyxl.reader.excel import load_workbook
 
 # global
 ROOT_TEST = Path(__file__).resolve().parents[2]
@@ -371,9 +372,7 @@ def test_links_files_not_exist(tmp_path: Path) -> None:
 
 # test with mocked data to simulate no data with margin year
 # for 2060 scenario ref => "TYNDP" => no DATA
-def test_links_no_data_year(
-    mock_links_data_csv: Path, mock_links_main_params_xlsx: Path
-) -> None:
+def test_links_no_data_year(mock_links_data_csv: Path, mock_links_main_params_xlsx: Path) -> None:
     # given
     year_param = [2030, 2060]
     local_conf = LocalConfiguration(
@@ -393,9 +392,7 @@ def test_links_no_data_year(
 
 
 # with all DATA parquet
-def test_links_data_management_works(
-    mock_links_main_params_xlsx: Path, parquet_to_csv: Path
-) -> None:
+def test_links_data_management_works(mock_links_main_params_xlsx: Path, parquet_to_csv: Path) -> None:
     # given
     year_param = [2030, 2060]
     local_conf = LocalConfiguration(
@@ -521,19 +518,11 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
     assert df_to_test.columns.to_list() == expected_cols
 
     # read every sheet of data
-    df_to_test = pd.read_excel(
-        path_export_links_file, sheet_name="2029-2030", keep_default_na=False
-    )
-    pd.testing.assert_frame_equal(
-        df_to_test, df_test, check_dtype=False, check_like=True
-    )
+    df_to_test = pd.read_excel(path_export_links_file, sheet_name="2029-2030", keep_default_na=False)
+    pd.testing.assert_frame_equal(df_to_test, df_test, check_dtype=False, check_like=True)
 
-    df_to_test = pd.read_excel(
-        path_export_links_file, sheet_name="2039-2040", keep_default_na=False
-    )
-    pd.testing.assert_frame_equal(
-        df_to_test, df_test, check_dtype=False, check_like=True
-    )
+    df_to_test = pd.read_excel(path_export_links_file, sheet_name="2039-2040", keep_default_na=False)
+    pd.testing.assert_frame_equal(df_to_test, df_test, check_dtype=False, check_like=True)
 
 
 ##
@@ -541,9 +530,7 @@ def test_links_manage_export_works(tmp_path: Path) -> None:
 ##
 
 
-def test_links_part_works(
-    mock_links_main_params_xlsx: Path, parquet_to_csv: Path, tmp_path: Path
-) -> None:
+def test_links_part_works(mock_links_main_params_xlsx: Path, parquet_to_csv: Path, tmp_path: Path) -> None:
     # given
     path_export_links = tmp_path / "link"
 

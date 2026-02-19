@@ -10,16 +10,18 @@
 #
 # This file is part of the Antares project.
 
+import pytest
+
 import os
 import re
-import pytest
+
 from pathlib import Path
 
 import pandas as pd
+
 from openpyxl.reader.excel import load_workbook
 
 from antares.data_collection.tools.tools import create_xlsx_workbook, edit_xlsx_workbook
-
 
 ##
 # Creation
@@ -34,9 +36,7 @@ def test_create_workbook_dir_not_exist(tmp_path: Path) -> None:
         FileNotFoundError,
         match=re.escape(f"Input directory does not exist: {dir_export_path}"),
     ):
-        create_xlsx_workbook(
-            path_dir=dir_export_path, workbook_name="dir_not_exist", sheet_name="sheet"
-        )
+        create_xlsx_workbook(path_dir=dir_export_path, workbook_name="dir_not_exist", sheet_name="sheet")
 
 
 def test_create_empty_workbook(tmp_path: Path) -> None:
@@ -81,9 +81,7 @@ def test_create_workbook_with_data(tmp_path: Path) -> None:
 
     assert list(df_to_test.columns) == list(df_pandaset.columns)
     assert df_to_test.shape == df_pandaset.shape
-    pd.testing.assert_frame_equal(
-        df_to_test, df_pandaset, check_dtype=False, check_like=True
-    )
+    pd.testing.assert_frame_equal(df_to_test, df_pandaset, check_dtype=False, check_like=True)
 
 
 def test_create_workbook_overwrite_false(tmp_path: Path) -> None:
@@ -164,9 +162,7 @@ def test_create_workbook_overwrite_true(tmp_path: Path) -> None:
 
     assert list(df_to_test.columns) == list(df_pandaset_overwrite.columns)
     assert df_to_test.shape == df_pandaset_overwrite.shape
-    pd.testing.assert_frame_equal(
-        df_to_test, df_pandaset_overwrite, check_dtype=False, check_like=True
-    )
+    pd.testing.assert_frame_equal(df_to_test, df_pandaset_overwrite, check_dtype=False, check_like=True)
 
 
 def test_create_workbook_df_index_header_true(tmp_path: Path) -> None:
@@ -192,9 +188,7 @@ def test_create_workbook_df_index_header_true(tmp_path: Path) -> None:
     )
 
     # then
-    df_to_test = pd.read_excel(
-        dir_export_path / ("test_workbook_header_index" + ".xlsx")
-    )
+    df_to_test = pd.read_excel(dir_export_path / ("test_workbook_header_index" + ".xlsx"))
     expected_cols = ["Unnamed: 0", *df_pandaset.columns.to_list()]
 
     assert df_to_test.columns.to_list() == expected_cols
@@ -216,9 +210,7 @@ def test_edit_workbook_file_not_exist(tmp_path: Path) -> None:
         FileNotFoundError,
         match=re.escape(f"This Excel file does not exist: {dir_export_path}"),
     ):
-        edit_xlsx_workbook(
-            path_file=dir_export_path, sheet_name="sheet", data_df=pd.DataFrame()
-        )
+        edit_xlsx_workbook(path_file=dir_export_path, sheet_name="sheet", data_df=pd.DataFrame())
 
 
 def test_edit_workbook_overwrite_false(mock_links_main_params_xlsx: Path) -> None:
@@ -267,9 +259,7 @@ def test_edit_workbook_overwrite_sheet_exist(mock_links_main_params_xlsx: Path) 
 
     assert list(new_data.columns) == list(df_to_test.columns)
     assert new_data.shape == df_to_test.shape
-    pd.testing.assert_frame_equal(
-        df_to_test, new_data, check_dtype=False, check_like=True
-    )
+    pd.testing.assert_frame_equal(df_to_test, new_data, check_dtype=False, check_like=True)
 
 
 def test_edit_workbook_add_new_sheet(mock_links_main_params_xlsx: Path) -> None:
@@ -278,18 +268,14 @@ def test_edit_workbook_add_new_sheet(mock_links_main_params_xlsx: Path) -> None:
     new_data = pd.DataFrame({"YEAR": [2030, 2040, 2060]})
 
     # when
-    edit_xlsx_workbook(
-        path_file=mock_links_main_params_xlsx, sheet_name=name_sheet, data_df=new_data
-    )
+    edit_xlsx_workbook(path_file=mock_links_main_params_xlsx, sheet_name=name_sheet, data_df=new_data)
 
     # then
     df_to_test = pd.read_excel(mock_links_main_params_xlsx, sheet_name=name_sheet)
 
     assert list(new_data.columns) == list(df_to_test.columns)
     assert df_to_test.shape == df_to_test.shape
-    pd.testing.assert_frame_equal(
-        df_to_test, new_data, check_dtype=False, check_like=True
-    )
+    pd.testing.assert_frame_equal(df_to_test, new_data, check_dtype=False, check_like=True)
 
 
 def test_edit_workbook_df_index_header_true(mock_links_main_params_xlsx: Path) -> None:
