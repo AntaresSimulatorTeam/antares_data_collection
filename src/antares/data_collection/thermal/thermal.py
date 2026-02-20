@@ -23,6 +23,10 @@ from antares.data_collection.thermal.conf_thermal import (
     ThermalDatetimeColumns,
     ThermalLayout,
 )
+from antares.data_collection.tools.tools import (
+    scenario_filter,
+    thermal_filter_active_years_commissioning,
+)
 
 # TODO steps of thermal process
 
@@ -64,9 +68,6 @@ def thermal_pre_treatments(
     df_ref_cluster: pd.DataFrame,
     op_stat: list[str] = ThermalLayout().default_values_column_op_stat,
 ) -> pd.DataFrame:
-    assert isinstance(df_thermal, pd.DataFrame)
-    assert isinstance(df_ref_pays, pd.DataFrame)
-    assert isinstance(df_ref_cluster, pd.DataFrame)
 
     # filter NA and keep only thermal cluster
     df_ref_cluster_filtered = df_ref_cluster[df_ref_cluster[ClusterColumnsNames.TYPE.value].eq("Thermal")].dropna(
@@ -176,19 +177,60 @@ def thermal_pre_treatments(
 
 # TODO next steps
 def thermal_treatments_year(
-    df_thermal_pre_treated: pd.DataFrame, year_input: int, filter_scenario_input: str
+    df_thermal_pre_treated: pd.DataFrame,
+    year_input: pd.Timestamp,
+    filter_scenario_input: str,
 ) -> pd.DataFrame:
     # filter by year/month (Cutting years into months with overlapping format)
     # filter scenario by year
     # aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
     # add new col date to tag year (int)
 
-    assert isinstance(df_thermal_pre_treated, pd.DataFrame)
-    assert isinstance(year_input, int)
-    assert isinstance(filter_scenario_input, str)
+    # filter on date
+    df_filtered = thermal_filter_active_years_commissioning(
+        df_input=df_thermal_pre_treated,
+        name_col_start_date=ThermalDatetimeColumns.COMMISSIONING_DATE.value,
+        name_col_end_date=ThermalDatetimeColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        year_date=year_input,
+    )
 
-    return df_thermal_pre_treated
+    # filter on scenario
+    df_filtered = scenario_filter(df_input=df_filtered, filter_params=filter_scenario_input)
+
+    # compute sum aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
+    df_computed = thermal_compute_power_number_capacity(
+        df_input=df_filtered,
+        name_cols_index=[
+            CountryColumnsNames.CODE_ANTARES.value,
+            ClusterColumnsNames.CLUSTER_BP.value,
+        ],
+        name_capacity_col=ThermalDataColumns.NET_MAX_GEN_CAP.value,
+    )
+
+    return df_computed
+
+
+def thermal_compute_power_number_capacity(
+    df_input: pd.DataFrame, name_cols_index: list[str], name_capacity_col: str
+) -> pd.DataFrame:
+
+    df_aggregate = df_input.groupby(name_cols_index, as_index=False).agg(
+        power=(name_capacity_col, "sum"), number=(name_capacity_col, "count")
+    )
+
+    df_aggregate["number"] = df_aggregate["number"].clip(upper=100)
+
+    return df_aggregate
+
+
+def thermal_manage_output_format() -> None:
+    raise NotImplementedError("Not implemented yet")
 
 
 def thermal_export() -> None:
+    raise NotImplementedError("Not implemented yet")
+
+
+# user function
+def create_thermal_outputs() -> None:
     raise NotImplementedError("Not implemented yet")

@@ -24,6 +24,7 @@ from antares.data_collection.referential_data.struct_main_params import (
 )
 from antares.data_collection.thermal.conf_thermal import ThermalDataColumns
 from antares.data_collection.thermal.thermal import (
+    thermal_compute_power_number_capacity,
     thermal_import,
     thermal_pre_treatments,
     thermal_treatments_year,
@@ -214,6 +215,14 @@ def mock_thermal_data_pre_treated_df() -> pd.DataFrame:
 
     df_pre_treated_full = pd.merge(pd.Series(list_code_antares, name="code_antares"), concat_df, how="cross")
 
+    # convert to datetime
+    cols_to_convert = [
+        "COMMISSIONING_DATE",
+        "DECOMMISSIONING_DATE_EXPECTED",
+    ]
+
+    df_pre_treated_full[cols_to_convert] = df_pre_treated_full[cols_to_convert].apply(pd.to_datetime)
+
     return df_pre_treated_full
 
 
@@ -366,11 +375,45 @@ def test_thermal_pre_treatments_default_works(
 ##
 
 
-def test_thermal_treatments_by_year_works(
+def test_thermal_compute_power_number_capacity() -> None:
+    # given
+    df_test = pd.DataFrame(
+        {
+            "col_index_1": ["A", "A", "B"],
+            "col_index_2": ["C", "C", "D"],
+            "numeric_col": [10, 20, 30],
+            "col_not_used": ["toto", "titi", "tata"],
+        }
+    )
+
+    # to test limit of "count" at max 100
+    df_test = pd.concat([df_test] * 120, ignore_index=True)
+
+    # when
+    res = thermal_compute_power_number_capacity(
+        df_input=df_test,
+        name_cols_index=["col_index_1", "col_index_2"],
+        name_capacity_col="numeric_col",
+    )
+
+    # then
+    df_expected = pd.DataFrame(
+        {
+            "col_index_1": ["A", "B"],
+            "col_index_2": ["C", "D"],
+            "power": [3600, 3600],
+            "number": [100, 100],
+        }
+    )
+
+    pd.testing.assert_frame_equal(df_expected, res)
+
+
+def test_thermal_treatments_by_year_2030_eraa(
     mock_thermal_data_pre_treated_df: pd.DataFrame,
 ) -> None:
     # given
-    year_tested = 2030
+    year_tested = pd.Timestamp("2030-01-01")
     filter_scenario_input_value = "ERAA"
     df_test = mock_thermal_data_pre_treated_df
 
@@ -382,3 +425,41 @@ def test_thermal_treatments_by_year_works(
     )
 
     assert isinstance(df_treated, pd.DataFrame)
+
+    df_expected = pd.DataFrame(
+        {
+            "code_antares": ["BE", "FR"],
+            "CLUSTER_BP": ["CCGT CCS", "CCGT CCS"],
+            "power": [220, 220],
+            "number": [2, 2],
+        }
+    )
+    pd.testing.assert_frame_equal(df_expected, df_treated)
+
+
+def test_thermal_treatments_by_year_2040(
+    mock_thermal_data_pre_treated_df: pd.DataFrame,
+) -> None:
+    # given
+    year_tested = pd.Timestamp("2040-01-01")
+    filter_scenario_input_value = "ERAA"
+    df_test = mock_thermal_data_pre_treated_df
+
+    # when
+    df_treated = thermal_treatments_year(
+        df_thermal_pre_treated=df_test,
+        year_input=year_tested,
+        filter_scenario_input=filter_scenario_input_value,
+    )
+
+    # then
+    assert isinstance(df_treated, pd.DataFrame)
+    df_expected = pd.DataFrame(
+        {
+            "code_antares": ["BE", "FR"],
+            "CLUSTER_BP": ["CCGT CCS bio", "CCGT CCS bio"],
+            "power": [220, 220],
+            "number": [2, 2],
+        }
+    )
+    pd.testing.assert_frame_equal(df_expected, df_treated)
