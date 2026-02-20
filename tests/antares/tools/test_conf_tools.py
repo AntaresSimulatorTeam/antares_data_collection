@@ -12,8 +12,10 @@
 
 
 import pytest
-from pathlib import Path
+
 import re
+
+from pathlib import Path
 
 from antares.data_collection.tools.conf import LocalConfiguration
 

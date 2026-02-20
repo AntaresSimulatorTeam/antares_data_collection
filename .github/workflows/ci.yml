@@ -1,0 +1,32 @@
+name: CI
+on:
+  push:
+    branches:
+      - "**"
+
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 9
+      matrix:
+        os: [ windows-latest, ubuntu-22.04 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python and uv
+        # Sonar need "Use full commit SHA hash"
+        uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244
+        with:
+          python-version: 3.11
+
+      - name: Install tox + tox-uv
+        run: uv tool install tox --with tox-uv
+
+      - name: Performs tests and linting
+        run: |
+          tox -e lint-ci
+          tox -p

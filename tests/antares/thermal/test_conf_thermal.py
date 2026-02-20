@@ -12,7 +12,6 @@
 
 from pathlib import Path
 
-
 from antares.data_collection.thermal.conf_thermal import ThermalLayout
 
 
