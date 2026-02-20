@@ -14,20 +14,19 @@ import pandas as pd
 
 from antares.data_collection import LocalConfiguration
 from antares.data_collection.referential_data.struct_main_params import (
-    CountryColumnsNames,
     ClusterColumnsNames,
+    CountryColumnsNames,
 )
 from antares.data_collection.thermal.conf_thermal import (
-    ThermalLayout,
-    ThermalDataColumns,
     ThermalComputedColumns,
+    ThermalDataColumns,
     ThermalDatetimeColumns,
+    ThermalLayout,
 )
 from antares.data_collection.tools.tools import (
     thermal_filter_active_years_commissioning,
     scenario_filter,
 )
-
 
 # TODO steps of thermal process
 
@@ -74,9 +73,9 @@ def thermal_pre_treatments(
     assert isinstance(df_ref_cluster, pd.DataFrame)
 
     # filter NA and keep only thermal cluster
-    df_ref_cluster_filtered = df_ref_cluster[
-        df_ref_cluster[ClusterColumnsNames.TYPE.value].eq("Thermal")
-    ].dropna(subset=[ClusterColumnsNames.CLUSTER_PEMMDB.value])
+    df_ref_cluster_filtered = df_ref_cluster[df_ref_cluster[ClusterColumnsNames.TYPE.value].eq("Thermal")].dropna(
+        subset=[ClusterColumnsNames.CLUSTER_PEMMDB.value]
+    )
 
     # merge with referential country
     df_thermal_updated = (
@@ -115,30 +114,24 @@ def thermal_pre_treatments(
     )
 
     # filter on op_stat
-    df_thermal_updated = df_thermal_updated[
-        df_thermal_updated[ThermalDataColumns.OP_STAT.value].isin(op_stat)
-    ]
+    df_thermal_updated = df_thermal_updated[df_thermal_updated[ThermalDataColumns.OP_STAT.value].isin(op_stat)]
 
     # add new columns FOSSIL_MAX_GENERATION_MW / BIO_MAX_GENERATION_MW
     df_thermal_updated = df_thermal_updated.assign(
         **{
             ThermalComputedColumns.BIO_MAX_GENERATION_MW.value: lambda d: np.where(
                 d[ThermalDataColumns.SCND_FUEL.value].eq("Bio"),
-                d[ThermalDataColumns.SCND_FUEL_RT.value]
-                * d[ThermalDataColumns.NET_MAX_GEN_CAP.value],
+                d[ThermalDataColumns.SCND_FUEL_RT.value] * d[ThermalDataColumns.NET_MAX_GEN_CAP.value],
                 0,
             ),
             ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value: lambda d: (
-                d[ThermalDataColumns.NET_MAX_GEN_CAP.value]
-                - d[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value]
+                d[ThermalDataColumns.NET_MAX_GEN_CAP.value] - d[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value]
             ),
         }
     )
 
     # split to keep df BIO and df FOSSIL to keep only capacity on "NET_MAX_GEN_CAP"
-    mask_bio = (
-        df_thermal_updated[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value] > 0
-    )
+    mask_bio = df_thermal_updated[ThermalComputedColumns.BIO_MAX_GENERATION_MW.value] > 0
 
     # tag bio to add a new cluster
     df_thermal_bio = (
@@ -149,20 +142,12 @@ def thermal_pre_treatments(
                 ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value,
             ]
         )
-        .rename(
-            columns={
-                ThermalComputedColumns.BIO_MAX_GENERATION_MW.value: ThermalDataColumns.NET_MAX_GEN_CAP.value
-            }
-        )
+        .rename(columns={ThermalComputedColumns.BIO_MAX_GENERATION_MW.value: ThermalDataColumns.NET_MAX_GEN_CAP.value})
     )
-    df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] = (
-        df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] + " bio"
-    )
+    df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] = df_thermal_bio[ClusterColumnsNames.CLUSTER_BP.value] + " bio"
 
     # manage FOSSIL
-    mask_fossil = (
-        df_thermal_updated[ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value] > 0
-    )
+    mask_fossil = df_thermal_updated[ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value] > 0
     df_thermal_fossil = (
         df_thermal_updated.loc[mask_fossil]
         .drop(
@@ -172,9 +157,7 @@ def thermal_pre_treatments(
             ]
         )
         .rename(
-            columns={
-                ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value: ThermalDataColumns.NET_MAX_GEN_CAP.value
-            }
+            columns={ThermalComputedColumns.FOSSIL_MAX_GENERATION_MW.value: ThermalDataColumns.NET_MAX_GEN_CAP.value}
         )
     )
 

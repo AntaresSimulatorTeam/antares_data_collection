@@ -11,6 +11,7 @@
 # This file is part of the Antares project.
 
 import pandas as pd
+
 from antares.data_collection.tools.tools import (
     thermal_filter_active_years_commissioning,
     thermal_year_to_overlapping_datetime,

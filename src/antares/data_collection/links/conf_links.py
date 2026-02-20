@@ -10,7 +10,7 @@
 #
 # This file is part of the Antares project.
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 
@@ -22,11 +22,6 @@ class LinksFileConfig:
 
     def all_names(self) -> list[str]:
         return [self.NTC_INDEX, self.NTC_TS, self.TRANSFER_LINKS]
-
-
-# structure of data files
-class StrEnum(str, Enum):
-    pass
 
 
 # data "Transfer Links.csv"

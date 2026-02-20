@@ -1,17 +1,15 @@
-name: Python CI with Coverage and Sonar
-
+name: Coverage
 on:
   push:
-    branches: [main, master]
-  pull_request:
+    branches:
+      - "**"
 
 jobs:
   coverage:
-    name: Run tests and generate coverage
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v5
 
       - name: Set up Python and uv
@@ -23,9 +21,6 @@ jobs:
       - name: Install tox + tox-uv
         run: uv tool install tox --with tox-uv
 
-      - name: Install project dependencies
-        run: uv sync --locked --all-extras --dev
-
       - name: Run tests and generate coverage
         run: tox -e coverage
 
@@ -35,19 +30,7 @@ jobs:
           name: python-coverage-report
           path: coverage.xml
 
-  sonarcloud:
-    name: SonarCloud Scan
-    runs-on: ubuntu-22.04
-    needs: [coverage]
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: python-coverage-report
-
-      - name: Run SonarCloud analysis
+      - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
