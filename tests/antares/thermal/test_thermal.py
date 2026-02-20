@@ -24,10 +24,10 @@ from antares.data_collection.referential_data.struct_main_params import (
 )
 from antares.data_collection.thermal.conf_thermal import ThermalDataColumns
 from antares.data_collection.thermal.thermal import (
+    thermal_compute_power_number_capacity,
     thermal_import,
     thermal_pre_treatments,
     thermal_treatments_year,
-    thermal_compute_power_number_capacity,
 )
 
 
@@ -221,9 +221,7 @@ def mock_thermal_data_pre_treated_df() -> pd.DataFrame:
         "DECOMMISSIONING_DATE_EXPECTED",
     ]
 
-    df_pre_treated_full[cols_to_convert] = df_pre_treated_full[cols_to_convert].apply(
-        pd.to_datetime
-    )
+    df_pre_treated_full[cols_to_convert] = df_pre_treated_full[cols_to_convert].apply(pd.to_datetime)
 
     return df_pre_treated_full
 

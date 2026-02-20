@@ -10,13 +10,13 @@
 #
 # This file is part of the Antares project.
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import pandas as pd
+
+from openpyxl.reader.excel import load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.workbook.workbook import Workbook
-from openpyxl.reader.excel import load_workbook
-
 
 ##
 # Data management
@@ -24,18 +24,10 @@ from openpyxl.reader.excel import load_workbook
 
 
 # TODO add tests
-def scenario_filter(
-    df_input: pd.DataFrame, filter_params: Optional[List[str]] = None
-) -> pd.DataFrame:
+def scenario_filter(df_input: pd.DataFrame, filter_params: str) -> pd.DataFrame:
     valid_choices: List[str] = ["ERAA", "TYNDP"]
 
-    # default: "ERAA"
-    if filter_params is None or len(filter_params) != 1:
-        filter_params = ["ERAA"]
-
-    fp: str = filter_params[0]
-
-    if fp not in valid_choices:
+    if filter_params not in valid_choices:
         raise ValueError(f"filter_params must be in {valid_choices}")
 
     filter_map: dict[str, str] = {
@@ -43,7 +35,7 @@ def scenario_filter(
         "TYNDP": r"ERAA&TYNDP|TYNDP",
     }
 
-    pattern: str = filter_map[fp]
+    pattern: str = filter_map[filter_params]
 
     return df_input[df_input["STUDY_SCENARIO"].str.contains(pattern, regex=True)]
 
@@ -55,10 +47,7 @@ def thermal_filter_active_years_commissioning(
     year_date: pd.Timestamp,
 ) -> pd.DataFrame:
     # filter by year
-    df_input = df_input.loc[
-        (df_input[name_col_start_date] <= year_date)
-        & (df_input[name_col_end_date] >= year_date)
-    ]
+    df_input = df_input.loc[(df_input[name_col_start_date] <= year_date) & (df_input[name_col_end_date] >= year_date)]
     return df_input
 
 

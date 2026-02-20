@@ -24,8 +24,8 @@ from antares.data_collection.thermal.conf_thermal import (
     ThermalLayout,
 )
 from antares.data_collection.tools.tools import (
-    thermal_filter_active_years_commissioning,
     scenario_filter,
+    thermal_filter_active_years_commissioning,
 )
 
 # TODO steps of thermal process
@@ -202,9 +202,7 @@ def thermal_treatments_year(
     )
 
     # filter on scenario
-    df_filtered = scenario_filter(
-        df_input=df_filtered, filter_params=filter_scenario_input
-    )
+    df_filtered = scenario_filter(df_input=df_filtered, filter_params=filter_scenario_input)
 
     # compute sum aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
     df_computed = thermal_compute_power_number_capacity(
