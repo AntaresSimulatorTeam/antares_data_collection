@@ -68,9 +68,6 @@ def thermal_pre_treatments(
     df_ref_cluster: pd.DataFrame,
     op_stat: list[str] = ThermalLayout().default_values_column_op_stat,
 ) -> pd.DataFrame:
-    assert isinstance(df_thermal, pd.DataFrame)
-    assert isinstance(df_ref_pays, pd.DataFrame)
-    assert isinstance(df_ref_cluster, pd.DataFrame)
 
     # filter NA and keep only thermal cluster
     df_ref_cluster_filtered = df_ref_cluster[df_ref_cluster[ClusterColumnsNames.TYPE.value].eq("Thermal")].dropna(
@@ -189,10 +186,6 @@ def thermal_treatments_year(
     # aggregate by code_antares/cluster_bp (power + number / unit count max to 100)
     # add new col date to tag year (int)
 
-    assert isinstance(df_thermal_pre_treated, pd.DataFrame)
-    assert isinstance(year_input, pd.Timestamp)
-    assert isinstance(filter_scenario_input, str)
-
     # filter on date
     df_filtered = thermal_filter_active_years_commissioning(
         df_input=df_thermal_pre_treated,
@@ -220,9 +213,6 @@ def thermal_treatments_year(
 def thermal_compute_power_number_capacity(
     df_input: pd.DataFrame, name_cols_index: list[str], name_capacity_col: str
 ) -> pd.DataFrame:
-    assert isinstance(df_input, pd.DataFrame)
-    assert isinstance(name_cols_index, list)
-    assert isinstance(name_capacity_col, str)
 
     df_aggregate = df_input.groupby(name_cols_index, as_index=False).agg(
         power=(name_capacity_col, "sum"), number=(name_capacity_col, "count")
