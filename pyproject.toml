@@ -1,6 +1,6 @@
 [project]
 name = "antares-data-collection"
-version = "0.1.1"
+version = "0.1.0"
 description = "Import and manage data from ENTSOE/pemmdb then format and export for Pegase"
 readme = "README.md"
 authors = [
@@ -9,12 +9,9 @@ authors = [
 ]
 requires-python = ">=3.11"
 
-# click is used as runtime with the package to add header with license information
 dependencies = [
-    "click>=8.3.1",
     "openpyxl>=3.1.5",
-    "pandas",
-    "types-openpyxl>=3.1.5.20250919",
+    "pandas"
 ]
 
 classifiers = [
@@ -27,9 +24,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Typing :: Typed"
 ]
-
-[project.scripts]
-license-checker = "antares.data_collection.cli.license_checker_and_adder:cli"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -50,18 +44,9 @@ dev = [
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.5",
+    "click~=8.1.7",
+    "types-openpyxl>=3.1.5.20250919",
 ]
 
 [project.optional-dependencies]
 parquet = ["pyarrow"]
-
-[tool.mypy]
-mypy_path = "src"
-packages = ["antares", "tests"]
-strict = true
-enable_error_code = ["explicit-override"]
-
-# Ignore pytest fixture decorator type errors ONLY in test files
-[[tool.mypy.overrides]]
-module = "tests.*"
-disable_error_code = ["untyped-decorator"]

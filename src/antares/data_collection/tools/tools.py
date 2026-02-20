@@ -10,13 +10,13 @@
 #
 # This file is part of the Antares project.
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import pandas as pd
+
+from openpyxl.reader.excel import load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.workbook.workbook import Workbook
-from openpyxl.reader.excel import load_workbook
-
 
 ##
 # Data management
@@ -47,10 +47,7 @@ def thermal_filter_active_years_commissioning(
     year_date: pd.Timestamp,
 ) -> pd.DataFrame:
     # filter by year
-    df_input = df_input.loc[
-        (df_input[name_col_start_date] <= year_date)
-        & (df_input[name_col_end_date] >= year_date)
-    ]
+    df_input = df_input.loc[(df_input[name_col_start_date] <= year_date) & (df_input[name_col_end_date] >= year_date)]
     return df_input
 
 

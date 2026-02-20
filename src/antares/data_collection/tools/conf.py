@@ -48,19 +48,13 @@ class LocalConfiguration:
 
     def _validate(self) -> None:
         if not self.input_path.exists():
-            raise FileNotFoundError(
-                f"Input directory does not exist: {self.input_path}"
-            )
+            raise FileNotFoundError(f"Input directory does not exist: {self.input_path}")
 
         if not self.export_path.exists():
-            raise FileNotFoundError(
-                f"Export directory does not exist: {self.export_path}"
-            )
+            raise FileNotFoundError(f"Export directory does not exist: {self.export_path}")
 
         if not self.scenario_name:
             raise ValueError("Scenario name cannot be empty")
 
         if not self.data_references_path.exists():
-            raise FileNotFoundError(
-                f"Data references files does not exist: {self.data_references_path}"
-            )
+            raise FileNotFoundError(f"Data references files does not exist: {self.data_references_path}")
