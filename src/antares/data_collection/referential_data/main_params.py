@@ -15,6 +15,7 @@ from enum import Enum
 from pathlib import Path
 
 import pandas as pd
+
 from openpyxl.reader.excel import load_workbook
 
 
@@ -63,37 +64,48 @@ class PeakParamsColumnsNames(Enum):
     PERIOD_MONTH = "period_month"
 
 
-
 class MainParams:
     """
-    Check Excel files "MAIN_PARAMS.xlsx"
-    """
+    Validates the structure and schema of a MAIN_PARAMS.xlsx workbook.
 
+    This class enforces a strict data contract on an Excel file by checking:
+    - The file exists at the provided path.
+    - All required workbook sheets are present.
+    - Each sheet contains exactly the expected columns, ignoring order.
+      No extra columns are allowed.
+
+    Attributes:
+        path_file (Path): Path to the Excel file to validate.
+        sheets_name (list[str]): List of expected sheet names.
+            Defaults to `target_sheet_names`.
+
+    Raises:
+        FileNotFoundError: If the provided file path does not exist.
+        ValueError: If:
+            - A required sheet is missing.
+            - A sheet's columns do not match the expected schema
+              (including missing or unexpected columns).
+    """
 
     target_sheet_names = [
         ReferentialSheetNames.PAYS.value,
         ReferentialSheetNames.STUDY_SCENARIO.value,
         ReferentialSheetNames.CLUSTER.value,
-        ReferentialSheetNames.PEAK_PARAMS.value
+        ReferentialSheetNames.PEAK_PARAMS.value,
     ]
 
     columns_names_dict = {
         ReferentialSheetNames.PAYS.value: [c.value for c in CountryColumnsNames],
-        ReferentialSheetNames.STUDY_SCENARIO.value:  [c.value for c in StudyScenarioColumnsNames],
+        ReferentialSheetNames.STUDY_SCENARIO.value: [c.value for c in StudyScenarioColumnsNames],
         ReferentialSheetNames.CLUSTER.value: [c.value for c in ClusterColumnsNames],
         ReferentialSheetNames.PEAK_PARAMS.value: [c.value for c in PeakParamsColumnsNames],
     }
 
-    def __init__(
-            self,
-            path_file: Path,
-            sheets_name: list[str] = target_sheet_names
-    ):
+    def __init__(self, path_file: Path, sheets_name: list[str] = target_sheet_names):
         self.path_file = path_file
         self.sheets_name = sheets_name
 
         self._parsefile()
-
 
     def _parsefile(self) -> None:
         if not self.path_file.exists():
@@ -106,10 +118,7 @@ class MainParams:
                 raise ValueError(f"Sheet '{sheet}' not found in MAIN_PARAMS.xlsx")
 
         # read sheets and put in a dict
-        dict_of_df = {
-            sheet: pd.read_excel(self.path_file, sheet_name=sheet)
-            for sheet in self.sheets_name
-        }
+        dict_of_df = {sheet: pd.read_excel(self.path_file, sheet_name=sheet) for sheet in self.sheets_name}
 
         # check every sheet/df must be with right columns
         for sheet, df in dict_of_df.items():
