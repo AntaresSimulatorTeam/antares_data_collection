@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection import LocalConfiguration
-from antares.data_collection.referential_data.struct_main_params import (
+from antares.data_collection.referential_data.main_params import (
     ClusterColumnsNames,
     CountryColumnsNames,
 )
