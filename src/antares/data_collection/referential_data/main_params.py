@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+from dataclasses import dataclass
 
 # structure Referential (MAIN_PARAMS.xlsx)
 from enum import Enum
@@ -64,28 +65,46 @@ class PeakParamsColumnsNames(Enum):
     PERIOD_MONTH = "period_month"
 
 
+@dataclass
 class MainParams:
+    pays: pd.DataFrame
+    study_scenario: pd.DataFrame
+    cluster: pd.DataFrame
+    peak_params: pd.DataFrame
+
+
+def parse_main_params(file_path: Path) -> MainParams:
     """
-    Validates the structure and schema of a MAIN_PARAMS.xlsx workbook.
+    Parse and validate a MAIN_PARAMS.xlsx workbook.
 
-    This class enforces a strict data contract on an Excel file by checking:
-    - The file exists at the provided path.
-    - All required workbook sheets are present.
-    - Each sheet contains exactly the expected columns, ignoring order.
-      No extra columns are allowed.
+    This function validates the structure of the provided Excel file:
+    - Ensures the file exists.
+    - Checks that all required sheets are present.
+    - Verifies that each sheet contains exactly the expected columns
+      (column order is ignored, but no missing or extra columns are allowed).
 
-    Attributes:
-        path_file (Path): Path to the Excel file to validate.
-        sheets_name (list[str]): List of expected sheet names.
-            Defaults to `target_sheet_names`.
+    If validation succeeds, the function returns a populated `MainParams`
+    dataclass containing the corresponding pandas DataFrames.
+
+    Args:
+        file_path (Path): Path to the MAIN_PARAMS.xlsx file to validate.
+
+    Returns:
+        MainParams: Dataclass containing validated DataFrames for:
+            - pays
+            - study_scenario
+            - cluster
+            - peak_params
 
     Raises:
-        FileNotFoundError: If the provided file path does not exist.
+        FileNotFoundError: If the file does not exist.
         ValueError: If:
-            - A required sheet is missing.
-            - A sheet's columns do not match the expected schema
-              (including missing or unexpected columns).
+            - One or more required sheets are missing.
+            - A sheet contains missing or unexpected columns.
     """
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"Input file does not exist: {file_path}")
 
     target_sheet_names = [
         ReferentialSheetNames.PAYS.value,
@@ -101,26 +120,30 @@ class MainParams:
         ReferentialSheetNames.PEAK_PARAMS.value: [c.value for c in PeakParamsColumnsNames],
     }
 
-    def __init__(self, path_file: Path, sheets_name: list[str] = target_sheet_names):
-        self.path_file = path_file
-        self.sheets_name = sheets_name
+    # Check sheets
+    wb = load_workbook(filename=file_path)
+    workbook_sheets = set(wb.sheetnames)
 
-        self._parsefile()
+    # missing_sheets = set(target_sheet_names) - workbook_sheets
+    missing_sheets = [sheet for sheet in target_sheet_names if sheet not in workbook_sheets]
+    if missing_sheets:
+        raise ValueError(f"Missing sheets: {missing_sheets}")
 
-    def _parsefile(self) -> None:
-        if not self.path_file.exists():
-            raise FileNotFoundError(f"Input file does not exist: {self.path_file}")
+    # Read sheets
+    dict_of_df = {sheet: pd.read_excel(file_path, sheet_name=sheet) for sheet in target_sheet_names}
 
-        # check sheets
-        wb = load_workbook(filename=self.path_file)
-        for sheet in wb.sheetnames:
-            if sheet not in self.sheets_name:
-                raise ValueError(f"Sheet '{sheet}' not found in MAIN_PARAMS.xlsx")
+    # Validate columns
+    for sheet, df in dict_of_df.items():
+        expected_cols = set(columns_names_dict[sheet])
+        actual_cols = set(df.columns)
 
-        # read sheets and put in a dict
-        dict_of_df = {sheet: pd.read_excel(self.path_file, sheet_name=sheet) for sheet in self.sheets_name}
+        if actual_cols != expected_cols:
+            raise ValueError(f"Columns mismatch in sheet '{sheet}'. Expected: {expected_cols}, Got: {actual_cols}")
 
-        # check every sheet/df must be with right columns
-        for sheet, df in dict_of_df.items():
-            if not set(df.columns.to_list()) == set(self.columns_names_dict[sheet]):
-                raise ValueError(f"Columns names mismatch for sheet '{sheet}'")
+    # Return validated dataclass
+    return MainParams(
+        pays=dict_of_df[ReferentialSheetNames.PAYS.value],
+        study_scenario=dict_of_df[ReferentialSheetNames.STUDY_SCENARIO.value],
+        cluster=dict_of_df[ReferentialSheetNames.CLUSTER.value],
+        peak_params=dict_of_df[ReferentialSheetNames.PEAK_PARAMS.value],
+    )
