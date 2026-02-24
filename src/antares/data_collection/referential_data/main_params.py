@@ -67,10 +67,38 @@ class PeakParamsColumnsNames(Enum):
 
 @dataclass
 class MainParams:
-    pays: pd.DataFrame
-    study_scenario: pd.DataFrame
-    cluster: pd.DataFrame
-    peak_params: pd.DataFrame
+    _market_to_antares: dict[str, str]
+    _year_to_scenario: dict[int, str]
+    _cluster_pemmdb_to_bp: dict[str, str]
+
+    def get_antares_code(self, market_code: str) -> str:
+        if market_code not in self._market_to_antares:
+            raise ValueError(f"No antares code defined for market {market_code}")
+        return self._market_to_antares[market_code]
+
+    def get_antares_codes(self, market_codes: list[str]) -> list[str]:
+        return [self.get_antares_code(c) for c in market_codes]
+
+    def get_scenario_type(self, year: int) -> str:
+        if year not in self._year_to_scenario:
+            raise ValueError(f"No scenario defined for year {year}")
+        return self._year_to_scenario[year]
+
+    def get_scenario_types(self, years: list[int]) -> list[str]:
+        return [self.get_scenario_type(y) for y in years]
+
+    def get_cluster_bp(self, cluster_pemmdb: str) -> str:
+        if cluster_pemmdb not in self._cluster_pemmdb_to_bp:
+            raise ValueError(f"No cluster BP defined for cluster {cluster_pemmdb}")
+        return self._cluster_pemmdb_to_bp[cluster_pemmdb]
+
+    def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str]:
+        return [self.get_cluster_bp(c) for c in clusters_pemmdb]
+
+
+
+
+
 
 
 def parse_main_params(file_path: Path) -> MainParams:
@@ -94,7 +122,6 @@ def parse_main_params(file_path: Path) -> MainParams:
             - pays
             - study_scenario
             - cluster
-            - peak_params
 
     Raises:
         FileNotFoundError: If the file does not exist.
