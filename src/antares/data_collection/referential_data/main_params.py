@@ -17,8 +17,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from openpyxl.reader.excel import load_workbook
-
 
 # all workbook sheet names
 class ReferentialSheetNames(Enum):
@@ -67,9 +65,29 @@ class PeakParamsColumnsNames(Enum):
 
 @dataclass
 class MainParams:
+    """
+    Container for validated referential parameters.
+
+    This class encapsulates mappings extracted from MAIN_PARAMS.xlsx
+    and exposes explicit getter methods to retrieve business values
+    in a safe and controlled way.
+
+    Internal dictionaries must not be accessed directly. All lookups
+    should be performed through the provided getter methods to ensure
+    consistent validation and explicit error handling.
+
+    Attributes:
+        _market_to_antares (dict[str, str]):
+            Mapping from market node to Antares code.
+        _year_to_scenario (dict[int, str]):
+            Mapping from study year to scenario type.
+        _cluster_pemmdb_to_antares (dict[str, str]):
+            Mapping from PEMMDB cluster to Antares cluster BP.
+    """
+
     _market_to_antares: dict[str, str]
     _year_to_scenario: dict[int, str]
-    _cluster_pemmdb_to_bp: dict[str, str]
+    _cluster_pemmdb_to_antares: dict[str, str]
 
     def get_antares_code(self, market_code: str) -> str:
         if market_code not in self._market_to_antares:
@@ -88,89 +106,89 @@ class MainParams:
         return [self.get_scenario_type(y) for y in years]
 
     def get_cluster_bp(self, cluster_pemmdb: str) -> str:
-        if cluster_pemmdb not in self._cluster_pemmdb_to_bp:
+        if cluster_pemmdb not in self._cluster_pemmdb_to_antares:
             raise ValueError(f"No cluster BP defined for cluster {cluster_pemmdb}")
-        return self._cluster_pemmdb_to_bp[cluster_pemmdb]
+        return self._cluster_pemmdb_to_antares[cluster_pemmdb]
 
     def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
 
-
-
-
-
-
 def parse_main_params(file_path: Path) -> MainParams:
-    """
-    Parse and validate a MAIN_PARAMS.xlsx workbook.
+    """Parse and validate a MAIN_PARAMS.xlsx workbook.
 
-    This function validates the structure of the provided Excel file:
-    - Ensures the file exists.
-    - Checks that all required sheets are present.
-    - Verifies that each sheet contains exactly the expected columns
-      (column order is ignored, but no missing or extra columns are allowed).
+    This function:
+        1. Verifies that the Excel file exists.
+        2. Reads required sheets using pandas.
+        3. Validates required columns via `usecols`.
+        4. Transforms each sheet into business mappings.
+        5. Returns an immutable MainParams instance.
 
-    If validation succeeds, the function returns a populated `MainParams`
-    dataclass containing the corresponding pandas DataFrames.
+    The returned object provides explicit getter methods to safely
+    access referential values.
+
+    Expected sheets:
+        - PAYS
+        - STUDY_SCENARIO
+        - CLUSTER
+
+    Expected mappings:
+        - market_node -> code_antares
+        - year -> study_scenario
+        - cluster_pemmdb -> cluster_bp
 
     Args:
-        file_path (Path): Path to the MAIN_PARAMS.xlsx file to validate.
+        file_path: Path to the MAIN_PARAMS.xlsx file.
 
     Returns:
-        MainParams: Dataclass containing validated DataFrames for:
-            - pays
-            - study_scenario
-            - cluster
+        A validated MainParams object containing referential mappings.
 
     Raises:
         FileNotFoundError: If the file does not exist.
-        ValueError: If:
-            - One or more required sheets are missing.
-            - A sheet contains missing or unexpected columns.
+        ValueError: If required sheets or columns are missing.
     """
 
     if not file_path.exists():
         raise FileNotFoundError(f"Input file does not exist: {file_path}")
 
-    target_sheet_names = [
-        ReferentialSheetNames.PAYS.value,
-        ReferentialSheetNames.STUDY_SCENARIO.value,
-        ReferentialSheetNames.CLUSTER.value,
-        ReferentialSheetNames.PEAK_PARAMS.value,
-    ]
-
     columns_names_dict = {
         ReferentialSheetNames.PAYS.value: [c.value for c in CountryColumnsNames],
         ReferentialSheetNames.STUDY_SCENARIO.value: [c.value for c in StudyScenarioColumnsNames],
         ReferentialSheetNames.CLUSTER.value: [c.value for c in ClusterColumnsNames],
-        ReferentialSheetNames.PEAK_PARAMS.value: [c.value for c in PeakParamsColumnsNames],
     }
 
-    # Check sheets
-    wb = load_workbook(filename=file_path)
-    workbook_sheets = set(wb.sheetnames)
+    # parse sheets + check on sheets and columns by pandas
+    countries_dict = (
+        pd.read_excel(
+            file_path,
+            sheet_name=ReferentialSheetNames.PAYS.value,
+            usecols=columns_names_dict[ReferentialSheetNames.PAYS.value],
+        )
+        .set_index(CountryColumnsNames.MARKET_NODE.value)[CountryColumnsNames.CODE_ANTARES.value]
+        .to_dict()
+    )
 
-    # missing_sheets = set(target_sheet_names) - workbook_sheets
-    missing_sheets = [sheet for sheet in target_sheet_names if sheet not in workbook_sheets]
-    if missing_sheets:
-        raise ValueError(f"Missing sheets: {missing_sheets}")
+    scenario_dict = (
+        pd.read_excel(
+            file_path,
+            sheet_name=ReferentialSheetNames.STUDY_SCENARIO.value,
+            usecols=columns_names_dict[ReferentialSheetNames.STUDY_SCENARIO.value],
+        )
+        .set_index(StudyScenarioColumnsNames.YEAR.value)[StudyScenarioColumnsNames.STUDY_SCENARIO.value]
+        .to_dict()
+    )
 
-    # Read sheets
-    dict_of_df = {sheet: pd.read_excel(file_path, sheet_name=sheet) for sheet in target_sheet_names}
-
-    # Validate columns
-    for sheet, df in dict_of_df.items():
-        expected_cols = set(columns_names_dict[sheet])
-        actual_cols = set(df.columns)
-
-        if actual_cols != expected_cols:
-            raise ValueError(f"Columns mismatch in sheet '{sheet}'. Expected: {expected_cols}, Got: {actual_cols}")
+    cluster_dict = (
+        pd.read_excel(
+            file_path,
+            sheet_name=ReferentialSheetNames.CLUSTER.value,
+            usecols=columns_names_dict[ReferentialSheetNames.CLUSTER.value],
+        )
+        .set_index(ClusterColumnsNames.CLUSTER_PEMMDB.value)[ClusterColumnsNames.CLUSTER_BP.value]
+        .to_dict()
+    )
 
     # Return validated dataclass
     return MainParams(
-        pays=dict_of_df[ReferentialSheetNames.PAYS.value],
-        study_scenario=dict_of_df[ReferentialSheetNames.STUDY_SCENARIO.value],
-        cluster=dict_of_df[ReferentialSheetNames.CLUSTER.value],
-        peak_params=dict_of_df[ReferentialSheetNames.PEAK_PARAMS.value],
+        _market_to_antares=countries_dict, _year_to_scenario=scenario_dict, _cluster_pemmdb_to_antares=cluster_dict
     )
