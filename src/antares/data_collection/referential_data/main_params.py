@@ -154,14 +154,9 @@ def parse_main_params(file_path: Path) -> MainParams:
     if not file_path.exists():
         raise FileNotFoundError(f"Input file does not exist: {file_path}")
 
-    columns_names_dict = {
-        ReferentialSheetNames.PAYS.value: [c.value for c in CountryColumnsNames],
-        ReferentialSheetNames.STUDY_SCENARIO.value: [c.value for c in StudyScenarioColumnsNames],
-        ReferentialSheetNames.CLUSTER.value: [c.value for c in ClusterColumnsNames],
-    }
-
+    expected_sheets = [ReferentialSheetNames.PAYS, ReferentialSheetNames.STUDY_SCENARIO, ReferentialSheetNames.CLUSTER]
     excel_sheets = pd.read_excel(file_path, sheet_name=None)
-    for sheet in columns_names_dict:
+    for sheet in expected_sheets:
         if sheet not in excel_sheets:
             raise ValueError(f"Worksheet named '{sheet}' not found")
 
