@@ -26,23 +26,31 @@ def test_parse_main_params_file_not_exist(tmp_path: Path) -> None:
     fake_path = tmp_path / "toto"
 
     # then
-    with pytest.raises(
-        FileNotFoundError,
-        match=re.escape(f"Input file does not exist: {fake_path}"),
-    ):
+    with pytest.raises(FileNotFoundError, match=re.escape(f"Input file does not exist: {fake_path}")):
         parse_main_params(file_path=fake_path)
 
 
-def test_parse_main_params_mandatory_sheets(tmp_path: Path) -> None:
-    # given
+@pytest.mark.parametrize(
+    "written_sheets,missing_sheet",
+    [
+        (["PAYS", "STUDY_SCENARIO"], "CLUSTER"),
+        (["CLUSTER", "STUDY_SCENARIO"], "PAYS"),
+        (["CLUSTER", "PAYS"], "STUDY_SCENARIO"),
+    ],
+)
+def test_parse_main_params_mandatory_sheets(
+    tmp_path: Path, written_sheets: tuple[str, str], missing_sheet: str
+) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
-    pd.DataFrame({"A": [1, 2, 3]}).to_excel(path_file, sheet_name="test")
+
+    df = pd.DataFrame({"A": [1, 2, 3]})
+
+    df.to_excel(path_file, sheet_name=written_sheets[0], index=False)
+    with pd.ExcelWriter(path_file, engine="openpyxl", mode="a") as writer:
+        df.to_excel(writer, sheet_name=written_sheets[1], index=False)
 
     # then
-    with pytest.raises(
-        ValueError,
-        match="Worksheet named 'PAYS' not found",
-    ):
+    with pytest.raises(ValueError, match=f"Worksheet named '{missing_sheet}' not found"):
         parse_main_params(file_path=path_file)
 
 

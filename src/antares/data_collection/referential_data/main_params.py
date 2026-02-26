@@ -157,6 +157,11 @@ def parse_main_params(file_path: Path) -> MainParams:
         ReferentialSheetNames.CLUSTER.value: [c.value for c in ClusterColumnsNames],
     }
 
+    excel_sheets = pd.read_excel(file_path, sheet_name=None)
+    for col in columns_names_dict:
+        if col not in excel_sheets:
+            raise ValueError(f"Worksheet named '{col}' not found")
+
     # parse sheets + check on sheets and columns by pandas
     df_countries = pd.read_excel(
         file_path,
