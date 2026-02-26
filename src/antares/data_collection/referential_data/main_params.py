@@ -158,34 +158,46 @@ def parse_main_params(file_path: Path) -> MainParams:
     }
 
     # parse sheets + check on sheets and columns by pandas
-    countries_dict = (
-        pd.read_excel(
-            file_path,
-            sheet_name=ReferentialSheetNames.PAYS.value,
-            usecols=columns_names_dict[ReferentialSheetNames.PAYS.value],
-        )
-        .set_index(CountryColumnsNames.MARKET_NODE.value)[CountryColumnsNames.CODE_ANTARES.value]
-        .to_dict()
+    df_countries = pd.read_excel(
+        file_path,
+        sheet_name=ReferentialSheetNames.PAYS.value,
+        usecols=columns_names_dict[ReferentialSheetNames.PAYS.value],
     )
 
-    scenario_dict = (
-        pd.read_excel(
-            file_path,
-            sheet_name=ReferentialSheetNames.STUDY_SCENARIO.value,
-            usecols=columns_names_dict[ReferentialSheetNames.STUDY_SCENARIO.value],
+    # strict typed conversion
+    countries_dict: dict[str, str] = dict(
+        zip(
+            df_countries[CountryColumnsNames.MARKET_NODE.value],
+            df_countries[CountryColumnsNames.CODE_ANTARES.value],
         )
-        .set_index(StudyScenarioColumnsNames.YEAR.value)[StudyScenarioColumnsNames.STUDY_SCENARIO.value]
-        .to_dict()
     )
 
-    cluster_dict = (
-        pd.read_excel(
-            file_path,
-            sheet_name=ReferentialSheetNames.CLUSTER.value,
-            usecols=columns_names_dict[ReferentialSheetNames.CLUSTER.value],
+    df_scenario = pd.read_excel(
+        file_path,
+        sheet_name=ReferentialSheetNames.STUDY_SCENARIO.value,
+        usecols=columns_names_dict[ReferentialSheetNames.STUDY_SCENARIO.value],
+    )
+
+    # strict typed conversion
+    scenario_dict: dict[int, str] = dict(
+        zip(
+            df_scenario[StudyScenarioColumnsNames.YEAR.value],
+            df_scenario[StudyScenarioColumnsNames.STUDY_SCENARIO.value],
         )
-        .set_index(ClusterColumnsNames.CLUSTER_PEMMDB.value)[ClusterColumnsNames.CLUSTER_BP.value]
-        .to_dict()
+    )
+
+    df_cluster = pd.read_excel(
+        file_path,
+        sheet_name=ReferentialSheetNames.CLUSTER.value,
+        usecols=columns_names_dict[ReferentialSheetNames.CLUSTER.value],
+    )
+
+    # strict typed conversion
+    cluster_dict: dict[str, str] = dict(
+        zip(
+            df_cluster[ClusterColumnsNames.CLUSTER_PEMMDB.value],
+            df_cluster[ClusterColumnsNames.CLUSTER_BP.value],
+        )
     )
 
     # Return validated dataclass
