@@ -15,6 +15,8 @@ from pathlib import Path
 
 import pandas as pd
 
+RESOURCE_PATH = Path(__file__).parent / "antares" / "resources"
+
 
 ## mock referential MAIN_PARAMS
 @pytest.fixture
