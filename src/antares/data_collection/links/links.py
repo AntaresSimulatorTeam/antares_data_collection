@@ -26,16 +26,16 @@ from antares.data_collection.links.conf_links import (
     NTCsIndex,
     TransferLinks,
 )
-from antares.data_collection.referential_data.struct_main_params import (
+from antares.data_collection.referential_data.main_params import (
     LinksColumnsNames,
     StudyScenarioColumnsNames,
 )
-from antares.data_collection.referential_data.struct_main_params import (
+from antares.data_collection.referential_data.main_params import (
     PeakParamsColumnsNames as RefPeak,
 )
 
 # Data referential
-from antares.data_collection.referential_data.struct_main_params import (
+from antares.data_collection.referential_data.main_params import (
     ReferentialSheetNames as RefSheetNames,
 )
 
