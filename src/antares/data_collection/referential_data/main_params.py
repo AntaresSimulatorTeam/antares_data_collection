@@ -12,14 +12,14 @@
 from dataclasses import dataclass
 
 # structure Referential (MAIN_PARAMS.xlsx)
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 
 import pandas as pd
 
 
 # all workbook sheet names
-class ReferentialSheetNames(Enum):
+class ReferentialSheetNames(StrEnum):
     PAYS = "PAYS"
     STUDY_SCENARIO = "STUDY_SCENARIO"
     LINKS = "LINKS"
@@ -28,7 +28,7 @@ class ReferentialSheetNames(Enum):
 
 
 # sheet "PAYS"
-class CountryColumnsNames(Enum):
+class CountryColumnsNames(StrEnum):
     NOM_PAYS = "Nom_pays"
     CODE_PAYS = "code_pays"
     AREAS = "areas"
@@ -37,7 +37,7 @@ class CountryColumnsNames(Enum):
 
 
 # sheet "STUDY_SCENARIO"
-class StudyScenarioColumnsNames(Enum):
+class StudyScenarioColumnsNames(StrEnum):
     YEAR = "YEAR"
     STUDY_SCENARIO = "STUDY_SCENARIO"
 
@@ -49,10 +49,13 @@ class LinksColumnsNames(Enum):
 
 
 # sheet "CLUSTER"
-class ClusterColumnsNames(Enum):
+class ClusterColumnsNames(StrEnum):
     TYPE = "TYPE"
     CLUSTER_PEMMDB = "CLUSTER_PEMMDB"
     CLUSTER_BP = "CLUSTER_BP"
+
+
+THERMAL_TYPE_NAME = "Thermal"
 
 
 # "PEAK_PARAMS"
@@ -151,54 +154,40 @@ def parse_main_params(file_path: Path) -> MainParams:
     if not file_path.exists():
         raise FileNotFoundError(f"Input file does not exist: {file_path}")
 
-    columns_names_dict = {
-        ReferentialSheetNames.PAYS.value: [c.value for c in CountryColumnsNames],
-        ReferentialSheetNames.STUDY_SCENARIO.value: [c.value for c in StudyScenarioColumnsNames],
-        ReferentialSheetNames.CLUSTER.value: [c.value for c in ClusterColumnsNames],
-    }
+    expected_sheets = [ReferentialSheetNames.PAYS, ReferentialSheetNames.STUDY_SCENARIO, ReferentialSheetNames.CLUSTER]
+    excel_sheets = pd.read_excel(file_path, sheet_name=None)
+    for sheet in expected_sheets:
+        if sheet not in excel_sheets:
+            raise ValueError(f"Worksheet named '{sheet}' not found")
 
-    # parse sheets + check on sheets and columns by pandas
-    df_countries = pd.read_excel(
-        file_path,
-        sheet_name=ReferentialSheetNames.PAYS.value,
-        usecols=columns_names_dict[ReferentialSheetNames.PAYS.value],
-    )
+    # Parse the `PAYS` sheet
+    df = excel_sheets[ReferentialSheetNames.PAYS]
+    actual_cols = set(df.columns)
+    for column in [CountryColumnsNames.MARKET_NODE, CountryColumnsNames.CODE_ANTARES]:
+        if column.value not in actual_cols:
+            raise ValueError(f"Column '{column}' not found inside sheet '{ReferentialSheetNames.PAYS}'")
 
-    # strict typed conversion
-    countries_dict: dict[str, str] = dict(
-        zip(
-            df_countries[CountryColumnsNames.MARKET_NODE.value],
-            df_countries[CountryColumnsNames.CODE_ANTARES.value],
-        )
-    )
+    countries_dict = dict(zip(df[CountryColumnsNames.MARKET_NODE], df[CountryColumnsNames.CODE_ANTARES]))
 
-    df_scenario = pd.read_excel(
-        file_path,
-        sheet_name=ReferentialSheetNames.STUDY_SCENARIO.value,
-        usecols=columns_names_dict[ReferentialSheetNames.STUDY_SCENARIO.value],
-    )
+    # Parse the `STUDY_SCENARIO` sheet
+    df = excel_sheets[ReferentialSheetNames.STUDY_SCENARIO]
+    actual_cols = set(df.columns)
+    for col in [StudyScenarioColumnsNames.YEAR, StudyScenarioColumnsNames.STUDY_SCENARIO]:
+        if col.value not in actual_cols:
+            raise ValueError(f"Column '{col}' not found inside sheet '{ReferentialSheetNames.STUDY_SCENARIO}'")
 
-    # strict typed conversion
-    scenario_dict: dict[int, str] = dict(
-        zip(
-            df_scenario[StudyScenarioColumnsNames.YEAR.value],
-            df_scenario[StudyScenarioColumnsNames.STUDY_SCENARIO.value],
-        )
-    )
+    scenario_dict = dict(zip(df[StudyScenarioColumnsNames.YEAR], df[StudyScenarioColumnsNames.STUDY_SCENARIO]))
 
-    df_cluster = pd.read_excel(
-        file_path,
-        sheet_name=ReferentialSheetNames.CLUSTER.value,
-        usecols=columns_names_dict[ReferentialSheetNames.CLUSTER.value],
-    )
+    # Parse the `CLUSTER` sheet
+    df = excel_sheets[ReferentialSheetNames.CLUSTER]
+    actual_cols = set(df.columns)
+    for cluster_col in [ClusterColumnsNames.CLUSTER_PEMMDB, ClusterColumnsNames.CLUSTER_BP, ClusterColumnsNames.TYPE]:
+        if cluster_col.value not in actual_cols:
+            raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
-    # strict typed conversion
-    cluster_dict: dict[str, str] = dict(
-        zip(
-            df_cluster[ClusterColumnsNames.CLUSTER_PEMMDB.value],
-            df_cluster[ClusterColumnsNames.CLUSTER_BP.value],
-        )
-    )
+    df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
+
+    cluster_dict = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB.value], df[ClusterColumnsNames.CLUSTER_BP.value]))
 
     # Return validated dataclass
     return MainParams(
