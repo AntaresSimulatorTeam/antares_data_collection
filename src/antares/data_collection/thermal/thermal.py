@@ -16,6 +16,7 @@ from antares.data_collection import LocalConfiguration
 from antares.data_collection.referential_data.main_params import (
     ClusterColumnsNames,
     CountryColumnsNames,
+    MainParams,
 )
 from antares.data_collection.thermal.conf_thermal import (
     ThermalComputedColumns,
@@ -232,5 +233,16 @@ def thermal_export() -> None:
 
 
 # user function
-def create_thermal_outputs() -> None:
+def create_thermal_outputs(links_conf_input: LocalConfiguration, referential_data: MainParams) -> None:
+    # call thermal_import(links_conf_input)
+    #    use parse_main_params()
+
+    # call thermal_pre_treatments(df_thermal: pd.DataFrame,
+    #     df_ref_pays: pd.DataFrame,
+    #     df_ref_cluster: pd.DataFrame,
+    #     op_stat: list[str] = ThermalLayout().default_values_column_op_stat)
+
+    # call thermal_treatments_year()
+
+    # cal thermal_export()
     raise NotImplementedError("Not implemented yet")
