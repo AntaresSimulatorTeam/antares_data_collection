@@ -165,7 +165,7 @@ def parse_main_params(file_path: Path) -> MainParams:
     actual_cols = set(df.columns)
     for column in [CountryColumnsNames.MARKET_NODE, CountryColumnsNames.CODE_ANTARES]:
         if column.value not in actual_cols:
-            raise ValueError(f"Column {column} not found inside sheet {ReferentialSheetNames.PAYS}")
+            raise ValueError(f"Column '{column}' not found inside sheet '{ReferentialSheetNames.PAYS}'")
 
     countries_dict = dict(zip(df[CountryColumnsNames.MARKET_NODE], df[CountryColumnsNames.CODE_ANTARES]))
 
@@ -174,7 +174,7 @@ def parse_main_params(file_path: Path) -> MainParams:
     actual_cols = set(df.columns)
     for col in [StudyScenarioColumnsNames.YEAR, StudyScenarioColumnsNames.STUDY_SCENARIO]:
         if col.value not in actual_cols:
-            raise ValueError(f"Column {col} not found inside sheet {ReferentialSheetNames.STUDY_SCENARIO}")
+            raise ValueError(f"Column '{col}' not found inside sheet '{ReferentialSheetNames.STUDY_SCENARIO}'")
 
     scenario_dict = dict(zip(df[StudyScenarioColumnsNames.YEAR], df[StudyScenarioColumnsNames.STUDY_SCENARIO]))
 
@@ -183,7 +183,7 @@ def parse_main_params(file_path: Path) -> MainParams:
     actual_cols = set(df.columns)
     for cluster_col in [ClusterColumnsNames.CLUSTER_PEMMDB, ClusterColumnsNames.CLUSTER_BP, ClusterColumnsNames.TYPE]:
         if cluster_col.value not in actual_cols:
-            raise ValueError(f"Column {cluster_col} not found inside sheet {ReferentialSheetNames.CLUSTER}")
+            raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
     df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
 

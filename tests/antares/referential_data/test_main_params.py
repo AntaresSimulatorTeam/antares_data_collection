@@ -54,30 +54,39 @@ def test_parse_main_params_mandatory_sheets(
         parse_main_params(file_path=path_file)
 
 
-def test_parse_main_params_mandatory_columns(tmp_path: Path) -> None:
-    # given
+@pytest.mark.parametrize(
+    "missing_column",
+    [
+        {"PAYS": "market_node"},
+        {"PAYS": "code_antares"},
+        {"STUDY_SCENARIO": "YEAR"},
+        {"STUDY_SCENARIO": "STUDY_SCENARIO"},
+        {"CLUSTER": "TYPE"},
+        {"CLUSTER": "CLUSTER_PEMMDB"},
+        {"CLUSTER": "CLUSTER_BP"},
+    ],
+)
+def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dict[str, str]) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
 
-    ref_pays = pd.DataFrame(
-        {"areas": ["ok"], "Nom_pays": ["ok"], "code_pays": ["ok"], "market_node_error": ["ok"], "code_antares": ["ok"]}
-    )
+    sheets = {
+        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
+        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
+        "CLUSTER": pd.DataFrame({"TYPE": ["Thermal"], "CLUSTER_PEMMDB": ["ok"], "CLUSTER_BP": ["ok"]}),
+    }
+    # Remove the column to create the issue
+    data = list(missing_column.items())[0]
+    key, value = data[0], data[1]
+    sheets[key].drop(value, axis=1, inplace=True)
 
-    ref_scenario = pd.DataFrame({"YEAR": ["ok"], "STUDY_SCENARIO": ["ok"]})
-
-    ref_cluster = pd.DataFrame({"TYPE": ["ok"], "CLUSTER_PEMMDB": ["ok"], "CLUSTER_BP": ["ok"]})
-
-    # write test workbook
-    ref_pays.to_excel(path_file, sheet_name="PAYS", index=False)
-
+    sheets["PAYS"].to_excel(path_file, sheet_name="PAYS", index=False)
     with pd.ExcelWriter(path_file, engine="openpyxl", mode="a") as writer:
-        ref_scenario.to_excel(writer, sheet_name="STUDY_SCENARIO", index=False)
-        ref_cluster.to_excel(writer, sheet_name="CLUSTER", index=False)
+        sheets["STUDY_SCENARIO"].to_excel(writer, sheet_name="STUDY_SCENARIO", index=False)
+        sheets["CLUSTER"].to_excel(writer, sheet_name="CLUSTER", index=False)
 
     # then
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Usecols do not match columns, columns expected but not found:"),
-    ):
+    msg = f"Column '{value}' not found inside sheet '{key}'"
+    with pytest.raises(ValueError, match=re.escape(msg)):
         parse_main_params(file_path=path_file)
 
 
