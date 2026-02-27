@@ -14,7 +14,6 @@ import pytest
 import re
 
 from pathlib import Path
-from zipfile import ZipFile
 
 import pandas as pd
 
@@ -30,7 +29,6 @@ from antares.data_collection.thermal.thermal import (
     thermal_pre_treatments,
     thermal_treatments_year,
 )
-from tests.conftest import RESOURCE_PATH
 
 
 ## mock referential MAIN_PARAMS EXCEL
