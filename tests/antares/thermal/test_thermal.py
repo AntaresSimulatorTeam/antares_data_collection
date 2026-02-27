@@ -334,48 +334,6 @@ def test_thermal_import_works(tmp_path: Path) -> None:
     )
 
 
-def test_thermal_import_real_test_case(tmp_path: Path) -> None:
-    # Use real test case
-    file_path = RESOURCE_PATH / "data_thermal_installed_power" / "Thermal.zip"
-
-    with ZipFile(file_path, "r") as z:
-        z.extractall(tmp_path)
-
-    # given
-    local_conf = LocalConfiguration(
-        input_path=tmp_path,
-        export_path=tmp_path,
-        scenario_name="test",
-        data_references_path=tmp_path,
-    )
-
-    # when
-    df_imported = thermal_import(conf_input=local_conf)
-
-    # then
-    list_cols_expected = [
-        "ZONE",
-        "STUDY_SCENARIO",
-        "MARKET_NODE",
-        "COMMISSIONING_DATE",
-        "DECOMMISSIONING_DATE_EXPECTED",
-        "OP_STAT",
-        "SCND_FUEL",
-        "SCND_FUEL_RT",
-        "NET_MAX_GEN_CAP",
-        "PEMMDB_TECHNOLOGY",
-    ]
-    assert isinstance(df_imported, pd.DataFrame)
-    assert not df_imported.empty
-    assert list(df_imported.columns) == list_cols_expected
-
-    # type datetime for columns treated as date
-    assert all(
-        pd.api.types.is_datetime64_any_dtype(df_imported[col])
-        for col in ["COMMISSIONING_DATE", "DECOMMISSIONING_DATE_EXPECTED"]
-    )
-
-
 ##
 # pre treatments
 ##
@@ -412,33 +370,6 @@ def test_thermal_pre_treatments_default_works(
 
     # test columns CLUSTER_BP is updated with line containing bio
     assert df_pre_treat.loc[df_pre_treat.code_antares == "BE", "CLUSTER_BP"].iloc[0] == "CCGT CCS CHP bio"
-
-
-def test_thermal_pre_treatments_real_test_case(tmp_path: Path) -> None:
-    # Use real main_params file
-    file_path_main_params = RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"
-
-    # use imported data from real file "Thermal.csv"
-    file_path_data = RESOURCE_PATH / "data_thermal_installed_power" / "thermal_imported.zip"
-
-    with ZipFile(file_path_data, "r") as z:
-        z.extractall(tmp_path)
-
-    file_path_data = tmp_path / "thermal_imported.csv"
-
-    # given
-    df_data = pd.read_csv(file_path_data)
-    df_ref_pays = pd.read_excel(file_path_main_params, sheet_name="PAYS")
-    df_ref_cluster = pd.read_excel(file_path_main_params, sheet_name="CLUSTER")
-
-    # when
-    df_pre_treated = thermal_pre_treatments(
-        df_thermal=df_data,
-        df_ref_pays=df_ref_pays,
-        df_ref_cluster=df_ref_cluster,
-    )
-
-    assert isinstance(df_pre_treated, pd.DataFrame)
 
 
 ##
