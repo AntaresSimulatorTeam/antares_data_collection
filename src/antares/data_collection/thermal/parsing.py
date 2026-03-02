@@ -15,10 +15,13 @@ import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams, parse_main_params
 from antares.data_collection.thermal.constants import (
+    BIOMASS_SNCD_FUEL,
     DEFAULT_DECOMMISSIONING_DATE,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
 )
+
+CLUSTER_NAME_INTERMEDIATE_COLUMN = "cluster_name"
 
 
 class ThermalParser:
@@ -102,20 +105,39 @@ class ThermalParser:
             raise ValueError(msg)
         return df
 
+    def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
+        """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
+        return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
+
     def _get_starting_and_ending_timestamps(self) -> tuple[pd.Timestamp, pd.Timestamp]:
         years = sorted(self.years)
         start = pd.Timestamp(year=years[0] - 1, month=1, day=1)
         end = pd.Timestamp(year=years[-1], month=12, day=31)
         return start, end
 
+    def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
+        cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
+        df[CLUSTER_NAME_INTERMEDIATE_COLUMN] = self.main_params.get_clusters_bp(cluster_list)
+        return df
+
+    def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
+        fuels = df[InputThermalColumns.SCND_FUEL]
+        cluster_names = list(df[CLUSTER_NAME_INTERMEDIATE_COLUMN])
+        for k, fuel in enumerate(fuels):
+            if fuel == BIOMASS_SNCD_FUEL:
+                print(cluster_names[k])
+        return df
+
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_values_based_on_study_scenarios(df)
+        df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._filter_values_based_on_commission_date(df)
+        df = self._add_antares_cluster_name_colum(df)
+        df = self._split_clusters_with_biomass_rule(df)
         """
         TODO:
-        - Convert clusters to their Antares names
         - Then Bio / Fuel units as we have to add suffix to the name
         - Convert areas to their Antares names
         - Write the ouput file
@@ -129,5 +151,6 @@ def test_truc():
     parser = ThermalParser(resource_path, ["Available on market"], main_params, [2030])
     df = parser.build_thermal_installed_power()
     print(df)
-    final_df = pd.read_csv(resource_path / "expected_output_files" / "thermal_installed_power.csv")
+    """final_df = pd.read_csv(resource_path / "expected_output_files" / "thermal_installed_power.csv")
     print(final_df)
+    """
