@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.referential_data.main_params import MainParams, parse_main_params
+from antares.data_collection.referential_data.main_params import MainParams, parse_main_params, ClusterParams
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
@@ -22,7 +22,7 @@ from antares.data_collection.thermal.constants import (
     THERMAL_INPUT_FILE,
     InputThermalColumns,
     OutputThermalInstallPowerColumns,
-    get_starting_and_ending_timestamps_for_outputs,
+    get_starting_and_ending_timestamps_for_outputs, FUEL_MAPPING,
 )
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
@@ -170,6 +170,15 @@ class ThermalInstallerPowerParser:
         _, end  = get_starting_and_ending_timestamps_for_outputs(years[-1])
         return start, end
 
+    def _find_fuel(self, unit_name: str) -> str:
+        for pattern, value in FUEL_MAPPING.items():
+            if pattern in unit_name:
+                return value
+        return self.main_params.get_antares_cluster_type_and_fuel(unit_name).fuel
+
+    def _find_technology(self, unit_name: str) -> str:
+        if BIOMASS_CLUSTER_SUFFIX in unit_name:
+            return "Mixed fuel"
 
     def _truc(self, df: pd.DataFrame):
         start, end = self._get_start_and_end_timestamps_for_outputs()
@@ -188,8 +197,22 @@ class ThermalInstallerPowerParser:
         for month in date_range:
             output_data[month.strftime('%Y_%m')] = []
 
-        """
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
+
+            assert isinstance(cluster_name, str)
+            # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
+            unit_name = cluster_name.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
+            params = self.main_params.get_antares_cluster_type_and_fuel(unit_name)
+
+            fuel = params.fuel
+            if BIOMASS_CLUSTER_SUFFIX in cluster_name:
+                fuel = "Mixed fuel"
+            for pattern in FUEL_MAPPING:
+                if pattern in cluster_name:
+                    fuel = "Other"
+
+            technology = params.type
+
 
             for month in date_range:
                 month_end = month + pd.offsets.MonthEnd(1)
@@ -199,8 +222,7 @@ class ThermalInstallerPowerParser:
                 output_data[month] = {"number": data.count(), "power": data.sum()}
 
             print(output_data)
-            break
-        """
+
 
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()

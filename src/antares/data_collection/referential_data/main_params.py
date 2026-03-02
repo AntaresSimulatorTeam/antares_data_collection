@@ -131,16 +131,10 @@ class MainParams:
     def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
-    def _get_antares_cluster(self, antares_cluster: str) -> ClusterParams:
-        if antares_cluster not in self._cluster_pemmdb_to_antares:
+    def get_antares_cluster_type_and_fuel(self, antares_cluster: str) -> ClusterParams:
+        if antares_cluster not in self._cluster_antares:
             raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
         return self._cluster_antares[antares_cluster]
-
-    def get_antares_cluster_type(self, antares_cluster: str) -> str:
-        return self._get_antares_cluster(antares_cluster).type
-
-    def get_antares_cluster_fuel(self, antares_cluster: str) -> str:
-        return self._get_antares_cluster(antares_cluster).fuel
 
 
 def parse_main_params(file_path: Path) -> MainParams:
