@@ -41,3 +41,12 @@ class InputThermalColumns(StrEnum):
     SCND_FUEL_RT = "SCND_FUEL_RT"
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"
+
+
+class OutputThermalInstallPowerColumns(StrEnum):
+    TO_USE = "ToUse"
+    AREA = "Area"
+    FUEL = "Fuel"
+    TECHNOLOGY = "Technology"
+    CLUSTER = "Cluster"
+    CATEGORY = "Category"
