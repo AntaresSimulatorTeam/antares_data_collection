@@ -156,16 +156,6 @@ def parse_main_params(file_path: Path) -> MainParams:
     The returned object provides explicit getter methods to safely
     access referential values.
 
-    Expected sheets:
-        - PAYS
-        - STUDY_SCENARIO
-        - CLUSTER
-
-    Expected mappings:
-        - market_node -> code_antares
-        - year -> study_scenario
-        - cluster_pemmdb -> cluster_bp
-
     Args:
         file_path: Path to the MAIN_PARAMS.xlsx file.
 
