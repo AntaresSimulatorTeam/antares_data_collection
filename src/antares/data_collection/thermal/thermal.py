@@ -14,6 +14,7 @@ import pandas as pd
 
 from antares.data_collection import LocalConfiguration
 from antares.data_collection.referential_data.main_params import (
+    THERMAL_TYPE_NAME,
     ClusterColumnsNames,
     CountryColumnsNames,
 )
@@ -70,9 +71,7 @@ def thermal_pre_treatments(
 ) -> pd.DataFrame:
 
     # filter NA and keep only thermal cluster
-    df_ref_cluster_filtered = df_ref_cluster[df_ref_cluster[ClusterColumnsNames.TYPE.value].eq("Thermal")].dropna(
-        subset=[ClusterColumnsNames.CLUSTER_PEMMDB.value]
-    )
+    df_ref_cluster_filtered = df_ref_cluster[df_ref_cluster[ClusterColumnsNames.TYPE.value].eq(THERMAL_TYPE_NAME)]
 
     # merge with referential country
     df_thermal_updated = (
