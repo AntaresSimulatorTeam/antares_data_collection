@@ -27,7 +27,7 @@ ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
 ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
-class ThermalParser:
+class ThermalInstallerPowerParser:
     def __init__(self, folder_path: Path, op_stat_values: list[str], main_params: MainParams, years: list[int]):
         self.folder_path = folder_path
         self.op_stat_values = op_stat_values
@@ -168,9 +168,9 @@ class ThermalParser:
 
 
 def test_truc():
-    resource_path = Path("/home/belthlemar/Projects/Antares/antares_data_collection/tests/antares/resources")
+    resource_path = Path("/tests/antares/resources")
     main_params = parse_main_params(resource_path / "MAIN_PARAMS_2025.xlsx")
-    parser = ThermalParser(resource_path, ["Available on market"], main_params, [2030])
+    parser = ThermalInstallerPowerParser(resource_path, ["Available on market"], main_params, [2030])
     df = parser.build_thermal_installed_power()
     print(df)
     """final_df = pd.read_csv(resource_path / "expected_output_files" / "thermal_installed_power.csv")
