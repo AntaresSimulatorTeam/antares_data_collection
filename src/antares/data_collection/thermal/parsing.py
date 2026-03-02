@@ -131,27 +131,27 @@ class ThermalParser:
         for k, fuel in enumerate(fuels):
             if fuel == BIOMASS_SNCD_FUEL_VALUE:
                 cluster_line = df.iloc[k]
-                if cluster_line[InputThermalColumns.SCND_FUEL_RT] == 0:
-                    # We don't need to create a Biomass plant as its power will be 0, it will be ignored.
-                    continue
+
+                # Add new line inside dataframe with the created biomass unit
                 bio_line = deepcopy(cluster_line)
                 bio_line[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
                 bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
-                cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= cluster_line[InputThermalColumns.SCND_FUEL_RT]
-                # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
-                df.iloc[k] = cluster_line
-                # Add new line inside dataframe with the created biomass unit
                 df.loc[len(df)] = bio_line
+
+                # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
+                cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= 1 - cluster_line[InputThermalColumns.SCND_FUEL_RT]
+                df.iloc[k] = cluster_line
+
         return df
 
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_values_based_on_study_scenarios(df)
-        df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._filter_values_based_on_commission_date(df)
         df = self._add_antares_cluster_name_colum(df)
         df = self._split_clusters_with_biomass_rule(df)
+        df = self._filter_values_based_on_net_max_gen_cap(df)
         """
         TODO:
         - Convert areas to their Antares names
