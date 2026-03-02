@@ -23,7 +23,7 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 
-CLUSTER_NAME_INTERMEDIATE_COLUMN = "cluster_name"
+ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
 
 
 class ThermalParser:
@@ -119,7 +119,7 @@ class ThermalParser:
 
     def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
         cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
-        df[CLUSTER_NAME_INTERMEDIATE_COLUMN] = self.main_params.get_clusters_bp(cluster_list)
+        df[ANTARES_CLUSTER_NAME_COLUMN] = self.main_params.get_clusters_bp(cluster_list)
         return df
 
     def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -135,7 +135,7 @@ class ThermalParser:
                     # We don't need to create a Biomass plant as its power will be 0, it will be ignored.
                     continue
                 bio_line = deepcopy(cluster_line)
-                bio_line[CLUSTER_NAME_INTERMEDIATE_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
+                bio_line[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
                 bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
                 cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= cluster_line[InputThermalColumns.SCND_FUEL_RT]
                 # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
