@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from antares.data_collection.referential_data.main_params import parse_main_params
+from antares.data_collection.referential_data.main_params import ClusterParams, parse_main_params
 from tests.conftest import RESOURCE_PATH
 
 
@@ -35,9 +35,10 @@ def test_parse_main_params_file_not_exist(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "written_sheets,missing_sheet",
     [
-        (["PAYS", "STUDY_SCENARIO"], "CLUSTER"),
-        (["CLUSTER", "STUDY_SCENARIO"], "PAYS"),
-        (["CLUSTER", "PAYS"], "STUDY_SCENARIO"),
+        (["PAYS", "STUDY_SCENARIO", "Common Data"], "CLUSTER"),
+        (["CLUSTER", "STUDY_SCENARIO", "Common Data"], "PAYS"),
+        (["CLUSTER", "PAYS", "Common Data"], "STUDY_SCENARIO"),
+        (["CLUSTER", "PAYS", "STUDY_SCENARIO"], "Common Data"),
     ],
 )
 def test_parse_main_params_mandatory_sheets(
@@ -49,7 +50,8 @@ def test_parse_main_params_mandatory_sheets(
 
     df.to_excel(path_file, sheet_name=written_sheets[0], index=False)
     with pd.ExcelWriter(path_file, engine="openpyxl", mode="a") as writer:
-        df.to_excel(writer, sheet_name=written_sheets[1], index=False)
+        for sheet in written_sheets[1:]:
+            df.to_excel(writer, sheet_name=sheet, index=False)
 
     # then
     with pytest.raises(ValueError, match=f"Worksheet named '{missing_sheet}' not found"):
@@ -66,6 +68,9 @@ def test_parse_main_params_mandatory_sheets(
         {"CLUSTER": "TYPE"},
         {"CLUSTER": "CLUSTER_PEMMDB"},
         {"CLUSTER": "CLUSTER_BP"},
+        {"Common Data": "cluster_BP"},
+        {"Common Data": "Fuel"},
+        {"Common Data": "Type"},
     ],
 )
 def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dict[str, str]) -> None:
@@ -75,6 +80,7 @@ def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dic
         "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
         "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
         "CLUSTER": pd.DataFrame({"TYPE": ["Thermal"], "CLUSTER_PEMMDB": ["ok"], "CLUSTER_BP": ["ok"]}),
+        "Common Data": pd.DataFrame({"Type": ["ok"], "Fuel": ["ok"], "cluster_BP": ["ok"]}),
     }
     # Remove the column to create the issue
     data = list(missing_column.items())[0]
@@ -82,9 +88,10 @@ def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dic
     sheets[key].drop(value, axis=1, inplace=True)
 
     sheets["PAYS"].to_excel(path_file, sheet_name="PAYS", index=False)
+    del sheets["PAYS"]
     with pd.ExcelWriter(path_file, engine="openpyxl", mode="a") as writer:
-        sheets["STUDY_SCENARIO"].to_excel(writer, sheet_name="STUDY_SCENARIO", index=False)
-        sheets["CLUSTER"].to_excel(writer, sheet_name="CLUSTER", index=False)
+        for sheet in sheets:
+            sheets[sheet].to_excel(writer, sheet_name=sheet, index=False)
 
     # then
     msg = f"Column '{value}' not found inside sheet '{key}'"
@@ -323,4 +330,55 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
         "Shale oil/new": "Oil shale new",
         "OtherNon-RES/Shale oil/old": "Oil shale old",
         "Shale oil/old": "Oil shale old",
+    }
+
+    assert main_params._cluster_antares == {
+        "CCGT CCS": ClusterParams(type="CCGT CCS", fuel="Gas"),
+        "CCGT CCS CHP": ClusterParams(type="CCGT CCS", fuel="Gas"),
+        "CCGT H2": ClusterParams(type="CCGT new", fuel="H2"),
+        "CCGT H2 CHP": ClusterParams(type="CCGT new", fuel="H2"),
+        "CCGT new": ClusterParams(type="CCGT new", fuel="Gas"),
+        "CCGT new CHP": ClusterParams(type="CCGT new", fuel="Gas"),
+        "CCGT old 1": ClusterParams(type="CCGT old 1", fuel="Gas"),
+        "CCGT old 1 CHP": ClusterParams(type="CCGT old 1", fuel="Gas"),
+        "CCGT old 2": ClusterParams(type="CCGT old 2", fuel="Gas"),
+        "CCGT old 2 CHP": ClusterParams(type="CCGT old 2", fuel="Gas"),
+        "CCGT present 1": ClusterParams(type="CCGT present 1", fuel="Gas"),
+        "CCGT present 1 CHP": ClusterParams(type="CCGT present 1", fuel="Gas"),
+        "CCGT present 2": ClusterParams(type="CCGT present 2", fuel="Gas"),
+        "CCGT present 2 CHP": ClusterParams(type="CCGT present 2", fuel="Gas"),
+        "Gas conventional old 1": ClusterParams(type="conventional old 1", fuel="Gas"),
+        "Gas conventional old 1 CHP": ClusterParams(type="conventional old 1", fuel="Gas"),
+        "Gas conventional old 2": ClusterParams(type="conventional old 2", fuel="Gas"),
+        "Gas conventional old 2 CHP": ClusterParams(type="conventional old 2", fuel="Gas"),
+        "Gas pcomp CCS": ClusterParams(type="CCGT CCS", fuel="Gas"),
+        "Gas pcomp H2": ClusterParams(type="CCGT new", fuel="H2"),
+        "Hard coal new": ClusterParams(type="new", fuel="Hard coal"),
+        "Hard coal new CHP": ClusterParams(type="new", fuel="Hard coal"),
+        "Hard coal old 1": ClusterParams(type="old 1", fuel="Hard coal"),
+        "Hard coal old 1 CHP": ClusterParams(type="old 1", fuel="Hard coal"),
+        "Hard coal old 2": ClusterParams(type="old 2", fuel="Hard coal"),
+        "Hard coal old 2 CHP": ClusterParams(type="old 2", fuel="Hard coal"),
+        "Heavy oil old 1": ClusterParams(type="old 1", fuel="Oil"),
+        "Heavy oil old 1 CHP": ClusterParams(type="old 1", fuel="Oil"),
+        "Heavy oil old 2": ClusterParams(type="old 2", fuel="Oil"),
+        "Heavy oil old 2 CHP": ClusterParams(type="old 2", fuel="Oil"),
+        "Light oil": ClusterParams(type="-", fuel="Oil"),
+        "Light oil CHP": ClusterParams(type="-", fuel="Oil"),
+        "Lignite new": ClusterParams(type="new", fuel="Lignite"),
+        "Lignite new CHP": ClusterParams(type="new", fuel="Lignite"),
+        "Lignite old 1": ClusterParams(type="old 1", fuel="Lignite"),
+        "Lignite old 1 CHP": ClusterParams(type="old 1", fuel="Lignite"),
+        "Lignite old 2": ClusterParams(type="old 2", fuel="Lignite"),
+        "Lignite old 2 CHP": ClusterParams(type="old 2", fuel="Lignite"),
+        "Nuclear": ClusterParams(type="-", fuel="Nuclear"),
+        "Nuclear SMR": ClusterParams(type="SMR", fuel="Nuclear"),
+        "OCGT H2": ClusterParams(type="OCGT new", fuel="H2"),
+        "OCGT H2 CHP": ClusterParams(type="OCGT new", fuel="H2"),
+        "OCGT new": ClusterParams(type="OCGT new", fuel="Gas"),
+        "OCGT new CHP": ClusterParams(type="OCGT new", fuel="Gas"),
+        "OCGT old": ClusterParams(type="OCGT old", fuel="Gas"),
+        "OCGT old CHP": ClusterParams(type="OCGT old", fuel="Gas"),
+        "Oil shale new": ClusterParams(type="new", fuel="Oil"),
+        "Oil shale old": ClusterParams(type="old", fuel="Oil"),
     }
