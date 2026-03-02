@@ -17,6 +17,7 @@ import pandas as pd
 THERMAL_INPUT_FILE = "Thermal.csv"
 THERMAL_INSTALL_POWER_FOLDER = Path("thermal") / "installed power"
 THERMAL_INSTALL_POWER_FILE_FORMAT = "thermal_{trajectory}/{scenario}.xlsx"
+DEFAULT_DECOMMISSIONING_DATE = pd.Timestamp(year=2100, month=1, day=1)
 
 
 def get_starting_and_ending_timestamps(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:

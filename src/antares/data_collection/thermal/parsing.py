@@ -15,9 +15,9 @@ import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams, parse_main_params
 from antares.data_collection.thermal.constants import (
+    DEFAULT_DECOMMISSIONING_DATE,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
-    get_starting_and_ending_timestamps,
 )
 
 
@@ -84,6 +84,14 @@ class ThermalParser:
         for datetime_col in [InputThermalColumns.COMMISSIONING_DATE, InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]:
             df[datetime_col] = pd.to_datetime(df[datetime_col])
 
+        # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
+        df[InputThermalColumns.COMMISSIONING_DATE] = pd.to_datetime(df[InputThermalColumns.COMMISSIONING_DATE])
+        # Some values might be missing inside `DECOMMISSIONING_DATE_EXPECTED`.
+        # If so, we should consider the decommissioning year to be 2100.
+        df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] = pd.to_datetime(
+            df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+        ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
+
         df = df.loc[
             (df[InputThermalColumns.COMMISSIONING_DATE] <= start)
             & (df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= end)
@@ -96,12 +104,8 @@ class ThermalParser:
 
     def _get_starting_and_ending_timestamps(self) -> tuple[pd.Timestamp, pd.Timestamp]:
         years = sorted(self.years)
-
-        if len(years) == 1:
-            return get_starting_and_ending_timestamps(year=self.years[0])
-
-        start, _ = get_starting_and_ending_timestamps(year=years[0])
-        _, end = get_starting_and_ending_timestamps(year=years[-1])
+        start = pd.Timestamp(year=years[0] - 1, month=1, day=1)
+        end = pd.Timestamp(year=years[-1], month=12, day=31)
         return start, end
 
     def build_thermal_installed_power(self) -> pd.DataFrame:
