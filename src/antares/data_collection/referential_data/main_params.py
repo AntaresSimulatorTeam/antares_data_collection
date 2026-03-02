@@ -25,6 +25,7 @@ class ReferentialSheetNames(StrEnum):
     LINKS = "LINKS"
     CLUSTER = "CLUSTER"
     PEAK_PARAMS = "PEAK_PARAMS"
+    COMMON_DATA = "Common Data"
 
 
 # sheet "PAYS"
@@ -55,6 +56,13 @@ class ClusterColumnsNames(StrEnum):
     CLUSTER_BP = "CLUSTER_BP"
 
 
+# sheet "Common Data"
+class CommonDataColumnsNames(StrEnum):
+    CLUSTER_BP = "cluster_BP"
+    FUEL = "Fuel"
+    TYPE = "Type"
+
+
 THERMAL_TYPE_NAME = "Thermal"
 
 
@@ -64,6 +72,12 @@ class PeakParamsColumnsNames(Enum):
     PERIOD_HOUR = "period_hour"
     MONTH = "month"
     PERIOD_MONTH = "period_month"
+
+
+@dataclass(frozen=True)
+class ClusterParams:
+    type: str
+    fuel: str
 
 
 @dataclass
@@ -84,13 +98,14 @@ class MainParams:
             Mapping from market node to Antares code.
         _year_to_scenario (dict[int, str]):
             Mapping from study year to scenario type.
-        _cluster_pemmdb_to_antares (dict[str, str]):
-            Mapping from PEMMDB cluster to Antares cluster BP.
+        _cluster_antares (dict[str, ClusterParams]):
+            Mapping from BP cluster to its attribute `fuel` and `type`
     """
 
     _market_to_antares: dict[str, str]
     _year_to_scenario: dict[int, str]
     _cluster_pemmdb_to_antares: dict[str, str]
+    _cluster_antares: dict[str, ClusterParams]
 
     def get_antares_code(self, market_code: str) -> str:
         if market_code not in self._market_to_antares:
@@ -116,6 +131,17 @@ class MainParams:
     def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
+    def _get_antares_cluster(self, antares_cluster: str) -> ClusterParams:
+        if antares_cluster not in self._cluster_pemmdb_to_antares:
+            raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
+        return self._cluster_antares[antares_cluster]
+
+    def get_antares_cluster_type(self, antares_cluster: str) -> str:
+        return self._get_antares_cluster(antares_cluster).type
+
+    def get_antares_cluster_fuel(self, antares_cluster: str) -> str:
+        return self._get_antares_cluster(antares_cluster).fuel
+
 
 def parse_main_params(file_path: Path) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.
@@ -123,22 +149,12 @@ def parse_main_params(file_path: Path) -> MainParams:
     This function:
         1. Verifies that the Excel file exists.
         2. Reads required sheets using pandas.
-        3. Validates required columns via `usecols`.
+        3. Validates required columns.
         4. Transforms each sheet into business mappings.
         5. Returns an immutable MainParams instance.
 
     The returned object provides explicit getter methods to safely
     access referential values.
-
-    Expected sheets:
-        - PAYS
-        - STUDY_SCENARIO
-        - CLUSTER
-
-    Expected mappings:
-        - market_node -> code_antares
-        - year -> study_scenario
-        - cluster_pemmdb -> cluster_bp
 
     Args:
         file_path: Path to the MAIN_PARAMS.xlsx file.
@@ -154,7 +170,12 @@ def parse_main_params(file_path: Path) -> MainParams:
     if not file_path.exists():
         raise FileNotFoundError(f"Input file does not exist: {file_path}")
 
-    expected_sheets = [ReferentialSheetNames.PAYS, ReferentialSheetNames.STUDY_SCENARIO, ReferentialSheetNames.CLUSTER]
+    expected_sheets = [
+        ReferentialSheetNames.PAYS,
+        ReferentialSheetNames.STUDY_SCENARIO,
+        ReferentialSheetNames.CLUSTER,
+        ReferentialSheetNames.COMMON_DATA,
+    ]
     excel_sheets = pd.read_excel(file_path, sheet_name=None)
     for sheet in expected_sheets:
         if sheet not in excel_sheets:
@@ -189,7 +210,24 @@ def parse_main_params(file_path: Path) -> MainParams:
 
     cluster_dict = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB.value], df[ClusterColumnsNames.CLUSTER_BP.value]))
 
+    # Parse the `Common Data` sheet
+    df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
+    actual_cols = set(df.columns)
+    for common_col in [CommonDataColumnsNames.CLUSTER_BP, CommonDataColumnsNames.FUEL, CommonDataColumnsNames.TYPE]:
+        if common_col.value not in actual_cols:
+            raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
+
+    cluster_antares_dict = {
+        row[CommonDataColumnsNames.CLUSTER_BP]: ClusterParams(
+            type=row[CommonDataColumnsNames.TYPE], fuel=row[CommonDataColumnsNames.FUEL]
+        )
+        for _, row in df.iterrows()
+    }
+
     # Return validated dataclass
     return MainParams(
-        _market_to_antares=countries_dict, _year_to_scenario=scenario_dict, _cluster_pemmdb_to_antares=cluster_dict
+        _market_to_antares=countries_dict,
+        _year_to_scenario=scenario_dict,
+        _cluster_pemmdb_to_antares=cluster_dict,
+        _cluster_antares=cluster_antares_dict,
     )
