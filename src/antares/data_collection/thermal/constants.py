@@ -22,7 +22,7 @@ BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
 
 
-def get_starting_and_ending_timestamps(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
+def get_starting_and_ending_timestamps_for_outputs(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
     """
     Implicit rule: For a given year, we have to consider the year starts in July of the previous year
     and ends in June of the current year.

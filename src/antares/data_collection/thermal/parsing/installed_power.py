@@ -21,6 +21,8 @@ from antares.data_collection.thermal.constants import (
     DEFAULT_DECOMMISSIONING_DATE,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
+    OutputThermalInstallPowerColumns,
+    get_starting_and_ending_timestamps_for_outputs,
 )
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
@@ -162,6 +164,44 @@ class ThermalInstallerPowerParser:
         ]
         return df[expected_cols]
 
+    def _get_start_and_end_timestamps_for_outputs(self) -> tuple[pd.Timestamp, pd.Timestamp]:
+        years = sorted(self.years)
+        start, _  = get_starting_and_ending_timestamps_for_outputs(years[0])
+        _, end  = get_starting_and_ending_timestamps_for_outputs(years[-1])
+        return start, end
+
+
+    def _truc(self, df: pd.DataFrame):
+        start, end = self._get_start_and_end_timestamps_for_outputs()
+        # Create a date range from min start to max end, monthly frequency
+        date_range = pd.date_range(start=start, end=end, freq='MS')  # MS = Month Start
+
+        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
+        output_data = {
+            OutputThermalInstallPowerColumns.AREA: [],
+            OutputThermalInstallPowerColumns.FUEL: [],
+            OutputThermalInstallPowerColumns.TECHNOLOGY: [],
+            OutputThermalInstallPowerColumns.CLUSTER: [],
+            OutputThermalInstallPowerColumns.CATEGORY: [],
+            OutputThermalInstallPowerColumns.TO_USE: [],
+        }
+        for month in date_range:
+            output_data[month.strftime('%Y_%m')] = []
+
+        """
+        for (antares_node, cluster_name), grouped_df in grouped_dfs:
+
+            for month in date_range:
+                month_end = month + pd.offsets.MonthEnd(1)
+                # Find rows where the range overlaps with the current month
+                mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month)
+                data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
+                output_data[month] = {"number": data.count(), "power": data.sum()}
+
+            print(output_data)
+            break
+        """
+
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
@@ -172,6 +212,7 @@ class ThermalInstallerPowerParser:
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output(df)
+        self._truc(df)
         """
         TODO:
         - Write the ouput file: not that easy
