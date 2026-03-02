@@ -9,13 +9,15 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+from copy import deepcopy
 from pathlib import Path
 
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams, parse_main_params
 from antares.data_collection.thermal.constants import (
-    BIOMASS_SNCD_FUEL,
+    BIOMASS_CLUSTER_SUFFIX,
+    BIOMASS_SNCD_FUEL_VALUE,
     DEFAULT_DECOMMISSIONING_DATE,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
@@ -121,11 +123,25 @@ class ThermalParser:
         return df
 
     def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        If the column `SNCD_FUEL` is set to `Bio`, we have to split the PEMMDB Cluster into 2 Antares ones.
+        We split its capacity based on its `SNCD_FUEL_RT` value.
+        """
         fuels = df[InputThermalColumns.SCND_FUEL]
-        cluster_names = list(df[CLUSTER_NAME_INTERMEDIATE_COLUMN])
         for k, fuel in enumerate(fuels):
-            if fuel == BIOMASS_SNCD_FUEL:
-                print(cluster_names[k])
+            if fuel == BIOMASS_SNCD_FUEL_VALUE:
+                cluster_line = df.iloc[k]
+                if cluster_line[InputThermalColumns.SCND_FUEL_RT] == 0:
+                    # We don't need to create a Biomass plant as its power will be 0, it will be ignored.
+                    continue
+                bio_line = deepcopy(cluster_line)
+                bio_line[CLUSTER_NAME_INTERMEDIATE_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
+                bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
+                cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= cluster_line[InputThermalColumns.SCND_FUEL_RT]
+                # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
+                df.iloc[k] = cluster_line
+                # Add new line inside dataframe with the created biomass unit
+                df.loc[len(df)] = bio_line
         return df
 
     def build_thermal_installed_power(self) -> pd.DataFrame:
@@ -138,7 +154,6 @@ class ThermalParser:
         df = self._split_clusters_with_biomass_rule(df)
         """
         TODO:
-        - Then Bio / Fuel units as we have to add suffix to the name
         - Convert areas to their Antares names
         - Write the ouput file
         """
