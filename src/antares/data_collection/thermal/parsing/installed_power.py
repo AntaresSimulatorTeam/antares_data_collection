@@ -42,7 +42,7 @@ class ThermalInstallerPowerParser:
         # Checks that all expected columns exist
         df = pd.read_csv(input_file_path)
         existing_cols = set(df.columns)
-        expected_cols = [col for col in InputThermalColumns]
+        expected_cols = list(InputThermalColumns)
         for expected_column in expected_cols:
             if expected_column not in existing_cols:
                 raise ValueError(f"Column {expected_column} not found in {input_file_path}")
@@ -150,6 +150,18 @@ class ThermalInstallerPowerParser:
         df[ANTARES_NODE_NAME_COLUMN] = self.main_params.get_antares_codes(node_list)
         return df
 
+    def _filter_columns_for_output(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Only keep the input columns we need to create the output file."""
+        expected_cols = [
+            InputThermalColumns.COMMISSIONING_DATE,
+            InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED,
+            ANTARES_CLUSTER_NAME_COLUMN,
+            ANTARES_NODE_NAME_COLUMN,
+            InputThermalColumns.PEMMDB_TECHNOLOGY,
+            InputThermalColumns.NET_MAX_GEN_CAP,
+        ]
+        return df[expected_cols]
+
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
@@ -159,6 +171,7 @@ class ThermalInstallerPowerParser:
         df = self._split_clusters_with_biomass_rule(df)
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
+        df = self._filter_columns_for_output(df)
         """
         TODO:
         - Write the ouput file: not that easy
@@ -168,7 +181,7 @@ class ThermalInstallerPowerParser:
 
 
 def test_truc():
-    resource_path = Path("/tests/antares/resources")
+    resource_path = Path("/home/belthlemar/Projects/Antares/antares_data_collection/tests/antares/resources")
     main_params = parse_main_params(resource_path / "MAIN_PARAMS_2025.xlsx")
     parser = ThermalInstallerPowerParser(resource_path, ["Available on market"], main_params, [2030])
     df = parser.build_thermal_installed_power()
