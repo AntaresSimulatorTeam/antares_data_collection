@@ -24,6 +24,7 @@ from antares.data_collection.thermal.constants import (
 )
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
+ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
 class ThermalParser:
@@ -144,6 +145,11 @@ class ThermalParser:
 
         return df
 
+    def _add_code_antares_colum(self, df: pd.DataFrame) -> pd.DataFrame:
+        node_list = df[InputThermalColumns.MARKET_NODE].tolist()
+        df[ANTARES_NODE_NAME_COLUMN] = self.main_params.get_antares_codes(node_list)
+        return df
+
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
@@ -152,10 +158,11 @@ class ThermalParser:
         df = self._add_antares_cluster_name_colum(df)
         df = self._split_clusters_with_biomass_rule(df)
         df = self._filter_values_based_on_net_max_gen_cap(df)
+        df = self._add_code_antares_colum(df)
         """
         TODO:
-        - Convert areas to their Antares names
-        - Write the ouput file
+        - Write the ouput file: not that easy
+        - need to put units in common: if the share antares_code and cluster_name it should be only 1 line in Pegase.
         """
         return df
 

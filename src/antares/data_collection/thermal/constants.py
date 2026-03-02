@@ -41,9 +41,3 @@ class InputThermalColumns(StrEnum):
     SCND_FUEL_RT = "SCND_FUEL_RT"
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"
-
-
-# new columns computed
-class ThermalInputComputedColumns(StrEnum):
-    BIO_MAX_GENERATION_MW = "BIO_MAX_GENERATION_MW"
-    FOSSIL_MAX_GENERATION_MW = "FOSSIL_MAX_GENERATION_MW"
