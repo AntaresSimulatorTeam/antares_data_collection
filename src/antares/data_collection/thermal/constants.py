@@ -21,15 +21,9 @@ DEFAULT_DECOMMISSIONING_DATE = pd.Timestamp(year=2100, month=1, day=1)
 BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
 FUEL_MAPPING = {
-    "DSR": "Other",
-    "virtuel": "Other",
-    BIOMASS_CLUSTER_SUFFIX: "Mixed fuel",
-}
+BIOMASS_CLUSTER_SUFFIX: "Mixed fuel",
+    "virtuel": "Other"
 
-TECHNOLOGY_MAPPING = {
-    "DSR": "Other",
-    "virtuel": "Other",
-    BIOMASS_CLUSTER_SUFFIX: BIOMASS_CLUSTER_SUFFIX,
 }
 
 
