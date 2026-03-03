@@ -175,7 +175,7 @@ class ThermalInstallerPowerParser:
         for pattern, value in FUEL_MAPPING.items():
             if pattern in unit_name:
                 return value
-        return self.main_params.get_antares_cluster_type_and_fuel(unit_name).fuel
+        return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
 
     def _find_technology(self, unit_name: str) -> str:
         if BIOMASS_CLUSTER_SUFFIX in unit_name:
