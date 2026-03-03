@@ -15,13 +15,14 @@ from typing import Any
 
 import pandas as pd
 
-from antares.data_collection.referential_data.main_params import MainParams, parse_main_params
+from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     DEFAULT_DECOMMISSIONING_DATE,
     FUEL_MAPPING,
     THERMAL_INPUT_FILE,
+    THERMAL_INSTALL_POWER_FOLDER,
     InputThermalColumns,
     OutputThermalInstallPowerColumns,
     get_starting_and_ending_timestamps_for_outputs,
@@ -32,8 +33,15 @@ ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
 class ThermalInstallerPowerParser:
-    def __init__(self, input_folder: Path, output_folder: Path, op_stat_values: list[str], main_params: MainParams, years: list[int]):
-        self.input_folder= input_folder
+    def __init__(
+        self,
+        input_folder: Path,
+        output_folder: Path,
+        op_stat_values: list[str],
+        main_params: MainParams,
+        years: list[int],
+    ):
+        self.input_folder = input_folder
         self.output_folder = output_folder
         self.op_stat_values = op_stat_values
         self.main_params = main_params
@@ -226,7 +234,9 @@ class ThermalInstallerPowerParser:
         return dataframe[[to_use_col] + [col for col in dataframe.columns if col != to_use_col]]
 
     def _export_dataframe(self, df: pd.DataFrame) -> None:
-        pass
+        parent_dir = self.output_folder / THERMAL_INSTALL_POWER_FOLDER
+        parent_dir.mkdir(parents=True, exist_ok=True)
+        df.to_excel(parent_dir / "thermal_installed_power.xlsx", index=False)
 
     def build_thermal_installed_power(self) -> None:
         input_df = self._read_input_file()
@@ -240,13 +250,3 @@ class ThermalInstallerPowerParser:
         df = self._filter_columns_for_output(df)
         df = self._build_pegase_dataframe(df)
         self._export_dataframe(df)
-
-
-def test_truc(tmp_path: Path):
-    resource_path = Path("/home/belthlemar/Projects/Antares/antares_data_collection/tests/antares/resources")
-    main_params = parse_main_params(resource_path / "MAIN_PARAMS_2025.xlsx")
-    parser = ThermalInstallerPowerParser(resource_path, tmp_path, ["Available on market"], main_params, [2030])
-    parser.build_thermal_installed_power()
-    """final_df = pd.read_csv(resource_path / "expected_output_files" / "thermal_installed_power.csv")
-    print(final_df)
-    """
