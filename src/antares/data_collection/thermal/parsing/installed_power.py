@@ -14,15 +14,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.referential_data.main_params import MainParams, parse_main_params, ClusterParams
+from antares.data_collection.referential_data.main_params import MainParams, parse_main_params
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     DEFAULT_DECOMMISSIONING_DATE,
+    FUEL_MAPPING,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
     OutputThermalInstallPowerColumns,
-    get_starting_and_ending_timestamps_for_outputs, FUEL_MAPPING,
+    get_starting_and_ending_timestamps_for_outputs,
 )
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"

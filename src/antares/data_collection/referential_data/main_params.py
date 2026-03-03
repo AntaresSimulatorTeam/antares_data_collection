@@ -54,13 +54,13 @@ class ClusterColumnsNames(StrEnum):
     TYPE = "TYPE"
     CLUSTER_PEMMDB = "CLUSTER_PEMMDB"
     CLUSTER_BP = "CLUSTER_BP"
+    TECHNOLOGY = "Technology thermal"
 
 
 # sheet "Common Data"
 class CommonDataColumnsNames(StrEnum):
     CLUSTER_BP = "cluster_BP"
     FUEL = "Fuel"
-    TYPE = "Type"
 
 
 THERMAL_TYPE_NAME = "Thermal"
@@ -76,7 +76,7 @@ class PeakParamsColumnsNames(Enum):
 
 @dataclass(frozen=True)
 class ClusterParams:
-    type: str
+    technology: str
     fuel: str
 
 
@@ -131,10 +131,16 @@ class MainParams:
     def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
-    def get_antares_cluster_type_and_fuel(self, antares_cluster: str) -> ClusterParams:
+    def get_antares_cluster_technology_and_fuel(self, antares_cluster: str) -> ClusterParams:
         if antares_cluster not in self._cluster_antares:
             raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
         return self._cluster_antares[antares_cluster]
+
+    def get_antares_cluster_type(self, antares_cluster: str) -> str:
+        return self._get_antares_cluster(antares_cluster).type
+
+    def get_antares_cluster_fuel(self, antares_cluster: str) -> str:
+        return self._get_antares_cluster(antares_cluster).fuel
 
 
 def parse_main_params(file_path: Path) -> MainParams:
@@ -196,32 +202,40 @@ def parse_main_params(file_path: Path) -> MainParams:
     # Parse the `CLUSTER` sheet
     df = excel_sheets[ReferentialSheetNames.CLUSTER]
     actual_cols = set(df.columns)
-    for cluster_col in [ClusterColumnsNames.CLUSTER_PEMMDB, ClusterColumnsNames.CLUSTER_BP, ClusterColumnsNames.TYPE]:
+    for cluster_col in [
+        ClusterColumnsNames.CLUSTER_PEMMDB,
+        ClusterColumnsNames.CLUSTER_BP,
+        ClusterColumnsNames.TYPE,
+        ClusterColumnsNames.TECHNOLOGY,
+    ]:
         if cluster_col.value not in actual_cols:
             raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
     df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
 
-    cluster_dict = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB.value], df[ClusterColumnsNames.CLUSTER_BP.value]))
+    pemmdb_to_antares_mapping = {}
+    intermediate_dict = {}  # Used to get the Technology attribute for the upcoming `ClusterParams` class
+    for _, row in df.iterrows():
+        pemmdb_to_antares_mapping[row[ClusterColumnsNames.CLUSTER_PEMMDB]] = row[ClusterColumnsNames.CLUSTER_BP]
+        intermediate_dict[row[ClusterColumnsNames.CLUSTER_BP]] = row[ClusterColumnsNames.TECHNOLOGY]
 
     # Parse the `Common Data` sheet
     df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
     actual_cols = set(df.columns)
-    for common_col in [CommonDataColumnsNames.CLUSTER_BP, CommonDataColumnsNames.FUEL, CommonDataColumnsNames.TYPE]:
+    for common_col in [CommonDataColumnsNames.CLUSTER_BP, CommonDataColumnsNames.FUEL]:
         if common_col.value not in actual_cols:
             raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
 
-    cluster_antares_dict = {
-        row[CommonDataColumnsNames.CLUSTER_BP]: ClusterParams(
-            type=row[CommonDataColumnsNames.TYPE], fuel=row[CommonDataColumnsNames.FUEL]
-        )
-        for _, row in df.iterrows()
-    }
+    cluster_antares_dict = {}
+    for _, row in df.iterrows():
+        bp_name = row[CommonDataColumnsNames.CLUSTER_BP]
+        fuel = row[CommonDataColumnsNames.FUEL]
+        cluster_antares_dict[bp_name] = ClusterParams(technology=intermediate_dict[bp_name], fuel=fuel)
 
     # Return validated dataclass
     return MainParams(
         _market_to_antares=countries_dict,
         _year_to_scenario=scenario_dict,
-        _cluster_pemmdb_to_antares=cluster_dict,
+        _cluster_pemmdb_to_antares=pemmdb_to_antares_mapping,
         _cluster_antares=cluster_antares_dict,
     )
