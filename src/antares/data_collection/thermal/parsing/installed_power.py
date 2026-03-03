@@ -32,14 +32,15 @@ ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
 class ThermalInstallerPowerParser:
-    def __init__(self, folder_path: Path, op_stat_values: list[str], main_params: MainParams, years: list[int]):
-        self.input_folder_path = folder_path
+    def __init__(self, input_folder: Path, output_folder: Path, op_stat_values: list[str], main_params: MainParams, years: list[int]):
+        self.input_folder= input_folder
+        self.output_folder = output_folder
         self.op_stat_values = op_stat_values
         self.main_params = main_params
         self.years = years
 
     def _read_input_file(self) -> pd.DataFrame:
-        input_file_path = self.input_folder_path.joinpath(THERMAL_INPUT_FILE)
+        input_file_path = self.input_folder.joinpath(THERMAL_INPUT_FILE)
         if not input_file_path.exists():
             raise ValueError(f"Thermal input file {input_file_path} not found")
 
@@ -241,10 +242,10 @@ class ThermalInstallerPowerParser:
         self._export_dataframe(df)
 
 
-def test_truc():
+def test_truc(tmp_path: Path):
     resource_path = Path("/home/belthlemar/Projects/Antares/antares_data_collection/tests/antares/resources")
     main_params = parse_main_params(resource_path / "MAIN_PARAMS_2025.xlsx")
-    parser = ThermalInstallerPowerParser(resource_path, ["Available on market"], main_params, [2030])
+    parser = ThermalInstallerPowerParser(resource_path, tmp_path, ["Available on market"], main_params, [2030])
     parser.build_thermal_installed_power()
     """final_df = pd.read_csv(resource_path / "expected_output_files" / "thermal_installed_power.csv")
     print(final_df)
