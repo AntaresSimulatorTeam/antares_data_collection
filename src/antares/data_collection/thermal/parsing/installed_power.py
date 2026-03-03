@@ -203,7 +203,7 @@ class ThermalInstallerPowerParser:
             assert isinstance(cluster_name, str)
             # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
             unit_name = cluster_name.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
-            params = self.main_params.get_antares_cluster_type_and_fuel(unit_name)
+            params = self.main_params.get_antares_cluster_technology_and_fuel(unit_name)
 
             fuel = params.fuel
             if BIOMASS_CLUSTER_SUFFIX in cluster_name:
