@@ -18,7 +18,7 @@ import pandas as pd
 RESOURCE_PATH = Path(__file__).parent / "antares" / "resources"
 
 
-## mock referential MAIN_PARAMS
+## mock referential MAIN_PARAMS (used for links)
 @pytest.fixture
 def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
     data = {
@@ -177,6 +177,86 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
 
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         for sheet_name, df in data.items():
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+    return output_path
+
+
+## mock referential MAIN_PARAMS (for parsing test)
+@pytest.fixture
+def mock_parsing_main_params_xlsx(tmp_path: Path) -> Path:
+    df_pays = pd.DataFrame(
+        {
+            "Nom_pays": ["Albanie", "Autriche", "Belgique", "France"],
+            "code_pays": ["AL", "AT", "BE", "FR"],
+            "areas": ["Albanie", "Autriche", "Belgique", "France"],
+            "market_node": ["AL00", "AT00", "BE00", "FR00"],
+            "code_antares": ["AL", "AT", "BE", "FR"],
+        }
+    )
+
+    df_study_scenario = pd.DataFrame(
+        {
+            "YEAR": ["2030", "2040", "2060", "2200"],
+            "STUDY_SCENARIO": ["ERAA", "ERAA", "TYNDP", "TYNDP"],
+        }
+    )
+
+    df_links = pd.DataFrame(
+        {
+            "market_node": [
+                "AL00",
+                "AT00",
+                "BA00",
+                "BE00",
+            ],
+            "code_antares": ["AL", "AT", "BA", "BE"],
+        }
+    )
+
+    df_cluster = pd.DataFrame(
+        {
+            "TYPE": ["Thermal", "Thermal", "Thermal"],
+            "CLUSTER_PEMMDB": [
+                "Gas/CCGT CCS",
+                "OtherNon-RES/Gas/CCGT CCS",
+                "Gas/CCGT CCS/CHP",
+            ],
+            "CLUSTER_BP": ["CCGT CCS", "CCGT CCS", "CCGT CCS CHP"],
+        }
+    )
+
+    df_peak_params = pd.DataFrame(
+        {
+            "hour": [1, 2],
+            "period_hour": ["HC", "HP"],
+            "month": [1, 2],
+            "period_month": ["winter", "summer"],
+        }
+    )
+
+    df_common_data = pd.DataFrame(
+        {
+            "cluster_BP": ["Nuclear", "Nuclear SMR"],
+            "Category": [1, 1],
+            "Fuel": ["Nuclear", "Nuclear"],
+            "Type": ["-", "SMR"],
+        }
+    )
+
+    dict_of_data = {
+        "PAYS": df_pays,
+        "STUDY_SCENARIO": df_study_scenario,
+        "LINKS": df_links,
+        "CLUSTER": df_cluster,
+        "PEAK_PARAMS": df_peak_params,
+        "Common Data": df_common_data,
+    }
+
+    output_path = tmp_path / "MAIN_PARAMS.xlsx"
+
+    with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+        for sheet_name, df in dict_of_data.items():
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     return output_path
