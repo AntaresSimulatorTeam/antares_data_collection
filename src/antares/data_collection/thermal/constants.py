@@ -20,11 +20,7 @@ THERMAL_INSTALL_POWER_FILE_FORMAT = "thermal_{trajectory}/{scenario}.xlsx"
 DEFAULT_DECOMMISSIONING_DATE = pd.Timestamp(year=2100, month=1, day=1)
 BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
-FUEL_MAPPING = {
-BIOMASS_CLUSTER_SUFFIX: "Mixed fuel",
-    "virtuel": "Other"
-
-}
+FUEL_MAPPING = {BIOMASS_CLUSTER_SUFFIX: "Mixed fuel", "virtuel": "Other"}
 
 
 def get_starting_and_ending_timestamps_for_outputs(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:

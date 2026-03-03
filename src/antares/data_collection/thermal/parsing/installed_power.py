@@ -11,6 +11,7 @@
 # This file is part of the Antares project.
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -167,8 +168,8 @@ class ThermalInstallerPowerParser:
 
     def _get_start_and_end_timestamps_for_outputs(self) -> tuple[pd.Timestamp, pd.Timestamp]:
         years = sorted(self.years)
-        start, _  = get_starting_and_ending_timestamps_for_outputs(years[0])
-        _, end  = get_starting_and_ending_timestamps_for_outputs(years[-1])
+        start, _ = get_starting_and_ending_timestamps_for_outputs(years[0])
+        _, end = get_starting_and_ending_timestamps_for_outputs(years[-1])
         return start, end
 
     def _find_fuel(self, unit_name: str) -> str:
@@ -177,42 +178,51 @@ class ThermalInstallerPowerParser:
                 return value
         return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
 
-    def _truc(self, df: pd.DataFrame):
+    def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         start, end = self._get_start_and_end_timestamps_for_outputs()
         # Create a date range from min start to max end, monthly frequency
-        date_range = pd.date_range(start=start, end=end, freq='MS')  # MS = Month Start
+        date_range = pd.date_range(start=start, end=end, freq="MS")  # MS = Month Start
 
         grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
-        output_data = {
+        output_data: dict[str, list[Any]] = {
             OutputThermalInstallPowerColumns.AREA: [],
             OutputThermalInstallPowerColumns.FUEL: [],
             OutputThermalInstallPowerColumns.TECHNOLOGY: [],
             OutputThermalInstallPowerColumns.CLUSTER: [],
             OutputThermalInstallPowerColumns.CATEGORY: [],
-            OutputThermalInstallPowerColumns.TO_USE: [],
         }
         for month in date_range:
-            output_data[month.strftime('%Y_%m')] = []
+            output_data[month.strftime("%Y_%m")] = []
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
-
             assert isinstance(cluster_name, str)
             # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
             unit_name = cluster_name.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
             technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
             fuel = self._find_fuel(unit_name)
 
-
+            output_data[OutputThermalInstallPowerColumns.AREA] += 2 * [antares_node]
+            output_data[OutputThermalInstallPowerColumns.FUEL] += 2 * [fuel]
+            output_data[OutputThermalInstallPowerColumns.TECHNOLOGY] += 2 * [technology]
+            output_data[OutputThermalInstallPowerColumns.CLUSTER] += 2 * [cluster_name]
+            output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["number", "power"]
 
             for month in date_range:
                 month_end = month + pd.offsets.MonthEnd(1)
                 # Find rows where the range overlaps with the current month
-                mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month)
+                mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
+                    grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
+                )
                 data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                output_data[month] = {"number": data.count(), "power": data.sum()}
+                output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
 
-            print(output_data)
+        # Add the `ToUse` column with every value being a 1
+        dataframe = pd.DataFrame(output_data)
+        to_use_col = OutputThermalInstallPowerColumns.TO_USE
+        dataframe[to_use_col] = 1
 
+        # Reorder the dataframe columns (just need to put `ToUse` in first)
+        return dataframe[[to_use_col] + [col for col in dataframe.columns if col != to_use_col]]
 
     def build_thermal_installed_power(self) -> pd.DataFrame:
         input_df = self._read_input_file()
@@ -224,7 +234,7 @@ class ThermalInstallerPowerParser:
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output(df)
-        self._truc(df)
+        df = self._build_pegase_dataframe(df)
         """
         TODO:
         - Write the ouput file: not that easy
