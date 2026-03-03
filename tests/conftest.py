@@ -18,7 +18,7 @@ import pandas as pd
 RESOURCE_PATH = Path(__file__).parent / "antares" / "resources"
 
 
-## mock referential MAIN_PARAMS
+## mock referential MAIN_PARAMS (used for links)
 @pytest.fixture
 def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
     data = {
