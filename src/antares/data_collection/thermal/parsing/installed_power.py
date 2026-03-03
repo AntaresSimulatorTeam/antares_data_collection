@@ -33,13 +33,13 @@ ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 class ThermalInstallerPowerParser:
     def __init__(self, folder_path: Path, op_stat_values: list[str], main_params: MainParams, years: list[int]):
-        self.folder_path = folder_path
+        self.input_folder_path = folder_path
         self.op_stat_values = op_stat_values
         self.main_params = main_params
         self.years = years
 
     def _read_input_file(self) -> pd.DataFrame:
-        input_file_path = self.folder_path.joinpath(THERMAL_INPUT_FILE)
+        input_file_path = self.input_folder_path.joinpath(THERMAL_INPUT_FILE)
         if not input_file_path.exists():
             raise ValueError(f"Thermal input file {input_file_path} not found")
 
@@ -224,7 +224,10 @@ class ThermalInstallerPowerParser:
         # Reorder the dataframe columns (just need to put `ToUse` in first)
         return dataframe[[to_use_col] + [col for col in dataframe.columns if col != to_use_col]]
 
-    def build_thermal_installed_power(self) -> pd.DataFrame:
+    def _export_dataframe(self, df: pd.DataFrame) -> None:
+        pass
+
+    def build_thermal_installed_power(self) -> None:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_values_based_on_study_scenarios(df)
@@ -235,20 +238,14 @@ class ThermalInstallerPowerParser:
         df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output(df)
         df = self._build_pegase_dataframe(df)
-        """
-        TODO:
-        - Write the ouput file: not that easy
-        - need to put units in common: if the share antares_code and cluster_name it should be only 1 line in Pegase.
-        """
-        return df
+        self._export_dataframe(df)
 
 
 def test_truc():
     resource_path = Path("/home/belthlemar/Projects/Antares/antares_data_collection/tests/antares/resources")
     main_params = parse_main_params(resource_path / "MAIN_PARAMS_2025.xlsx")
     parser = ThermalInstallerPowerParser(resource_path, ["Available on market"], main_params, [2030])
-    df = parser.build_thermal_installed_power()
-    print(df)
+    parser.build_thermal_installed_power()
     """final_df = pd.read_csv(resource_path / "expected_output_files" / "thermal_installed_power.csv")
     print(final_df)
     """
