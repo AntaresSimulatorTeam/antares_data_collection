@@ -40,21 +40,6 @@ def scenario_filter(df_input: pd.DataFrame, filter_params: str) -> pd.DataFrame:
     return df_input[df_input["STUDY_SCENARIO"].str.contains(pattern, regex=True)]
 
 
-def thermal_filter_active_years_commissioning(
-    df_input: pd.DataFrame,
-    name_col_start_date: str,
-    name_col_end_date: str,
-    year_date: pd.Timestamp,
-) -> pd.DataFrame:
-    # filter by year
-    df_input = df_input.loc[(df_input[name_col_start_date] <= year_date) & (df_input[name_col_end_date] >= year_date)]
-    return df_input
-
-
-def thermal_year_to_overlapping_datetime(year_input: int) -> pd.DatetimeIndex:
-    return pd.date_range(f"{year_input - 1}-07-01", f"{year_input}-06-01", freq="MS")
-
-
 ##
 # Export : Excel workbook
 ##
