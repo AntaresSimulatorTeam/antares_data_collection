@@ -22,7 +22,7 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # Build for Chriselle
     parser = ThermalInstallerPowerParser(
-        RESOURCE_PATH, tmp_path, ["Available on market"], main_params, [2040, 2050, 2060, 2027]
+        RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2040, 2050, 2060, 2027]
     )
     parser.build_thermal_installed_power()
     print("ok")
