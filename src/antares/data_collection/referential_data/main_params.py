@@ -120,8 +120,8 @@ class MainParams:
             raise ValueError(f"No scenario defined for year {year}")
         return self._year_to_scenario[year]
 
-    def get_scenario_types(self, years: list[int]) -> list[str]:
-        return [self.get_scenario_type(y) for y in years]
+    def get_scenario_types(self, years: list[int]) -> set[str]:
+        return {self.get_scenario_type(y) for y in years}
 
     def get_cluster_bp(self, cluster_pemmdb: str) -> str:
         if cluster_pemmdb not in self._cluster_pemmdb_to_antares:

@@ -78,7 +78,7 @@ class ThermalInstallerPowerParser:
         Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
         Other scenarios present in the input file will be ignored.
         """
-        scenario_types = self.main_params.get_scenario_types(years=self.years)
+        scenario_types = list(self.main_params.get_scenario_types(years=self.years))
 
         if not scenario_types:
             return df
