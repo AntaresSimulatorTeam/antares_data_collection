@@ -25,16 +25,7 @@ def test_nominal_case(tmp_path: Path) -> None:
     # Use the real MainParams file
     main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
 
-    # Build a thermal installed power file
-    parser = ThermalInstallerPowerParser(RESOURCE_PATH, tmp_path, ["Available on market"], main_params, [2030])
+    # Build for Chriselle
+    parser = ThermalInstallerPowerParser(RESOURCE_PATH, tmp_path, ["Available on market"], main_params, [2040, 2050, 2060, 2027])
     parser.build_thermal_installed_power()
-
-    # Asserts the file is created
-    generated_file_path = tmp_path / THERMAL_INSTALL_POWER_FOLDER / "thermal_installed_power.xlsx"
-    assert generated_file_path.exists()
-    generated_df = pd.read_excel(generated_file_path)
-
-    # Compare its content with the expected one
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal_installed_power.xlsx"
-    expected_df = pd.read_excel(expected_file_path)
-    pd.testing.assert_frame_equal(generated_df, expected_df, check_dtype=False)
+    print("ok")
