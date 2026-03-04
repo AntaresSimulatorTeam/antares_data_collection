@@ -223,7 +223,7 @@ def thermal_compute_power_number_capacity(
     return df_aggregate
 
 
-def thermal_manage_output_format() -> None:
+def thermal_manage_output_format(df_aggregated_by_year: pd.DataFrame, years_input: list[int]) -> None:
     raise NotImplementedError("Not implemented yet")
 
 
