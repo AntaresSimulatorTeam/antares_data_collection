@@ -10,8 +10,9 @@
 #
 # This file is part of the Antares project.
 from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 import pandas as pd
 
@@ -30,6 +31,12 @@ from antares.data_collection.thermal.constants import (
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
 ANTARES_NODE_NAME_COLUMN = "antares_node"
+
+
+@dataclass
+class CommissioningDateLimits:
+    last_possible_commissioning_date: pd.Timestamp
+    earliest_possible_decommissioning_date: pd.Timestamp
 
 
 class ThermalInstallerPowerParser:
@@ -98,8 +105,6 @@ class ThermalInstallerPowerParser:
         if not self.years:
             return df
 
-        start, end = self._get_starting_and_ending_timestamps()
-
         # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
         for datetime_col in [InputThermalColumns.COMMISSIONING_DATE, InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]:
             df[datetime_col] = pd.to_datetime(df[datetime_col])
@@ -112,10 +117,21 @@ class ThermalInstallerPowerParser:
             df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
         ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
 
-        df = df.loc[
-            (df[InputThermalColumns.COMMISSIONING_DATE] <= start)
-            & (df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= end)
-        ]
+        filtered_dfs = []
+        for commissioning_limits in self._get_starting_and_ending_timestamps():
+            # For each year we only keep the values with fitting dates
+            filtered_df = df.loc[
+                (df[InputThermalColumns.COMMISSIONING_DATE] <= commissioning_limits.last_possible_commissioning_date)
+                & (
+                    df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+                    >= commissioning_limits.earliest_possible_decommissioning_date
+                )
+            ]
+            filtered_dfs.append(filtered_df)
+
+        # In the end we concatenate them and drop duplicated lines
+        df = pd.concat(filtered_dfs).drop_duplicates().reset_index(drop=True)
+
         if df.empty:
             # We want to raise as soon as possible to have a clear error msg
             msg = f"No input data matched the given (de)commissioning dates for the given years {self.years}"
@@ -126,11 +142,17 @@ class ThermalInstallerPowerParser:
         """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
         return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
 
-    def _get_starting_and_ending_timestamps(self) -> tuple[pd.Timestamp, pd.Timestamp]:
-        years = sorted(self.years)
-        start = pd.Timestamp(year=years[0] - 1, month=1, day=1)
-        end = pd.Timestamp(year=years[-1], month=12, day=31)
-        return start, end
+    def _get_starting_and_ending_timestamps(self) -> Iterator[CommissioningDateLimits]:
+        """
+        For each year in `self.years`, we should consider:
+        - 31st December of the year -> Each cluster with a commissioning date after this will not be considered.
+        - 1st January of previous year -> Each cluster with a decommissioning date before this will not be considered.
+        """
+        for year in self.years:
+            yield CommissioningDateLimits(
+                last_possible_commissioning_date=pd.Timestamp(year=year, month=12, day=31),
+                earliest_possible_decommissioning_date=pd.Timestamp(year=year - 1, month=1, day=1),
+            )
 
     def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
         cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
