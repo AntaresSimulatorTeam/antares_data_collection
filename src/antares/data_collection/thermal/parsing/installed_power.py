@@ -84,8 +84,9 @@ class ThermalInstallerPowerParser:
             return df
 
         if len(scenario_types) == 2:
-            # The input writing is `X&Y` so we have to consider that
+            # The input writing is `X&Y` or `Y&X` so we have to consider that
             scenario_types.append(f"{scenario_types[0]}&{scenario_types[1]}")
+            scenario_types.append(f"{scenario_types[1]}&{scenario_types[0]}")
 
         df = df[df[InputThermalColumns.STUDY_SCENARIO].isin(scenario_types)]
         if df.empty:
