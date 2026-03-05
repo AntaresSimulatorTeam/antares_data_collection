@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import ClusterParams, parse_main_params
-from tests.conftest import RESOURCE_PATH
+from tests.conftest import INPUT_RESOURCE_PATH
 
 
 def test_parse_main_params_file_not_exist(tmp_path: Path) -> None:
@@ -102,7 +102,7 @@ def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dic
 
 def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     # Use real test case
-    file_path = RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"
+    file_path = INPUT_RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"
 
     main_params = parse_main_params(file_path=file_path)
 
