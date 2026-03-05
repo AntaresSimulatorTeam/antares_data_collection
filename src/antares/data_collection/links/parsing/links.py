@@ -23,6 +23,7 @@ class LinksParser:
         self.output_folder = output_folder
         self.main_params = main_params
         self.years = years
+        self.ntc_id_to_curve_uid = {}
 
     def _read_ntc_file(self) -> pd.DataFrame:
         input_file_path = self.input_folder.joinpath(NTC_FILE_NAME)
@@ -39,7 +40,7 @@ class LinksParser:
         # First read the file
         input_file_path = self.input_folder.joinpath(NTC_INDEX_FILE_NAME)
         if not input_file_path.exists():
-            raise ValueError(f"Thermal input file {input_file_path} not found")
+            raise ValueError(f"Links NTC Index input file {input_file_path} not found")
 
         # Checks that all expected columns exist
         df = pd.read_csv(input_file_path)
@@ -49,5 +50,5 @@ class LinksParser:
             if expected_column not in existing_cols:
                 raise ValueError(f"Column {expected_column} not found in {input_file_path}")
 
-        # Keep the useful dataframe columns only
-        df = df[expected_cols]
+        # Fill the internal mapping for the rest of the code
+        self.ntc_id_to_curve_uid = dict(zip(df[NtcIndexColumns.ID], df[NtcIndexColumns.CURVE_UID]))
