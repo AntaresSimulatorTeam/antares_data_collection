@@ -30,11 +30,8 @@ class LinksParser:
         if not input_file_path.exists():
             raise ValueError(f"Links NTC input file {input_file_path} not found")
 
-        # Checks that all expected columns exist
-        df = pd.read_csv(input_file_path)
-
         # We need all columns inside this file
-        return df
+        return pd.read_csv(input_file_path)
 
     def _fill_ntc_index_map(self) -> None:
         # First read the file

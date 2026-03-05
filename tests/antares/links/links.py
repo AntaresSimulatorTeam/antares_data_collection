@@ -11,15 +11,9 @@
 # This file is part of the Antares project.
 from pathlib import Path
 
-import pandas as pd
-
 from antares.data_collection.links.parsing.links import LinksParser
 from antares.data_collection.referential_data.main_params import parse_main_params
-from antares.data_collection.thermal.constants import (
-    THERMAL_INSTALL_POWER_FOLDER,
-)
-from antares.data_collection.thermal.parsing.installed_power import ThermalInstallerPowerParser
-from tests.conftest import INPUT_RESOURCE_PATH, RESOURCE_PATH
+from tests.conftest import INPUT_RESOURCE_PATH
 
 
 def test_nominal_case(tmp_path: Path) -> None:
