@@ -24,7 +24,6 @@ class LinksParser:
         self.main_params = main_params
         self.years = years
 
-
     def _read_ntc_file(self) -> pd.DataFrame:
         input_file_path = self.input_folder.joinpath(NTC_FILE_NAME)
         if not input_file_path.exists():
