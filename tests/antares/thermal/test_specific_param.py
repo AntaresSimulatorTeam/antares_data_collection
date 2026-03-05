@@ -25,7 +25,8 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # TODO tests are temporary (not pands df is returned by build_specific_param()
     # Build a thermal installed power file
-    parser = ThermalSpecificParamParser(RESOURCE_PATH, tmp_path, ["Available on market"], main_params, [2030])
+    op_stat_filter = ["Available on market", "Inelastic supply / fixed profile"]
+    parser = ThermalSpecificParamParser(RESOURCE_PATH, tmp_path, op_stat_filter, main_params, [2030])
     df_temp = parser.build_specific_param()
 
     assert isinstance(df_temp, pd.DataFrame)
