@@ -90,12 +90,7 @@ class ThermalInstallerPowerParser:
         if not scenario_types:
             return df
 
-        if len(scenario_types) == 2:
-            # The input writing is `X&Y` or `Y&X` so we have to consider that
-            scenario_types.append(f"{scenario_types[0]}&{scenario_types[1]}")
-            scenario_types.append(f"{scenario_types[1]}&{scenario_types[0]}")
-
-        df = df[df[InputThermalColumns.STUDY_SCENARIO].isin(scenario_types)]
+        df = df[df[InputThermalColumns.STUDY_SCENARIO].str.contains("|".join(scenario_types), case=False, na=False)]
         if df.empty:
             # We want to raise as soon as possible to have a clear error msg
             raise ValueError(f"No input data matched the given study scenario for the given years {self.years}")
