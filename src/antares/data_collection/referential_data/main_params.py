@@ -84,12 +84,12 @@ class PeakParamsColumnsNames(Enum):
 class ClusterParams:
     technology: str
     fuel: str
-    efficiency_default: int
-    fo_rate_default: int
+    efficiency_default: float
+    fo_rate_default: float
     fo_duration_default: int
     po_duration_default: int
-    po_winter_default: int
-    min_stable_generation_default: int
+    po_winter_default: float
+    min_stable_generation_default: float
 
 
 @dataclass
@@ -236,7 +236,23 @@ def parse_main_params(file_path: Path) -> MainParams:
     for _, row in df.iterrows():
         bp_name = row[CommonDataColumnsNames.CLUSTER_BP]
         fuel = row[CommonDataColumnsNames.FUEL]
-        cluster_antares_dict[bp_name] = ClusterParams(technology=intermediate_dict[bp_name], fuel=fuel)
+        efficiency_default = row[CommonDataColumnsNames.EFFICIENCY_DEFAULT]
+        fo_rate_default = row[CommonDataColumnsNames.FO_RATE_DEFAULT]
+        fo_duration_default = row[CommonDataColumnsNames.FO_DURATION_DEFAULT]
+        po_duration_default = row[CommonDataColumnsNames.PO_DURATION_DEFAULT]
+        po_winter_default = row[CommonDataColumnsNames.PO_WINTER_DEFAULT]
+        min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
+
+        cluster_antares_dict[bp_name] = ClusterParams(
+            technology=intermediate_dict[bp_name],
+            fuel=fuel,
+            efficiency_default=efficiency_default,
+            fo_rate_default=fo_rate_default,
+            fo_duration_default=fo_duration_default,
+            po_duration_default=po_duration_default,
+            po_winter_default=po_winter_default,
+            min_stable_generation_default=min_stable_generation_default,
+        )
 
     # Return validated dataclass
     return MainParams(

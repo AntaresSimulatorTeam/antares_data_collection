@@ -12,6 +12,7 @@
 
 from copy import deepcopy
 from pathlib import Path
+from typing import Iterator
 
 import pandas as pd
 
@@ -28,6 +29,7 @@ from antares.data_collection.thermal.constants import (
 from antares.data_collection.thermal.parsing.installed_power import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
+    CommissioningDateLimits,
 )
 
 
@@ -78,16 +80,12 @@ class ThermalSpecificParamParser:
         Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
         Other scenarios present in the input file will be ignored.
         """
-        scenario_types = self.main_params.get_scenario_types(years=self.years)
+        scenario_types = list(self.main_params.get_scenario_types(years=self.years))
 
         if not scenario_types:
             return df
 
-        if len(scenario_types) == 2:
-            # The input writing is `X&Y` so we have to consider that
-            scenario_types.append(f"{scenario_types[0]}&{scenario_types[1]}")
-
-        df = df[df[InputThermalColumns.STUDY_SCENARIO].isin(scenario_types)]
+        df = df[df[InputThermalColumns.STUDY_SCENARIO].str.contains("|".join(scenario_types), case=False, na=False)]
         if df.empty:
             # We want to raise as soon as possible to have a clear error msg
             raise ValueError(f"No input data matched the given study scenario for the given years {self.years}")
@@ -96,8 +94,6 @@ class ThermalSpecificParamParser:
     def _filter_values_based_on_commission_date(self, df: pd.DataFrame) -> pd.DataFrame:
         if not self.years:
             return df
-
-        start, end = self._get_starting_and_ending_timestamps()
 
         # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
         for datetime_col in [InputThermalColumns.COMMISSIONING_DATE, InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]:
@@ -111,10 +107,21 @@ class ThermalSpecificParamParser:
             df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
         ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
 
-        df = df.loc[
-            (df[InputThermalColumns.COMMISSIONING_DATE] <= start)
-            & (df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= end)
-        ]
+        filtered_dfs = []
+        for commissioning_limits in self._get_starting_and_ending_timestamps():
+            # For each year we only keep the values with fitting dates
+            filtered_df = df.loc[
+                (df[InputThermalColumns.COMMISSIONING_DATE] <= commissioning_limits.last_possible_commissioning_date)
+                & (
+                    df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+                    >= commissioning_limits.earliest_possible_decommissioning_date
+                )
+            ]
+            filtered_dfs.append(filtered_df)
+
+        # In the end we concatenate them and drop duplicated lines
+        df = pd.concat(filtered_dfs).drop_duplicates().reset_index(drop=True)
+
         if df.empty:
             # We want to raise as soon as possible to have a clear error msg
             msg = f"No input data matched the given (de)commissioning dates for the given years {self.years}"
@@ -125,11 +132,17 @@ class ThermalSpecificParamParser:
         """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
         return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
 
-    def _get_starting_and_ending_timestamps(self) -> tuple[pd.Timestamp, pd.Timestamp]:
-        years = sorted(self.years)
-        start = pd.Timestamp(year=years[0] - 1, month=1, day=1)
-        end = pd.Timestamp(year=years[-1], month=12, day=31)
-        return start, end
+    def _get_starting_and_ending_timestamps(self) -> Iterator[CommissioningDateLimits]:
+        """
+        For each year in `self.years`, we should consider:
+        - 31st December of the year -> Each cluster with a commissioning date after this will not be considered.
+        - 1st January of previous year -> Each cluster with a decommissioning date before this will not be considered.
+        """
+        for year in self.years:
+            yield CommissioningDateLimits(
+                last_possible_commissioning_date=pd.Timestamp(year=year, month=12, day=31),
+                earliest_possible_decommissioning_date=pd.Timestamp(year=year - 1, month=1, day=1),
+            )
 
     def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
         cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
@@ -146,7 +159,7 @@ class ThermalSpecificParamParser:
             if fuel == BIOMASS_SNCD_FUEL_VALUE:
                 cluster_line = df.iloc[k]
 
-                # Add a new line inside the dataframe with the created biomass unit
+                # Add new line inside dataframe with the created biomass unit
                 bio_line = deepcopy(cluster_line)
                 bio_line[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
                 bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
