@@ -23,7 +23,7 @@ class LinksParser:
         self.output_folder = output_folder
         self.main_params = main_params
         self.years = years
-        self.ntc_id_to_curve_uid = {}
+        self.ntc_id_to_curve_uid: dict[str, str] = {}
 
     def _read_ntc_file(self) -> pd.DataFrame:
         input_file_path = self.input_folder.joinpath(NTC_FILE_NAME)
