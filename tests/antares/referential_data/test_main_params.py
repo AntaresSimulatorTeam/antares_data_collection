@@ -330,6 +330,10 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
         "Shale oil/new": "Oil shale new",
         "OtherNon-RES/Shale oil/old": "Oil shale old",
         "Shale oil/old": "Oil shale old",
+        "OtherNon-RES/Lignite/old 1": "Lignite old 1",
+        "OtherNon-RES/Hydrogen/CCGT": "CCGT H2",
+        "OtherNon-RES/Light oil/-": "Light oil",
+        "OtherNon-RES/Hydrogen/OCGT": "OCGT H2",
     }
 
     assert main_params._cluster_antares == {
