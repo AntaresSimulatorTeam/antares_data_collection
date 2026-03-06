@@ -148,6 +148,9 @@ class MainParams:
             raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
         return self._cluster_antares[antares_cluster]
 
+    def get_antares_clusters_technology_and_fuel(self, antares_clusters: list[str]) -> list[ClusterParams]:
+        return [self.get_antares_cluster_technology_and_fuel(c) for c in antares_clusters]
+
 
 def parse_main_params(file_path: Path) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.

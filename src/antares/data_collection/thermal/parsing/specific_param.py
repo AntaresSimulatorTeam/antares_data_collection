@@ -176,17 +176,116 @@ class ThermalSpecificParamParser:
         df[ANTARES_NODE_NAME_COLUMN] = self.main_params.get_antares_codes(node_list)
         return df
 
+    def _update_existing_columns_with_commondata(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Use Common Data if empty or missing values in the input file for columns define in class `InputThermalColumns`.
+
+        Additional rules:
+            - STD_EFF_NCV: if value > 1 then apply div by 100
+            - NET_MIN_STAB_GEN: min_stable_generation_default*NET_MAX_GEN_CAP
+        """
+        # std_eff_nvc = df[InputThermalColumns.STD_EFF_NCV].tolist()
+        # for k, std_eff in enumerate(std_eff_nvc):
+        #     if pd.isna(std_eff):
+        #         cluster_unit = df.loc[k, ANTARES_CLUSTER_NAME_COLUMN]
+        #         df.loc[
+        #             k, InputThermalColumns.STD_EFF_NCV] = self.main_params.get_antares_cluster_technology_and_fuel(
+        #             antares_cluster=cluster_unit
+        #         ).efficiency_default
+        #         if df.loc[k, InputThermalColumns.STD_EFF_NCV] >1:
+        #             df.loc[k, InputThermalColumns.STD_EFF_NCV] /= 100
+        #
+        # net_min_stab_gen = df[InputThermalColumns.NET_MIN_STAB_GEN].tolist()
+        # for k, net_min_stab in enumerate(net_min_stab_gen):
+        #     if pd.isna(net_min_stab):
+        #         cluster_unit = df.loc[k, ANTARES_CLUSTER_NAME_COLUMN]
+        #         df.loc[k, InputThermalColumns.NET_MIN_STAB_GEN] = self.main_params.get_antares_cluster_technology_and_fuel(
+        #             antares_cluster=cluster_unit
+        #         ).min_stable_generation_default * df.loc[k, InputThermalColumns.NET_MAX_GEN_CAP]
+        #
+        #
+        #
+        #
+        # mask_std_eff_nvc = df[InputThermalColumns.STD_EFF_NCV].isna()
+        # if mask_std_eff_nvc.any():
+        #     clusters_unit = df.loc[mask_std_eff_nvc, ANTARES_CLUSTER_NAME_COLUMN].tolist()
+        #     df.loc[
+        #         mask_std_eff_nvc, InputThermalColumns.STD_EFF_NCV] = self.main_params.get_antares_clusters_technology_and_fuel(
+        #         antares_clusters=clusters_unit
+        #     ).efficiency_default
+
+        def _fill_from_common_data(
+            dftofill: pd.DataFrame, mask: pd.Series, column: InputThermalColumns, attr: str
+        ) -> pd.DataFrame:
+            clusters = df.loc[mask, ANTARES_CLUSTER_NAME_COLUMN].tolist()
+            values = [getattr(x, attr) for x in self.main_params.get_antares_clusters_technology_and_fuel(clusters)]
+            df.loc[mask, column] = values
+
+            return dftofill
+
+        # STD_EFF_NCV
+        # TODO add to MAINPARAM parser to check `efficiency_default`ranged value [0;1]
+        mask_std_eff_nvc = df[InputThermalColumns.STD_EFF_NCV].isna()
+        if mask_std_eff_nvc.any():
+            _fill_from_common_data(df, mask_std_eff_nvc, InputThermalColumns.STD_EFF_NCV, "efficiency_default")
+
+        # NET_MIN_STAB_GEN
+        mask_net_min_stab_gen = df[InputThermalColumns.NET_MIN_STAB_GEN].isna()
+        if mask_net_min_stab_gen.any():
+            _fill_from_common_data(
+                df, mask_net_min_stab_gen, InputThermalColumns.NET_MIN_STAB_GEN, "min_stable_generation_default"
+            )
+
+        # FORCED_OUTAGE_RATE
+
+        # listOfColumns = [
+        #     InputThermalColumns.STD_EFF_NCV,
+        #     InputThermalColumns.FORCED_OUTAGE_RATE,
+        #     InputThermalColumns.MEAN_TIME_REPAIR,
+        #     InputThermalColumns.PLAN_OUTAGE_ANNUAL_DAYS,
+        #     InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN,
+        #     InputThermalColumns.NET_MIN_STAB_GEN
+        # ]
+        #
+        # antares_cluster_list = df[ANTARES_CLUSTER_NAME_COLUMN].tolist()
+        # updated_data: dict[str, list[Any]] = {
+        #     InputThermalColumns.STD_EFF_NCV: [],
+        #     InputThermalColumns.FORCED_OUTAGE_RATE: [],
+        #     InputThermalColumns.MEAN_TIME_REPAIR: [],
+        #     InputThermalColumns.PLAN_OUTAGE_ANNUAL_DAYS: [],
+        #     InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN: [],
+        #     InputThermalColumns.NET_MIN_STAB_GEN: [],
+        # }
+        # for antares_node in antares_cluster_list:
+        #     updated_data[InputThermalColumns.STD_EFF_NCV] = self.main_params.get_antares_cluster_technology_and_fuel(
+        #         antares_cluster=antares_node
+        #     ).efficiency_default
+
+        return df
+
+    def _filter_columns_for_output(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df
+
+    def _build_thermal_specific_pegase(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df
+
     def build_specific_param(self) -> DataFrame:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_values_based_on_study_scenarios(df)
         df = self._filter_values_based_on_commission_date(df)
+
         df = self._add_antares_cluster_name_colum(df)
+        df = self._update_existing_columns_with_commondata(df)
+
         df = self._split_clusters_with_biomass_rule(df)
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
+        df = self._filter_columns_for_output(df)
+        df = self._build_thermal_specific_pegase(df)
 
         # TODO add method to check and update columns with values from Common Data
-        # TODO
+        # TODO add method to filter columns only needed
+        # TODO build pegase dataframe
 
         return df
