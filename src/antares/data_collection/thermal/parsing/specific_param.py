@@ -173,4 +173,7 @@ class ThermalSpecificParamParser:
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
 
+        # TODO add method to check and update columns with values from Common Data
+        # TODO
+
         return df

@@ -61,6 +61,12 @@ class ClusterColumnsNames(StrEnum):
 class CommonDataColumnsNames(StrEnum):
     CLUSTER_BP = "cluster_BP"
     FUEL = "Fuel"
+    EFFICIENCY_DEFAULT = "efficiency_default"
+    FO_RATE_DEFAULT = "FO_rate_default"
+    FO_DURATION_DEFAULT = "FO_duration_default"
+    PO_DURATION_DEFAULT = "PO_duration_default"
+    PO_WINTER_DEFAULT = "PO_winter_default"
+    MIN_STABLE_GENERATION_DEFAULT = "min_stable_generation_default"
 
 
 THERMAL_TYPE_NAME = "Thermal"
@@ -78,6 +84,12 @@ class PeakParamsColumnsNames(Enum):
 class ClusterParams:
     technology: str
     fuel: str
+    efficiency_default: int
+    fo_rate_default: int
+    fo_duration_default: int
+    po_duration_default: int
+    po_winter_default: int
+    min_stable_generation_default: int
 
 
 @dataclass
