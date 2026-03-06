@@ -18,15 +18,17 @@ from antares.data_collection.thermal.constants import (
     THERMAL_INSTALL_POWER_FOLDER,
 )
 from antares.data_collection.thermal.parsing.installed_power import ThermalInstallerPowerParser
-from tests.conftest import RESOURCE_PATH
+from tests.conftest import INPUT_RESOURCE_PATH, OUTPUT_RESOURCE_PATH
 
 
 def test_nominal_case(tmp_path: Path) -> None:
     # Use the real MainParams file
-    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+    main_params = parse_main_params(INPUT_RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
 
     # Build a thermal installed power file
-    parser = ThermalInstallerPowerParser(RESOURCE_PATH, tmp_path, ["Available on market"], main_params, [2030])
+    parser = ThermalInstallerPowerParser(
+        INPUT_RESOURCE_PATH / "thermal", tmp_path, ["Available on market"], main_params, [2030]
+    )
     parser.build_thermal_installed_power()
 
     # Asserts the file is created
@@ -35,6 +37,6 @@ def test_nominal_case(tmp_path: Path) -> None:
     generated_df = pd.read_excel(generated_file_path)
 
     # Compare its content with the expected one
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal_installed_power.xlsx"
+    expected_file_path = OUTPUT_RESOURCE_PATH / "thermal_installed_power.xlsx"
     expected_df = pd.read_excel(expected_file_path)
     pd.testing.assert_frame_equal(generated_df, expected_df, check_dtype=False)

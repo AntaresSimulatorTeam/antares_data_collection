@@ -16,6 +16,8 @@ from pathlib import Path
 import pandas as pd
 
 RESOURCE_PATH = Path(__file__).parent / "antares" / "resources"
+INPUT_RESOURCE_PATH = Path(__file__).parent / "antares" / "resources" / "input_files"
+OUTPUT_RESOURCE_PATH = Path(__file__).parent / "antares" / "resources" / "expected_output_files"
 
 
 ## mock referential MAIN_PARAMS (used for links)
