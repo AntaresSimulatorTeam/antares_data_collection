@@ -209,7 +209,7 @@ class ThermalInstallerPowerParser:
                 return value
         return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
 
-    def _build_pegase_dataframev2(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
 
         start_dates = list(df[InputThermalColumns.COMMISSIONING_DATE])
@@ -218,7 +218,7 @@ class ThermalInstallerPowerParser:
         cluster_names = list(df[ANTARES_CLUSTER_NAME_COLUMN])
         node_names = list(df[ANTARES_NODE_NAME_COLUMN])
 
-        cluster_groups: dict[str, dict[str, dict[str, list[int | float]]]] = {}
+        cluster_groups: dict[str, dict[str, dict[pd.Timestamp, list[int | float]]]] = {}
 
         for k in range(len(start_dates)):
             cluster_name = cluster_names[k]
@@ -260,53 +260,6 @@ class ThermalInstallerPowerParser:
                     for month in date_range:
                         data = cluster_groups[area][cluster].get(month, [])
                         output_data[month.strftime("%Y_%m")] += [round(sum(data), MAX_DECIMAL_DIGITS), len(data)]
-
-        # Add the `ToUse` column with every value being a 1
-        dataframe = pd.DataFrame(output_data)
-        to_use_col = OutputThermalInstallPowerColumns.TO_USE
-        dataframe[to_use_col] = 1
-
-        # Reorder the dataframe columns (just need to put `ToUse` in first)
-        return dataframe[[to_use_col] + [col for col in dataframe.columns if col != to_use_col]]
-
-    def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
-
-        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
-        output_data: dict[str, list[Any]] = {
-            OutputThermalInstallPowerColumns.AREA: [],
-            OutputThermalInstallPowerColumns.FUEL: [],
-            OutputThermalInstallPowerColumns.TECHNOLOGY: [],
-            OutputThermalInstallPowerColumns.CLUSTER: [],
-            OutputThermalInstallPowerColumns.CATEGORY: [],
-        }
-        for date_range in date_ranges:
-            for month in date_range:
-                month_as_string = month.strftime("%Y_%m")
-                output_data[month_as_string] = []
-
-        for (antares_node, cluster_name), grouped_df in grouped_dfs:
-            assert isinstance(cluster_name, str)
-            # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
-            unit_name = cluster_name.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
-            technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
-            fuel = self._find_fuel(unit_name)
-
-            output_data[OutputThermalInstallPowerColumns.AREA] += 2 * [antares_node]
-            output_data[OutputThermalInstallPowerColumns.FUEL] += 2 * [fuel]
-            output_data[OutputThermalInstallPowerColumns.TECHNOLOGY] += 2 * [technology]
-            output_data[OutputThermalInstallPowerColumns.CLUSTER] += 2 * [cluster_name]
-            output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["number", "power"]
-
-            for date_range in date_ranges:
-                for month in date_range:
-                    month_end = month + pd.offsets.MonthEnd(1)
-                    # Find rows where the range overlaps with the current month
-                    mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
-                        grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
-                    )
-                    data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                    output_data[month.strftime("%Y_%m")] += [round(data.sum(), MAX_DECIMAL_DIGITS), data.count()]
 
         # Add the `ToUse` column with every value being a 1
         dataframe = pd.DataFrame(output_data)
