@@ -9,7 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-from copy import deepcopy
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
@@ -159,20 +159,23 @@ class ThermalInstallerPowerParser:
         If the column `SNCD_FUEL` is set to `Bio`, we have to split the PEMMDB Cluster into 2 Antares ones.
         We split its capacity based on its `SNCD_FUEL_RT` value.
         """
-        fuels = df[InputThermalColumns.SCND_FUEL]
-        for k, fuel in enumerate(fuels):
-            if fuel == BIOMASS_SNCD_FUEL_VALUE:
-                cluster_line = df.iloc[k]
+        # Create a boolean mask for biomass rows
+        biomass_mask = df[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE
 
-                # Add new line inside dataframe with the created biomass unit
-                bio_line = deepcopy(cluster_line)
-                bio_line[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
-                bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
-                df.loc[len(df)] = bio_line
+        # Get the biomass rows
+        biomass_rows = df[biomass_mask].copy()
 
-                # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
-                cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= 1 - cluster_line[InputThermalColumns.SCND_FUEL_RT]
-                df.iloc[k] = cluster_line
+        # Create new biomass lines
+        biomass_rows[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
+        biomass_rows[InputThermalColumns.NET_MAX_GEN_CAP] *= biomass_rows[InputThermalColumns.SCND_FUEL_RT]
+
+        # Update the original rows
+        df.loc[biomass_mask, InputThermalColumns.NET_MAX_GEN_CAP] *= (
+            1 - df.loc[biomass_mask, InputThermalColumns.SCND_FUEL_RT]
+        )
+
+        # Concatenate the original and new biomass rows
+        df = pd.concat([df, biomass_rows], ignore_index=True)
 
         return df
 
@@ -193,11 +196,11 @@ class ThermalInstallerPowerParser:
         ]
         return df[expected_cols]
 
-    def _get_start_and_end_timestamps_for_outputs(self) -> tuple[pd.Timestamp, pd.Timestamp]:
+    def _get_start_and_end_timestamps_for_outputs(self) -> Iterator[pd.DatetimeIndex]:
         years = sorted(self.years)
-        start, _ = get_starting_and_ending_timestamps_for_outputs(years[0])
-        _, end = get_starting_and_ending_timestamps_for_outputs(years[-1])
-        return start, end
+        for year in years:
+            start, end = get_starting_and_ending_timestamps_for_outputs(year)
+            yield pd.date_range(start=start, end=end, freq="MS")  # MS = Month Start
 
     def _find_fuel(self, unit_name: str) -> str:
         for pattern, value in FUEL_MAPPING.items():
@@ -206,9 +209,7 @@ class ThermalInstallerPowerParser:
         return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
 
     def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        start, end = self._get_start_and_end_timestamps_for_outputs()
-        # Create a date range from min start to max end, monthly frequency
-        date_range = pd.date_range(start=start, end=end, freq="MS")  # MS = Month Start
+        date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
 
         grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
         output_data: dict[str, list[Any]] = {
@@ -218,8 +219,10 @@ class ThermalInstallerPowerParser:
             OutputThermalInstallPowerColumns.CLUSTER: [],
             OutputThermalInstallPowerColumns.CATEGORY: [],
         }
-        for month in date_range:
-            output_data[month.strftime("%Y_%m")] = []
+        for date_range in date_ranges:
+            for month in date_range:
+                month_as_string = month.strftime("%Y_%m")
+                output_data[month_as_string] = []
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
             assert isinstance(cluster_name, str)
@@ -234,14 +237,15 @@ class ThermalInstallerPowerParser:
             output_data[OutputThermalInstallPowerColumns.CLUSTER] += 2 * [cluster_name]
             output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["number", "power"]
 
-            for month in date_range:
-                month_end = month + pd.offsets.MonthEnd(1)
-                # Find rows where the range overlaps with the current month
-                mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
-                    grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
-                )
-                data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
+            for date_range in date_ranges:
+                for month in date_range:
+                    month_end = month + pd.offsets.MonthEnd(1)
+                    # Find rows where the range overlaps with the current month
+                    mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
+                        grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
+                    )
+                    data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
+                    output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
 
         # Add the `ToUse` column with every value being a 1
         dataframe = pd.DataFrame(output_data)
