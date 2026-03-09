@@ -193,11 +193,11 @@ class ThermalInstallerPowerParser:
         ]
         return df[expected_cols]
 
-    def _get_start_and_end_timestamps_for_outputs(self) -> tuple[pd.Timestamp, pd.Timestamp]:
+    def _get_start_and_end_timestamps_for_outputs(self) -> Iterator[pd.DatetimeIndex]:
         years = sorted(self.years)
-        start, _ = get_starting_and_ending_timestamps_for_outputs(years[0])
-        _, end = get_starting_and_ending_timestamps_for_outputs(years[-1])
-        return start, end
+        for year in years:
+            start, end = get_starting_and_ending_timestamps_for_outputs(year)
+            yield pd.date_range(start=start, end=end, freq="MS")  # MS = Month Start
 
     def _find_fuel(self, unit_name: str) -> str:
         for pattern, value in FUEL_MAPPING.items():
@@ -206,9 +206,7 @@ class ThermalInstallerPowerParser:
         return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
 
     def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        start, end = self._get_start_and_end_timestamps_for_outputs()
-        # Create a date range from min start to max end, monthly frequency
-        date_range = pd.date_range(start=start, end=end, freq="MS")  # MS = Month Start
+        date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
 
         grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
         output_data: dict[str, list[Any]] = {
@@ -218,8 +216,6 @@ class ThermalInstallerPowerParser:
             OutputThermalInstallPowerColumns.CLUSTER: [],
             OutputThermalInstallPowerColumns.CATEGORY: [],
         }
-        for month in date_range:
-            output_data[month.strftime("%Y_%m")] = []
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
             assert isinstance(cluster_name, str)
@@ -234,14 +230,18 @@ class ThermalInstallerPowerParser:
             output_data[OutputThermalInstallPowerColumns.CLUSTER] += 2 * [cluster_name]
             output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["number", "power"]
 
-            for month in date_range:
-                month_end = month + pd.offsets.MonthEnd(1)
-                # Find rows where the range overlaps with the current month
-                mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
-                    grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
-                )
-                data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
+            for date_range in date_ranges:
+                for month in date_range:
+                    month_as_string = month.strftime("%Y_%m")
+                    if month_as_string not in output_data:
+                        output_data[month_as_string] = []
+                    month_end = month + pd.offsets.MonthEnd(1)
+                    # Find rows where the range overlaps with the current month
+                    mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
+                        grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
+                    )
+                    data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
+                    output_data[month_as_string] += [data.sum(), data.count()]
 
         # Add the `ToUse` column with every value being a 1
         dataframe = pd.DataFrame(output_data)
