@@ -220,6 +220,10 @@ class ThermalInstallerPowerParser:
             OutputThermalInstallPowerColumns.CLUSTER: [],
             OutputThermalInstallPowerColumns.CATEGORY: [],
         }
+        for date_range in date_ranges:
+            for month in date_range:
+                month_as_string = month.strftime("%Y_%m")
+                output_data[month_as_string] = []
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
             assert isinstance(cluster_name, str)
@@ -236,16 +240,13 @@ class ThermalInstallerPowerParser:
 
             for date_range in date_ranges:
                 for month in date_range:
-                    month_as_string = month.strftime("%Y_%m")
-                    if month_as_string not in output_data:
-                        output_data[month_as_string] = []
                     month_end = month + pd.offsets.MonthEnd(1)
                     # Find rows where the range overlaps with the current month
                     mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
                         grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
                     )
                     data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                    output_data[month_as_string] += [data.sum(), data.count()]
+                    output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
 
         # Add the `ToUse` column with every value being a 1
         dataframe = pd.DataFrame(output_data)
