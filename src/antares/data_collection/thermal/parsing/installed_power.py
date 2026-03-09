@@ -211,6 +211,67 @@ class ThermalInstallerPowerParser:
     def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
 
+        start_dates = list(df[InputThermalColumns.COMMISSIONING_DATE])
+        end_dates = list(df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED])
+        capacities = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
+        cluster_names = list(df[ANTARES_CLUSTER_NAME_COLUMN])
+        node_names = list(df[ANTARES_NODE_NAME_COLUMN])
+
+        cluster_groups: dict[str, dict[str, dict[str, list[int | float]]]] = {}
+
+        for k in range(len(start_dates)):
+            cluster_name = cluster_names[k]
+            antares_node = node_names[k]
+            if pd.isna(antares_node):
+                continue
+
+            cluster_groups.setdefault(antares_node, {}).setdefault(cluster_name, {})
+
+            for date_range in date_ranges:
+                for month in date_range:
+                    if start_dates[k] <= month <= end_dates[k]:
+                        cluster_groups[antares_node][cluster_name].setdefault(month, []).append(capacities[k])
+
+        output_data: dict[str, list[Any]] = {
+            OutputThermalInstallPowerColumns.AREA: [],
+            OutputThermalInstallPowerColumns.FUEL: [],
+            OutputThermalInstallPowerColumns.TECHNOLOGY: [],
+            OutputThermalInstallPowerColumns.CLUSTER: [],
+            OutputThermalInstallPowerColumns.CATEGORY: [],
+        }
+        for date_range in date_ranges:
+            for month in date_range:
+                month_as_string = month.strftime("%Y_%m")
+                output_data[month_as_string] = []
+
+        for area in sorted(cluster_groups):
+            for cluster in sorted(cluster_groups[area]):
+                unit_name = cluster.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
+                technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
+                fuel = self._find_fuel(unit_name)
+                output_data[OutputThermalInstallPowerColumns.AREA] += 2 * [area]
+                output_data[OutputThermalInstallPowerColumns.FUEL] += 2 * [fuel]
+                output_data[OutputThermalInstallPowerColumns.TECHNOLOGY] += 2 * [technology]
+                output_data[OutputThermalInstallPowerColumns.CLUSTER] += 2 * [cluster]
+                output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["number", "power"]
+
+                for date_range in date_ranges:
+                    for month in date_range:
+                        data = cluster_groups[area][cluster].get(month, [])
+                        output_data[month.strftime("%Y_%m")] += [round(sum(data), 2), len(data)]
+
+        # Add the `ToUse` column with every value being a 1
+        dataframe = pd.DataFrame(output_data)
+        to_use_col = OutputThermalInstallPowerColumns.TO_USE
+        dataframe[to_use_col] = 1
+
+        # Reorder the dataframe columns (just need to put `ToUse` in first)
+        return dataframe[[to_use_col] + [col for col in dataframe.columns if col != to_use_col]]
+
+
+    def _build_pegase_dataframe_original(self, df: pd.DataFrame) -> pd.DataFrame:
+        date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
+
         grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
         output_data: dict[str, list[Any]] = {
             OutputThermalInstallPowerColumns.AREA: [],
