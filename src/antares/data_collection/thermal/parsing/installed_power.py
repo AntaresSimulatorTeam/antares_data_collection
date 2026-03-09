@@ -259,6 +259,7 @@ class ThermalInstallerPowerParser:
 
         for area in sorted(cluster_groups):
             for cluster in sorted(cluster_groups[area]):
+                # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
                 unit_name = cluster.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
                 technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
                 fuel = self._find_fuel(unit_name)
