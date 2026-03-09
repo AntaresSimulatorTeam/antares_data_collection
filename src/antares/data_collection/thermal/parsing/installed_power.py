@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-import time
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -271,10 +270,5 @@ class ThermalInstallerPowerParser:
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output(df)
-
-        start = time.time()
         df = self._build_pegase_dataframe(df)
-        end = time.time()
-        print("Duration", end - start)
-
         self._export_dataframe(df)
