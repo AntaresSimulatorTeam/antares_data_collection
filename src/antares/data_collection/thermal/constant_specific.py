@@ -28,9 +28,33 @@ class InputThermalColumns(StrEnum):
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"
 
+    # added for 'specif param' part
     STD_EFF_NCV = "STD_EFF_NCV"
     FORCED_OUTAGE_RATE = "FORCED_OUTAGE_RATE"
     MEAN_TIME_REPAIR = "MEAN_TIME_REPAIR"
     PLAN_OUTAGE_ANNUAL_DAYS = "PLAN_OUTAGE_ANNUAL_DAYS"
     PLAN_OUTAGE_ANNUAL_WIN = "PLAN_OUTAGE_ANNUAL_WIN"
     NET_MIN_STAB_GEN = "NET_MIN_STAB_GEN"
+
+    GRP_MRUN_CURVE_ID = "GRP_MRUN_CURVE_ID"
+    GEN_UNT_MRUN_CURVE_ID = "GEN_UNT_MRUN_CURVE_ID"
+    GEN_UNT_INELASTIC_ID = "GEN_UNT_INELASTIC_ID"
+    GEN_UNT_D_CURVE_ID = "GEN_UNT_D_CURVE_ID"
+    GRP_D_CURVE_ID = "GRP_D_CURVE_ID"
+
+
+class OutputThermalSpecificColumns(StrEnum):
+    NODE = "node"
+    CLUSTER = "Cluster"
+    MIN_STABLE_GEN = "min_stable_gen"
+    SPINNING = "spinning"
+    EFFICIENCY = "efficiency"
+    FO_RATE = "FO_rate"
+    FO_DURATION = "FO_duration"
+    PO_DURATION = "PO_duration"
+    PO_WINTER = "PO_winter"
+    MARGINAL_COST = "marginal_cost"
+    MARKET_BID = "market_bid"
+    MR_SPECIFIC = "MR_specific"
+    CM_SPECIFIC = "CM_specific"
+    NB_UNIT = "nb_unit"
