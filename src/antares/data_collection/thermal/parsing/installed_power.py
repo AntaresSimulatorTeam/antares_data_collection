@@ -81,6 +81,20 @@ class ThermalInstallerPowerParser:
             raise ValueError(f"The given op_stat values {self.op_stat_values} are not present in the dataframe")
         return df
 
+    def _filter_non_declared_areas(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
+        We don't want to consider them.
+        We simply log a message for each area we find in this case
+        """
+        all_market_nodes = set(df[InputThermalColumns.MARKET_NODE])
+        missing_nodes = []
+        for node in all_market_nodes:
+            antares_code = self.main_params.get_antares_code(node)
+            if not antares_code:
+                missing_nodes.append(node)
+        return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
+
     def _filter_values_based_on_study_scenarios(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
@@ -278,6 +292,7 @@ class ThermalInstallerPowerParser:
     def build_thermal_installed_power(self) -> None:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
+        df = self._filter_non_declared_areas(df)
         df = self._filter_values_based_on_study_scenarios(df)
         df = self._filter_values_based_on_commission_date(df)
         df = self._add_antares_cluster_name_colum(df)
