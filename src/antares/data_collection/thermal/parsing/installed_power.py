@@ -237,9 +237,6 @@ class ThermalInstallerPowerParser:
         for k in range(len(df)):
             cluster_name = cluster_names[k]
             antares_node = node_names[k]
-            if pd.isna(antares_node):
-                # todo: remove this as it's jut here as we're mising antares node names
-                continue
 
             cluster_groups.setdefault(antares_node, {}).setdefault(cluster_name, {})
 
