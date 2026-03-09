@@ -10,21 +10,22 @@
 #
 # This file is part of the Antares project.
 
-from copy import deepcopy
 from pathlib import Path
-from typing import Iterator
+from typing import Any, Iterator
 
 import pandas as pd
 
 from pandas import DataFrame
 
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constant_specific import InputThermalColumns
+from antares.data_collection.thermal.constant_specific import InputThermalColumns, OutputThermalSpecificColumns
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     DEFAULT_DECOMMISSIONING_DATE,
+    FUEL_MAPPING,
     THERMAL_INPUT_FILE,
+    get_starting_and_ending_timestamps_for_outputs,
 )
 from antares.data_collection.thermal.parsing.installed_power import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -154,20 +155,23 @@ class ThermalSpecificParamParser:
         If the column `SNCD_FUEL` is set to `Bio`, we have to split the PEMMDB Cluster into 2 Antares ones.
         We split its capacity based on its `SNCD_FUEL_RT` value.
         """
-        fuels = df[InputThermalColumns.SCND_FUEL]
-        for k, fuel in enumerate(fuels):
-            if fuel == BIOMASS_SNCD_FUEL_VALUE:
-                cluster_line = df.iloc[k]
+        # Create a boolean mask for biomass rows
+        biomass_mask = df[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE
 
-                # Add new line inside dataframe with the created biomass unit
-                bio_line = deepcopy(cluster_line)
-                bio_line[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
-                bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
-                df.loc[len(df)] = bio_line
+        # Get the biomass rows
+        biomass_rows = df[biomass_mask].copy()
 
-                # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
-                cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= 1 - cluster_line[InputThermalColumns.SCND_FUEL_RT]
-                df.iloc[k] = cluster_line
+        # Create new biomass lines
+        biomass_rows[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
+        biomass_rows[InputThermalColumns.NET_MAX_GEN_CAP] *= biomass_rows[InputThermalColumns.SCND_FUEL_RT]
+
+        # Update the original rows
+        df.loc[biomass_mask, InputThermalColumns.NET_MAX_GEN_CAP] *= (
+                1 - df.loc[biomass_mask, InputThermalColumns.SCND_FUEL_RT]
+        )
+
+        # Concatenate the original and new biomass rows
+        df = pd.concat([df, biomass_rows], ignore_index=True)
 
         return df
 
@@ -268,18 +272,72 @@ class ThermalSpecificParamParser:
         return df[expected_cols]
 
     def _build_thermal_specific_pegase(self, df: pd.DataFrame) -> pd.DataFrame:
-        # start, end = self._get_start_and_end_timestamps_for_outputs()
-        # # Create a date range from min start to max end, monthly frequency
-        # date_range = pd.date_range(start=start, end=end, freq="MS")  # MS = Month Start
-        #
-        # grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
-        # output_data: dict[str, list[Any]] = {
-        #     OutputThermalSpecificColumns.NODE: [],
-        #     OutputThermalSpecificColumns.CLUSTER: [],
-        #     OutputThermalSpecificColumns.MIN_STABLE_GEN: [],
-        #     OutputThermalSpecificColumns.SPINNING: [],
-        #
-        # }
+        years = self.years
+
+        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
+        output_data: dict[str, list[Any]] = {
+            OutputThermalSpecificColumns.NODE: [],
+            OutputThermalSpecificColumns.CLUSTER: [],
+            OutputThermalSpecificColumns.MIN_STABLE_GEN: [],
+            OutputThermalSpecificColumns.SPINNING: [],
+            OutputThermalSpecificColumns.EFFICIENCY: [],
+            OutputThermalSpecificColumns.FO_RATE: [],
+            OutputThermalSpecificColumns.FO_DURATION: [],
+            OutputThermalSpecificColumns.PO_DURATION: [],
+            OutputThermalSpecificColumns.PO_WINTER: [],
+            OutputThermalSpecificColumns.MARGINAL_COST: [],
+            OutputThermalSpecificColumns.MARKET_BID: [],
+            OutputThermalSpecificColumns.MR_SPECIFIC: [],
+            OutputThermalSpecificColumns.CM_SPECIFIC: [],
+            OutputThermalSpecificColumns.NB_UNIT: [],
+          }
+
+        # TODO just filter with year (eg 2030, 2030-01-01)
+        for date_range in date_ranges:
+            for month in date_range:
+                month_as_string = month.strftime("%Y_%m")
+                output_data[month_as_string] = []
+
+        for (antares_node, cluster_name), grouped_df in grouped_dfs:
+            assert isinstance(cluster_name, str)
+            # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
+            unit_name = cluster_name.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
+
+            # technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
+            # fuel = self._find_fuel(unit_name)
+            # efficiency_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).efficiency_default
+            # fo_rate_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fo_rate_default
+            # fo_duration_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fo_duration_default
+            # po_duration_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).po_duration_default
+            # po_winter_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).po_winter_default
+            # min_stable_generation_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).min_stable_generation_default
+
+
+            output_data[OutputThermalSpecificColumns.NODE] += [antares_node]
+            output_data[OutputThermalSpecificColumns.CLUSTER] += [cluster_name]
+
+            # TODO process function to compute specific params
+            output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN] += [] # sum(NET_MIN_STAB_GEN)/max(NET_MAX_GEN_CAP)
+            output_data[OutputThermalSpecificColumns.SPINNING] += [0]
+            output_data[OutputThermalSpecificColumns.EFFICIENCY] += [] # STD_EFF_NCV pondarate by NET_MAX_GEN_CAP
+            output_data[OutputThermalSpecificColumns.FO_RATE] += [] # FORCED_OUTAGE_RATE pondarate by NET_MAX_GEN_CAP
+            output_data[OutputThermalSpecificColumns.FO_DURATION] += [] # MEAN_TIME_REPAIR pondarate by NET_MAX_GEN_CAP
+            output_data[OutputThermalSpecificColumns.PO_DURATION] += [] # PLAN_OUTAGE_ANNUAL_DAYS pondarate by NET_MAX_GEN_CAP
+            output_data[OutputThermalSpecificColumns.PO_WINTER] += [] # PLAN_OUTAGE_ANNUAL_WIN pondarate by NET_MAX_GEN_CAP
+            output_data[OutputThermalSpecificColumns.MARGINAL_COST] += [] # empty
+            output_data[OutputThermalSpecificColumns.MARKET_BID] += [] # empty
+            output_data[OutputThermalSpecificColumns.MR_SPECIFIC] += [] # at least one unit in those columns GRP_MRUN_CURVE_ID, GEN_UNT_MRUN_CURVE_ID , GEN_UNT_INELASTIC_ID THEN 1 ELSE 0
+
+            for date_range in date_ranges:
+                for month in date_range:
+                    month_end = month + pd.offsets.MonthEnd(1)
+                    # Find rows where the range overlaps with the current month
+                    mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
+                        grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
+                    )
+                    data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
+                    output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
+
 
         return df
 
