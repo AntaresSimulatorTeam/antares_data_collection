@@ -9,7 +9,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-from copy import deepcopy
+import time
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
@@ -159,20 +160,23 @@ class ThermalInstallerPowerParser:
         If the column `SNCD_FUEL` is set to `Bio`, we have to split the PEMMDB Cluster into 2 Antares ones.
         We split its capacity based on its `SNCD_FUEL_RT` value.
         """
-        fuels = df[InputThermalColumns.SCND_FUEL]
-        for k, fuel in enumerate(fuels):
-            if fuel == BIOMASS_SNCD_FUEL_VALUE:
-                cluster_line = df.iloc[k]
+        # Create a boolean mask for biomass rows
+        biomass_mask = df[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE
 
-                # Add new line inside dataframe with the created biomass unit
-                bio_line = deepcopy(cluster_line)
-                bio_line[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
-                bio_line[InputThermalColumns.NET_MAX_GEN_CAP] *= bio_line[InputThermalColumns.SCND_FUEL_RT]
-                df.loc[len(df)] = bio_line
+        # Get the biomass rows
+        biomass_rows = df[biomass_mask].copy()
 
-                # Replace fuel cluster with new `NET_MAX_GEN_CAP` value
-                cluster_line[InputThermalColumns.NET_MAX_GEN_CAP] *= 1 - cluster_line[InputThermalColumns.SCND_FUEL_RT]
-                df.iloc[k] = cluster_line
+        # Create new biomass lines
+        biomass_rows[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
+        biomass_rows[InputThermalColumns.NET_MAX_GEN_CAP] *= biomass_rows[InputThermalColumns.SCND_FUEL_RT]
+
+        # Update the original rows
+        df.loc[biomass_mask, InputThermalColumns.NET_MAX_GEN_CAP] *= (
+            1 - df.loc[biomass_mask, InputThermalColumns.SCND_FUEL_RT]
+        )
+
+        # Concatenate the original and new biomass rows
+        df = pd.concat([df, biomass_rows], ignore_index=True)
 
         return df
 
@@ -266,5 +270,10 @@ class ThermalInstallerPowerParser:
         df = self._filter_values_based_on_net_max_gen_cap(df)
         df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output(df)
+
+        start = time.time()
         df = self._build_pegase_dataframe(df)
+        end = time.time()
+        print("Duration", end - start)
+
         self._export_dataframe(df)
