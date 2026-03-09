@@ -16,6 +16,7 @@ from typing import Any, Iterator
 
 import pandas as pd
 
+from antares.data_collection.constants import MAX_DECIMAL_DIGITS
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
@@ -208,7 +209,7 @@ class ThermalInstallerPowerParser:
                 return value
         return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
 
-    def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _build_pegase_dataframev2(self, df: pd.DataFrame) -> pd.DataFrame:
         date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
 
         start_dates = list(df[InputThermalColumns.COMMISSIONING_DATE])
@@ -258,7 +259,7 @@ class ThermalInstallerPowerParser:
                 for date_range in date_ranges:
                     for month in date_range:
                         data = cluster_groups[area][cluster].get(month, [])
-                        output_data[month.strftime("%Y_%m")] += [round(sum(data), 2), len(data)]
+                        output_data[month.strftime("%Y_%m")] += [round(sum(data), MAX_DECIMAL_DIGITS), len(data)]
 
         # Add the `ToUse` column with every value being a 1
         dataframe = pd.DataFrame(output_data)
@@ -268,8 +269,7 @@ class ThermalInstallerPowerParser:
         # Reorder the dataframe columns (just need to put `ToUse` in first)
         return dataframe[[to_use_col] + [col for col in dataframe.columns if col != to_use_col]]
 
-
-    def _build_pegase_dataframe_original(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
 
         grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
@@ -306,7 +306,7 @@ class ThermalInstallerPowerParser:
                         grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
                     )
                     data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                    output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
+                    output_data[month.strftime("%Y_%m")] += [round(data.sum(), MAX_DECIMAL_DIGITS), data.count()]
 
         # Add the `ToUse` column with every value being a 1
         dataframe = pd.DataFrame(output_data)
