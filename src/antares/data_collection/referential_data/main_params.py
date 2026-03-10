@@ -119,12 +119,15 @@ class MainParams:
     _cluster_pemmdb_to_antares: dict[str, str]
     _cluster_antares: dict[str, ClusterParams]
 
-    def get_antares_code(self, market_code: str) -> str:
-        if market_code not in self._market_to_antares:
-            raise ValueError(f"No antares code defined for market {market_code}")
-        return self._market_to_antares[market_code]
+    def get_antares_code(self, market_code: str) -> str | None:
+        value = self._market_to_antares.get(market_code)
+        if pd.isna(value):
+            # The value is either missing or the line does not even exist. We should log the information but not crash.
+            print(f"Market node '{market_code}' was not found inside `MainParams`")
+            return None
+        return value
 
-    def get_antares_codes(self, market_codes: list[str]) -> list[str]:
+    def get_antares_codes(self, market_codes: list[str]) -> list[str | None]:
         return [self.get_antares_code(c) for c in market_codes]
 
     def get_scenario_type(self, year: int) -> str:
