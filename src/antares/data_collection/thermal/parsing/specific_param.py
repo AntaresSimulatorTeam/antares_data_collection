@@ -13,19 +13,20 @@
 from pathlib import Path
 from typing import Any, Iterator
 
+import numpy as np
 import pandas as pd
 
-from pandas import DataFrame
-
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constant_specific import InputThermalColumns, OutputThermalSpecificColumns
+from antares.data_collection.thermal.constant_specific import (
+    SPECIFIC_PARAM_FOLDER,
+    InputThermalColumns,
+    OutputThermalSpecificColumns,
+)
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     DEFAULT_DECOMMISSIONING_DATE,
-    FUEL_MAPPING,
     THERMAL_INPUT_FILE,
-    get_starting_and_ending_timestamps_for_outputs,
 )
 from antares.data_collection.thermal.parsing.installed_power import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -43,12 +44,14 @@ class ThermalSpecificParamParser:
         op_stat_values: list[str],
         main_params: MainParams,
         years: list[int],
+        scenario_name: str,
     ):
         self.input_folder = input_folder
         self.output_folder = output_folder
         self.op_stat_values = op_stat_values
         self.main_params = main_params
         self.years = years
+        self.scenario_name = scenario_name
 
     def _read_input_file(self) -> pd.DataFrame:
         input_file_path = self.input_folder.joinpath(THERMAL_INPUT_FILE)
@@ -167,7 +170,7 @@ class ThermalSpecificParamParser:
 
         # Update the original rows
         df.loc[biomass_mask, InputThermalColumns.NET_MAX_GEN_CAP] *= (
-                1 - df.loc[biomass_mask, InputThermalColumns.SCND_FUEL_RT]
+            1 - df.loc[biomass_mask, InputThermalColumns.SCND_FUEL_RT]
         )
 
         # Concatenate the original and new biomass rows
@@ -274,10 +277,16 @@ class ThermalSpecificParamParser:
     def _build_thermal_specific_pegase(self, df: pd.DataFrame) -> pd.DataFrame:
         years = self.years
 
+        years_date_format: dict[str, pd.Timestamp] = {
+            str(year): pd.Timestamp(year=year, month=1, day=1) for year in years
+        }
+
         grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
+
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
             OutputThermalSpecificColumns.CLUSTER: [],
+            "YEAR": [],
             OutputThermalSpecificColumns.MIN_STABLE_GEN: [],
             OutputThermalSpecificColumns.SPINNING: [],
             OutputThermalSpecificColumns.EFFICIENCY: [],
@@ -290,75 +299,136 @@ class ThermalSpecificParamParser:
             OutputThermalSpecificColumns.MR_SPECIFIC: [],
             OutputThermalSpecificColumns.CM_SPECIFIC: [],
             OutputThermalSpecificColumns.NB_UNIT: [],
-          }
+        }
 
-        # TODO just filter with year (eg 2030, 2030-01-01)
-        for date_range in date_ranges:
-            for month in date_range:
-                month_as_string = month.strftime("%Y_%m")
-                output_data[month_as_string] = []
+        def weighted_avg(df: pd.DataFrame, value_col: str, weight_col: str) -> float:
+            return float(np.average(df[value_col], weights=df[weight_col]))
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
-            assert isinstance(cluster_name, str)
-            # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
-            unit_name = cluster_name.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
+            for year_str, year_date in years_date_format.items():
+                mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= year_date) & (
+                    grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= year_date
+                )
 
-            # technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
-            # fuel = self._find_fuel(unit_name)
-            # efficiency_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).efficiency_default
-            # fo_rate_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fo_rate_default
-            # fo_duration_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fo_duration_default
-            # po_duration_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).po_duration_default
-            # po_winter_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).po_winter_default
-            # min_stable_generation_default = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).min_stable_generation_default
+                active_units = grouped_df.loc[mask]
 
+                if active_units.empty:
+                    continue
 
-            output_data[OutputThermalSpecificColumns.NODE] += [antares_node]
-            output_data[OutputThermalSpecificColumns.CLUSTER] += [cluster_name]
+                # computations all indicators
+                nb_unit = active_units.shape[0]
 
-            # TODO process function to compute specific params
-            output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN] += [] # sum(NET_MIN_STAB_GEN)/max(NET_MAX_GEN_CAP)
-            output_data[OutputThermalSpecificColumns.SPINNING] += [0]
-            output_data[OutputThermalSpecificColumns.EFFICIENCY] += [] # STD_EFF_NCV pondarate by NET_MAX_GEN_CAP
-            output_data[OutputThermalSpecificColumns.FO_RATE] += [] # FORCED_OUTAGE_RATE pondarate by NET_MAX_GEN_CAP
-            output_data[OutputThermalSpecificColumns.FO_DURATION] += [] # MEAN_TIME_REPAIR pondarate by NET_MAX_GEN_CAP
-            output_data[OutputThermalSpecificColumns.PO_DURATION] += [] # PLAN_OUTAGE_ANNUAL_DAYS pondarate by NET_MAX_GEN_CAP
-            output_data[OutputThermalSpecificColumns.PO_WINTER] += [] # PLAN_OUTAGE_ANNUAL_WIN pondarate by NET_MAX_GEN_CAP
-            output_data[OutputThermalSpecificColumns.MARGINAL_COST] += [] # empty
-            output_data[OutputThermalSpecificColumns.MARKET_BID] += [] # empty
-            output_data[OutputThermalSpecificColumns.MR_SPECIFIC] += [] # at least one unit in those columns GRP_MRUN_CURVE_ID, GEN_UNT_MRUN_CURVE_ID , GEN_UNT_INELASTIC_ID THEN 1 ELSE 0
+                cap = active_units[InputThermalColumns.NET_MAX_GEN_CAP]
+                max_cap = cap.max()
 
-            for date_range in date_ranges:
-                for month in date_range:
-                    month_end = month + pd.offsets.MonthEnd(1)
-                    # Find rows where the range overlaps with the current month
-                    mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= month_end) & (
-                        grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= month
+                min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / max_cap
+
+                efficiency = weighted_avg(
+                    active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
+                )
+
+                fo_rate = weighted_avg(
+                    active_units, InputThermalColumns.FORCED_OUTAGE_RATE, InputThermalColumns.NET_MAX_GEN_CAP
+                )
+
+                fo_duration = weighted_avg(
+                    active_units, InputThermalColumns.MEAN_TIME_REPAIR, InputThermalColumns.NET_MAX_GEN_CAP
+                )
+
+                po_duration = weighted_avg(
+                    active_units, InputThermalColumns.PLAN_OUTAGE_ANNUAL_DAYS, InputThermalColumns.NET_MAX_GEN_CAP
+                )
+
+                po_winter = weighted_avg(
+                    active_units, InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN, InputThermalColumns.NET_MAX_GEN_CAP
+                )
+
+                mr_specific = int(
+                    (
+                        active_units[
+                            [
+                                "GRP_MRUN_CURVE_ID",
+                                "GEN_UNT_MRUN_CURVE_ID",
+                                "GEN_UNT_INELASTIC_ID",
+                            ]
+                        ]
+                        .notna()
+                        .any()
+                        .any()
                     )
-                    data = grouped_df.loc[mask, InputThermalColumns.NET_MAX_GEN_CAP]
-                    output_data[month.strftime("%Y_%m")] += [data.sum(), data.count()]
+                )
 
+                cm_specific = int(
+                    active_units[
+                        [
+                            "GEN_UNT_D_CURVE_ID",
+                            "GRP_D_CURVE_ID",
+                            "GEN_UNT_INELASTIC_ID",
+                        ]
+                    ]
+                    .notna()
+                    .any()
+                    .any()
+                )
 
-        return df
+                # TODO compute last columns F1-F12 and P1-P12
 
-    def build_specific_param(self) -> DataFrame:
+                # ---- store result ----
+                output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
+                output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
+                output_data["YEAR"].append(year_str)
+
+                output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN].append(min_stable)
+                output_data[OutputThermalSpecificColumns.SPINNING].append(0)
+                output_data[OutputThermalSpecificColumns.EFFICIENCY].append(efficiency)
+                output_data[OutputThermalSpecificColumns.FO_RATE].append(fo_rate)
+                output_data[OutputThermalSpecificColumns.FO_DURATION].append(fo_duration)
+                output_data[OutputThermalSpecificColumns.PO_DURATION].append(po_duration)
+                output_data[OutputThermalSpecificColumns.PO_WINTER].append(po_winter)
+                output_data[OutputThermalSpecificColumns.MARGINAL_COST].append(pd.NA)
+                output_data[OutputThermalSpecificColumns.MARKET_BID].append(pd.NA)
+                output_data[OutputThermalSpecificColumns.MR_SPECIFIC].append(mr_specific)
+                output_data[OutputThermalSpecificColumns.CM_SPECIFIC].append(cm_specific)
+                output_data[OutputThermalSpecificColumns.NB_UNIT].append(nb_unit)
+
+        return pd.DataFrame(output_data)
+
+    def _export_specific_param_dataframe(self, df: pd.DataFrame) -> None:
+        parent_dir = self.output_folder / SPECIFIC_PARAM_FOLDER
+        parent_dir.mkdir(parents=True, exist_ok=True)
+        # df.to_excel(parent_dir / f"specific_param_{self.scenario_name}.xlsx", index=False)
+
+        output_path = parent_dir / f"specific_param_{self.scenario_name}.xlsx"
+
+        with pd.ExcelWriter(output_path) as writer:
+            for year, year_df in df.sort_values("YEAR").groupby("YEAR"):
+                year_int = int(str(year))
+                sheet_name = f"{year_int - 1}-{year_int}"
+
+                year_df = year_df.sort_values(
+                    by=[OutputThermalSpecificColumns.NODE, OutputThermalSpecificColumns.CLUSTER]
+                ).drop(columns=["YEAR"])
+
+                year_df.to_excel(
+                    writer,
+                    sheet_name=sheet_name,
+                    index=False,
+                )
+
+    def build_specific_param(self) -> None:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_values_based_on_study_scenarios(df)
         df = self._filter_values_based_on_commission_date(df)
-
         df = self._add_antares_cluster_name_colum(df)
         df = self._filter_values_based_on_net_max_gen_cap(df)
+
         df = self._update_existing_columns_with_commondata(df)
 
         df = self._split_clusters_with_biomass_rule(df)
+        df = self._filter_values_based_on_net_max_gen_cap(df)
 
         df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
-
-        # TODO add method to check and update columns with values from Common Data
-        # TODO add method to filter columns only needed
-        # TODO build pegase dataframe
-
-        return df
+        self._export_specific_param_dataframe(df)
