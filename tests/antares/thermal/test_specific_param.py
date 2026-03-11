@@ -12,6 +12,8 @@
 
 from pathlib import Path
 
+import pandas as pd
+
 from antares.data_collection.referential_data.main_params import parse_main_params
 from antares.data_collection.thermal.constant_specific import SPECIFIC_PARAM_FOLDER
 from antares.data_collection.thermal.parsing.specific_param import ThermalSpecificParamParser
@@ -31,9 +33,22 @@ def test_nominal_case(tmp_path: Path) -> None:
     # Asserts the file is created
     generated_file_path = tmp_path / SPECIFIC_PARAM_FOLDER / "specific_param_test.xlsx"
     assert generated_file_path.exists()
-    # generated_df = pd.read_excel(generated_file_path)
-    #
-    # # Compare its content with the expected one
-    # expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal_installed_power.xlsx"
-    # expected_df = pd.read_excel(expected_file_path)
-    # pd.testing.assert_frame_equal(generated_df, expected_df, check_dtype=False)
+
+    # read Excel workbook, one sheet by year
+    file_wb = pd.ExcelFile(generated_file_path)
+    sheet_names = file_wb.sheet_names
+
+    generated_df = pd.read_excel(generated_file_path, sheet_name=sheet_names)
+    assert list(generated_df.keys()) == ["2029-2030", "2034-2035"]
+
+    # Compare its content with the expected one for any sheet
+    # 2030
+    expected_file_path = RESOURCE_PATH / "expected_output_files" / "specific_2030.xlsx"
+    expected_df_2030 = pd.read_excel(expected_file_path)
+    sheet_name = list(generated_df.keys())[0]
+    pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2030, check_dtype=False)
+    # 2035
+    expected_file_path = RESOURCE_PATH / "expected_output_files" / "specific_2035.xlsx"
+    expected_df_2035 = pd.read_excel(expected_file_path)
+    sheet_name = list(generated_df.keys())[1]
+    pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2035, check_dtype=False)

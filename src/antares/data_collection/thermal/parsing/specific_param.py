@@ -13,14 +13,17 @@
 from pathlib import Path
 from typing import Any, Iterator
 
-import numpy as np
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constant_specific import (
+    F_COLUMNS,
+    P_COLUMNS,
+    P_COLUMNS_WINTER,
     SPECIFIC_PARAM_FOLDER,
     InputThermalColumns,
     OutputThermalSpecificColumns,
+    weighted_avg,
 )
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
@@ -221,11 +224,11 @@ class ThermalSpecificParamParser:
                 df, mask_plan_outage_annual_days, InputThermalColumns.PLAN_OUTAGE_ANNUAL_DAYS, "po_duration_default"
             )
 
-        # PLAN_OUTAGE_ANNUAL_WIN / PO_winter_default
-        mask_plan_outage_annual_win = df[InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN].isna()
+        # PLAN_OUTAGE_WINTER / PO_winter_default
+        mask_plan_outage_annual_win = df[InputThermalColumns.PLAN_OUTAGE_WINTER].isna()
         if mask_plan_outage_annual_win.any():
             df = self._fill_from_common_data(
-                df, mask_plan_outage_annual_win, InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN, "po_winter_default"
+                df, mask_plan_outage_annual_win, InputThermalColumns.PLAN_OUTAGE_WINTER, "po_winter_default"
             )
 
         # NET_MIN_STAB_GEN / min_stable_generation_default
@@ -263,7 +266,7 @@ class ThermalSpecificParamParser:
             InputThermalColumns.FORCED_OUTAGE_RATE,
             InputThermalColumns.MEAN_TIME_REPAIR,
             InputThermalColumns.PLAN_OUTAGE_ANNUAL_DAYS,
-            InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN,
+            InputThermalColumns.PLAN_OUTAGE_WINTER,
             InputThermalColumns.NET_MIN_STAB_GEN,
             InputThermalColumns.GRP_MRUN_CURVE_ID,
             InputThermalColumns.GEN_UNT_MRUN_CURVE_ID,
@@ -281,7 +284,14 @@ class ThermalSpecificParamParser:
             str(year): pd.Timestamp(year=year, month=1, day=1) for year in years
         }
 
-        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
+        df_computed = self._computations_thermal_specific(df, years_date_format)
+
+        return df_computed
+
+    def _computations_thermal_specific(
+        self, df_to_compute: pd.DataFrame, years_input: dict[str, pd.Timestamp]
+    ) -> pd.DataFrame:
+        grouped_dfs = df_to_compute.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
 
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
@@ -299,19 +309,17 @@ class ThermalSpecificParamParser:
             OutputThermalSpecificColumns.MR_SPECIFIC: [],
             OutputThermalSpecificColumns.CM_SPECIFIC: [],
             OutputThermalSpecificColumns.NB_UNIT: [],
+            **{col: [] for col in F_COLUMNS},
+            **{col: [] for col in P_COLUMNS},
         }
 
-        def weighted_avg(df: pd.DataFrame, value_col: str, weight_col: str) -> float:
-            return float(np.average(df[value_col], weights=df[weight_col]))
-
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
-            for year_str, year_date in years_date_format.items():
+            for year_str, year_date in years_input.items():
                 mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= year_date) & (
                     grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= year_date
                 )
 
                 active_units = grouped_df.loc[mask]
-
                 if active_units.empty:
                     continue
 
@@ -340,7 +348,7 @@ class ThermalSpecificParamParser:
                 )
 
                 po_winter = weighted_avg(
-                    active_units, InputThermalColumns.PLAN_OUTAGE_ANNUAL_WIN, InputThermalColumns.NET_MAX_GEN_CAP
+                    active_units, InputThermalColumns.PLAN_OUTAGE_WINTER, InputThermalColumns.NET_MAX_GEN_CAP
                 )
 
                 mr_specific = int(
@@ -390,13 +398,20 @@ class ThermalSpecificParamParser:
                 output_data[OutputThermalSpecificColumns.MR_SPECIFIC].append(mr_specific)
                 output_data[OutputThermalSpecificColumns.CM_SPECIFIC].append(cm_specific)
                 output_data[OutputThermalSpecificColumns.NB_UNIT].append(nb_unit)
+                for col in F_COLUMNS:
+                    output_data[col].append(fo_rate)
+                # winter
+                for col in P_COLUMNS:
+                    if col in P_COLUMNS_WINTER:
+                        output_data[col].append((po_duration / 182) * po_winter)
+                    else:
+                        output_data[col].append((po_duration / 183) * (1 - po_winter))
 
         return pd.DataFrame(output_data)
 
     def _export_specific_param_dataframe(self, df: pd.DataFrame) -> None:
         parent_dir = self.output_folder / SPECIFIC_PARAM_FOLDER
         parent_dir.mkdir(parents=True, exist_ok=True)
-        # df.to_excel(parent_dir / f"specific_param_{self.scenario_name}.xlsx", index=False)
 
         output_path = parent_dir / f"specific_param_{self.scenario_name}.xlsx"
 

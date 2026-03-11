@@ -13,8 +13,26 @@
 from enum import StrEnum
 from pathlib import Path
 
-# TODO check for path
-SPECIFIC_PARAM_FOLDER = Path("thermal") / "specific param"
+import numpy as np
+import pandas as pd
+
+SPECIFIC_PARAM_FOLDER = Path("thermal") / "technicalParameters"
+
+
+def weighted_avg(df: pd.DataFrame, value_col: str, weight_col: str) -> float:
+    """
+    Compute weighted average for a given column from a Data Frame
+
+    Args:
+        df: Input pandas DataFrame containing the data.
+        value_col: Name of the column containing the values to average.
+        weight_col: Name of the column containing the weights associated
+            with each value.
+
+    Returns:
+        The weighted average as a float.
+    """
+    return float(np.average(df[value_col], weights=df[weight_col]))
 
 
 class InputThermalColumns(StrEnum):
@@ -33,7 +51,7 @@ class InputThermalColumns(StrEnum):
     FORCED_OUTAGE_RATE = "FORCED_OUTAGE_RATE"
     MEAN_TIME_REPAIR = "MEAN_TIME_REPAIR"
     PLAN_OUTAGE_ANNUAL_DAYS = "PLAN_OUTAGE_ANNUAL_DAYS"
-    PLAN_OUTAGE_ANNUAL_WIN = "PLAN_OUTAGE_ANNUAL_WIN"
+    PLAN_OUTAGE_WINTER = "PLAN_OUTAGE_WINTER"
     NET_MIN_STAB_GEN = "NET_MIN_STAB_GEN"
 
     GRP_MRUN_CURVE_ID = "GRP_MRUN_CURVE_ID"
@@ -58,3 +76,8 @@ class OutputThermalSpecificColumns(StrEnum):
     MR_SPECIFIC = "MR_specific"
     CM_SPECIFIC = "CM_specific"
     NB_UNIT = "nb_unit"
+
+
+F_COLUMNS = [f"F{i}" for i in range(1, 13)]
+P_COLUMNS = [f"P{i}" for i in range(1, 13)]
+P_COLUMNS_WINTER = [f"P{i}" for i in [1, 2, 3, 10, 11, 12]]
