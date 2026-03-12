@@ -64,6 +64,9 @@ class InputThermalColumns(StrEnum):
 class OutputThermalSpecificColumns(StrEnum):
     NODE = "node"
     CLUSTER = "Cluster"
+    NODE_ENTSOE = "node_ENTSOE"
+    COMMENTS = "comments"
+    CLUSTER_PEMMDB = "cluster_PEMMDB"
     MIN_STABLE_GEN = "min_stable_gen"
     SPINNING = "spinning"
     EFFICIENCY = "efficiency"
