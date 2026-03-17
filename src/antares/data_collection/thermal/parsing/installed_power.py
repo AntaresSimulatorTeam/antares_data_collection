@@ -124,25 +124,29 @@ class ThermalInstallerPowerParser:
             df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
         ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
 
-        # Some rows are exactly the same except for the capacity.
-        # We want to merge them by summing their capacity as in the end they'll be merged for PEGASE format
-        columns_to_group_on = df.columns.drop(InputThermalColumns.NET_MAX_GEN_CAP).tolist()
-        df = df.groupby(columns_to_group_on, as_index=False, dropna=False).sum()
+        # Reindex the dataframe to use Series freely
+        df.index = pd.RangeIndex(len(df))
 
-        filtered_dfs = []
-        for commissioning_limits in self._get_starting_and_ending_timestamps():
-            # For each year we only keep the values with fitting dates
-            filtered_df = df.loc[
-                (df[InputThermalColumns.COMMISSIONING_DATE] <= commissioning_limits.last_possible_commissioning_date)
-                & (
-                    df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
-                    >= commissioning_limits.earliest_possible_decommissioning_date
-                )
-            ]
-            filtered_dfs.append(filtered_df)
+        commissioning_limits = list(self._get_starting_and_ending_timestamps())
+        start_dates = df[InputThermalColumns.COMMISSIONING_DATE]
+        end_dates = df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+        index_to_drop = []
+        for k in range(len(df)):
+            start_date = start_dates[k]
+            end_date = end_dates[k]
+            invalid_limits = 0
+            for limit in commissioning_limits:
+                if (
+                    start_date > limit.last_possible_commissioning_date
+                    or end_date < limit.earliest_possible_decommissioning_date
+                ):
+                    invalid_limits += 1
 
-        # In the end we concatenate them and drop duplicated lines
-        df = pd.concat(filtered_dfs).drop_duplicates().reset_index(drop=True)
+            # If no year matches the commissioning dates, we don't want to consider the row.
+            if invalid_limits == len(commissioning_limits):
+                index_to_drop.append(k)
+
+        df = df.drop(index_to_drop)
 
         if df.empty:
             # We want to raise as soon as possible to have a clear error msg
