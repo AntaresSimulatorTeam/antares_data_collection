@@ -116,11 +116,8 @@ class ThermalInstallerPowerParser:
             return df
 
         # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
-        for datetime_col in [InputThermalColumns.COMMISSIONING_DATE, InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]:
-            df[datetime_col] = pd.to_datetime(df[datetime_col])
-
-        # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
         df[InputThermalColumns.COMMISSIONING_DATE] = pd.to_datetime(df[InputThermalColumns.COMMISSIONING_DATE])
+
         # Some values might be missing inside `DECOMMISSIONING_DATE_EXPECTED`.
         # If so, we should consider the decommissioning year to be 2100.
         df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] = pd.to_datetime(
