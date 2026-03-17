@@ -124,6 +124,11 @@ class ThermalInstallerPowerParser:
             df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
         ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
 
+        # Some rows are exactly the same except for the capacity.
+        # We want to merge them by summing their capacity as in the end they'll be merged for PEGASE format
+        columns_to_group_on = df.columns.drop(InputThermalColumns.NET_MAX_GEN_CAP).tolist()
+        df = df.groupby(columns_to_group_on, as_index=False, dropna=False).sum()
+
         filtered_dfs = []
         for commissioning_limits in self._get_starting_and_ending_timestamps():
             # For each year we only keep the values with fitting dates
@@ -264,7 +269,7 @@ class ThermalInstallerPowerParser:
                 output_data[OutputThermalInstallPowerColumns.FUEL] += 2 * [fuel]
                 output_data[OutputThermalInstallPowerColumns.TECHNOLOGY] += 2 * [technology]
                 output_data[OutputThermalInstallPowerColumns.CLUSTER] += 2 * [cluster]
-                output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["number", "power"]
+                output_data[OutputThermalInstallPowerColumns.CATEGORY] += ["power", "number"]
 
                 for date_range in date_ranges:
                     for month in date_range:
