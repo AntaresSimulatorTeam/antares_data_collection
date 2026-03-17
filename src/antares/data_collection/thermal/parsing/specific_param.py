@@ -82,6 +82,20 @@ class ThermalSpecificParamParser:
             raise ValueError(f"The given op_stat values {self.op_stat_values} are not present in the dataframe")
         return df
 
+    def _filter_non_declared_areas(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
+        We don't want to consider them.
+        We simply log a message for each area we find in this case
+        """
+        all_market_nodes = set(df[InputThermalColumns.MARKET_NODE])
+        missing_nodes = []
+        for node in all_market_nodes:
+            antares_code = self.main_params.get_antares_code(node)
+            if not antares_code:
+                missing_nodes.append(node)
+        return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
+
     def _filter_values_based_on_study_scenarios(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
@@ -103,31 +117,34 @@ class ThermalSpecificParamParser:
             return df
 
         # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
-        for datetime_col in [InputThermalColumns.COMMISSIONING_DATE, InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]:
-            df[datetime_col] = pd.to_datetime(df[datetime_col])
-
-        # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
         df[InputThermalColumns.COMMISSIONING_DATE] = pd.to_datetime(df[InputThermalColumns.COMMISSIONING_DATE])
+
         # Some values might be missing inside `DECOMMISSIONING_DATE_EXPECTED`.
         # If so, we should consider the decommissioning year to be 2100.
         df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] = pd.to_datetime(
             df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
         ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
 
-        filtered_dfs = []
-        for commissioning_limits in self._get_starting_and_ending_timestamps():
-            # For each year we only keep the values with fitting dates
-            filtered_df = df.loc[
-                (df[InputThermalColumns.COMMISSIONING_DATE] <= commissioning_limits.last_possible_commissioning_date)
-                & (
-                    df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
-                    >= commissioning_limits.earliest_possible_decommissioning_date
-                )
-            ]
-            filtered_dfs.append(filtered_df)
-
-        # In the end we concatenate them and drop duplicated lines
-        df = pd.concat(filtered_dfs).drop_duplicates().reset_index(drop=True)
+        # # Some rows are exactly the same except for the capacity.
+        # # We want to merge them by summing their capacity as in the end they'll be merged for PEGASE format
+        # columns_to_group_on = df.columns.drop(InputThermalColumns.NET_MAX_GEN_CAP).tolist()
+        # df = df.groupby(columns_to_group_on, as_index=False, dropna=False).sum()
+        #
+        # filtered_dfs = []
+        # for commissioning_limits in self._get_starting_and_ending_timestamps():
+        #     # For each year we only keep the values with fitting dates
+        #     filtered_df = df.loc[
+        #         (df[
+        #              InputThermalColumns.COMMISSIONING_DATE] <= commissioning_limits.last_possible_commissioning_date)
+        #         & (
+        #                 df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+        #                 >= commissioning_limits.earliest_possible_decommissioning_date
+        #         )
+        #         ]
+        #     filtered_dfs.append(filtered_df)
+        #
+        # # In the end we concatenate them and drop duplicated lines
+        # df = pd.concat(filtered_dfs).drop_duplicates().reset_index(drop=True)
 
         if df.empty:
             # We want to raise as soon as possible to have a clear error msg
@@ -382,8 +399,6 @@ class ThermalSpecificParamParser:
                     .any()
                 )
 
-                # TODO compute last columns F1-F12 and P1-P12
-
                 # ---- store result ----
                 output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
                 output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
@@ -440,6 +455,9 @@ class ThermalSpecificParamParser:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_values_based_on_study_scenarios(df)
+
+        df = self._filter_non_declared_areas(df)
+
         df = self._filter_values_based_on_commission_date(df)
         df = self._add_antares_cluster_name_colum(df)
         df = self._filter_values_based_on_net_max_gen_cap(df)
