@@ -287,7 +287,7 @@ class ThermalInstallerPowerParser:
     def _export_dataframe(self, df: pd.DataFrame) -> None:
         parent_dir = self.output_folder / THERMAL_INSTALL_POWER_FOLDER
         parent_dir.mkdir(parents=True, exist_ok=True)
-        df.to_excel(parent_dir / "thermal_installed_power.xlsx", index=False)
+        df.to_excel(parent_dir / "thermal_martin.xlsx", index=False)
 
     def build_thermal_installed_power(self) -> None:
         input_df = self._read_input_file()
