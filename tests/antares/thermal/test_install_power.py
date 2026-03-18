@@ -28,7 +28,7 @@ def test_nominal_case(tmp_path: Path) -> None:
     parser = ThermalParser(
         RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
-    parser.build_thermal_installed_power()
+    parser.build_installed_power()
 
     # Asserts the file is created
     generated_file_path = tmp_path / THERMAL_INSTALL_POWER_FOLDER / "thermal_installed_power.xlsx"

@@ -232,6 +232,10 @@ class ThermalParser:
         df = self._filter_values_based_on_net_max_gen_cap(df)
         return self._add_code_antares_colum(df)
 
-    def build_thermal_installed_power(self) -> None:
+    def build_installed_power(self) -> None:
         parser = ThermalInstallerPowerParser(self.output_folder, self.main_params, self.years)
         parser.build_thermal_installed_power(self.filtered_dataframe)
+
+    def build_specific_parameters(self) -> None:
+        pass
+        # todo
