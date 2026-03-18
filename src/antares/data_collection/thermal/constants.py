@@ -10,13 +10,10 @@
 #
 # This file is part of the Antares project.
 from enum import StrEnum
-from pathlib import Path
 
 import pandas as pd
 
 THERMAL_INPUT_FILE = "Thermal.csv"
-THERMAL_INSTALL_POWER_FOLDER = Path("thermal") / "installed power"
-THERMAL_INSTALL_POWER_FILE_FORMAT = "thermal_{trajectory}/{scenario}.xlsx"
 DEFAULT_DECOMMISSIONING_DATE = pd.Timestamp(year=2100, month=1, day=1)
 BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
@@ -42,12 +39,3 @@ class InputThermalColumns(StrEnum):
     SCND_FUEL_RT = "SCND_FUEL_RT"
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"
-
-
-class OutputThermalInstallPowerColumns(StrEnum):
-    TO_USE = "ToUse"
-    AREA = "Area"
-    FUEL = "Fuel"
-    TECHNOLOGY = "Technology"
-    CLUSTER = "Cluster"
-    CATEGORY = "Category"
