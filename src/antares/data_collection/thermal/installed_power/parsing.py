@@ -24,10 +24,12 @@ from antares.data_collection.thermal.constants import (
     DEFAULT_DECOMMISSIONING_DATE,
     FUEL_MAPPING,
     THERMAL_INPUT_FILE,
-    THERMAL_INSTALL_POWER_FOLDER,
     InputThermalColumns,
-    OutputThermalInstallPowerColumns,
     get_starting_and_ending_timestamps_for_outputs,
+)
+from antares.data_collection.thermal.installed_power.constants import (
+    THERMAL_INSTALL_POWER_FOLDER,
+    OutputThermalInstallPowerColumns,
 )
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
