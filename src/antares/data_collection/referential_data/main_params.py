@@ -126,12 +126,15 @@ class MainParams:
     def get_scenario_types(self, years: list[int]) -> set[str]:
         return {self.get_scenario_type(y) for y in years}
 
-    def get_cluster_bp(self, cluster_pemmdb: str) -> str:
-        if cluster_pemmdb not in self._cluster_pemmdb_to_antares:
-            raise ValueError(f"No cluster BP defined for cluster {cluster_pemmdb}")
-        return self._cluster_pemmdb_to_antares[cluster_pemmdb]
+    def get_cluster_bp(self, cluster_pemmdb: str) -> str | None:
+        value = self._cluster_pemmdb_to_antares.get(cluster_pemmdb)
+        if pd.isna(value):
+            # The value is either missing or the line does not even exist. We should log the information but not crash.
+            print(f"ENTSOE Cluster '{cluster_pemmdb}' was not found inside `MainParams`")
+            return None
+        return value
 
-    def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str]:
+    def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
     def get_antares_cluster_technology_and_fuel(self, antares_cluster: str) -> ClusterParams:
