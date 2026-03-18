@@ -49,6 +49,7 @@ class ThermalParser:
         self.op_stat_values = op_stat_values
         self.main_params = main_params
         self.years = years
+        self.filtered_dataframe = self._build_filtered_dataframe()
 
     def _read_input_file(self) -> pd.DataFrame:
         input_file_path = self.input_folder.joinpath(THERMAL_INPUT_FILE)
@@ -232,6 +233,5 @@ class ThermalParser:
         return self._add_code_antares_colum(df)
 
     def build_thermal_installed_power(self) -> None:
-        df = self._build_filtered_dataframe()
         parser = ThermalInstallerPowerParser(self.output_folder, self.main_params, self.years)
-        parser.build_thermal_installed_power(df)
+        parser.build_thermal_installed_power(self.filtered_dataframe)
