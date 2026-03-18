@@ -20,6 +20,10 @@ BIOMASS_CLUSTER_SUFFIX = "bio"
 FUEL_MAPPING = {BIOMASS_CLUSTER_SUFFIX: "Mixed fuel", "virtuel": "Other"}
 
 
+ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
+ANTARES_NODE_NAME_COLUMN = "antares_node"
+
+
 def get_starting_and_ending_timestamps_for_outputs(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
     """
     Implicit rule: For a given year, we have to consider the year starts in July of the previous year
