@@ -93,7 +93,26 @@ class ThermalInstallerPowerParser:
             antares_code = self.main_params.get_antares_code(node)
             if not antares_code:
                 missing_nodes.append(node)
-        return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
+
+        if missing_nodes:
+            return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
+        return df
+
+    def _filter_non_declared_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Some mapping between ENTSOE clusters and Antares ones might be missing in the `MainParams` file.
+        If so, we do not want to crash but rather log that we'll not consider them.
+        """
+        all_pemmdb_clusters = set(df[InputThermalColumns.PEMMDB_TECHNOLOGY])
+        missing_mappings = []
+        for cluster_pemmdb in all_pemmdb_clusters:
+            antares_cluster = self.main_params.get_cluster_bp(cluster_pemmdb)
+            if not antares_cluster:
+                missing_mappings.append(antares_cluster)
+
+        if missing_mappings:
+            return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
+        return df
 
     def _filter_values_based_on_study_scenarios(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -297,6 +316,7 @@ class ThermalInstallerPowerParser:
         input_df = self._read_input_file()
         df = self._filter_values_based_on_op_stat(input_df)
         df = self._filter_non_declared_areas(df)
+        df = self._filter_non_declared_clusters(df)
         df = self._filter_values_based_on_study_scenarios(df)
         df = self._filter_values_based_on_commission_date(df)
         df = self._add_antares_cluster_name_colum(df)
