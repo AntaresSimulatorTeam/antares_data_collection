@@ -239,4 +239,4 @@ class ThermalParser:
 
     def build_specific_parameters(self) -> None:
         parser = ThermalSpecificParametersParser(self.input_folder, self.output_folder, self.main_params, self.years)
-        parser._parse_inelastic_index()
+        parser.build_thermal_specific_parameters(self.filtered_dataframe)

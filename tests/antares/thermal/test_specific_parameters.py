@@ -12,10 +12,7 @@
 
 from pathlib import Path
 
-import pandas as pd
-
 from antares.data_collection.referential_data.main_params import parse_main_params
-from antares.data_collection.thermal.installed_power.constants import THERMAL_INSTALL_POWER_FOLDER
 from antares.data_collection.thermal.parsing import ThermalParser
 from tests.conftest import RESOURCE_PATH
 

@@ -21,6 +21,8 @@ MUST_RUN_NAME = f"MR_{FOLDER_NAME}"
 
 # Input constants
 
+SCENARIO_TO_ALWAYS_CONSIDER = "All_years_ERAA_TYNDP"
+
 INELASTIC_INDEX_NAME = "Inelastic Index.csv"
 INELASTIC_NAME = "Inelastic.csv"
 
