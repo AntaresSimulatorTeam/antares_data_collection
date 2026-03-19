@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias
@@ -188,7 +189,8 @@ class ThermalSpecificParametersParser:
             grp_must_run_value: str = group[0]  # type: ignore
 
             # We want to select the Series with the lowest mean
-            ts_tracker = ()
+            lowest_mean = math.inf
+            final_ts = pd.Series()
 
             if not pd.isna(grp_must_run_value):
                 if grp_must_run_value in index_to_ts.group_must_run.index[zone]:
@@ -196,10 +198,11 @@ class ThermalSpecificParametersParser:
                     for curve_id in curve_ids:
                         ts = index_to_ts.group_must_run.data[curve_id]
                         ts_mean = ts.mean()
-                        if not ts_tracker or ts_tracker[0] > ts_mean:
-                            ts_tracker = (ts, ts_mean)
+                        if lowest_mean > ts_mean:
+                            final_ts = ts
+                            lowest_mean = ts_mean
 
-            print(ts_tracker)
+            print(final_ts)
 
 
     # Deprecated
@@ -298,7 +301,6 @@ class ThermalSpecificParametersParser:
         for k in range(len(df)):
             column_name = f"{antares_zones[k]}_{antares_clusters[k]}"
             net_max_capacity = net_max_capacities[k]
-            print(output_data.must_run[k])
 
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
         file_path.parent.mkdir(parents=True, exist_ok=True)
