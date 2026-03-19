@@ -4,6 +4,7 @@ from typing import Iterator
 
 import pandas as pd
 
+from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns
 
 
@@ -91,4 +92,21 @@ def filter_thermal_input_file_based_on_commission_date(df: pd.DataFrame, years: 
         # We want to raise as soon as possible to have a clear error msg
         msg = f"No input data matched the given (de)commissioning dates for the given years {years}"
         raise ValueError(msg)
+    return df
+
+
+def filter_input_based_on_study_scenarios(df: pd.DataFrame, main_params: MainParams, years: list[int]) -> pd.DataFrame:
+    """
+    Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
+    Other scenarios present in the input file will be ignored.
+    """
+    scenario_types = list(main_params.get_scenario_types(years=years))
+
+    if not scenario_types:
+        return df
+
+    df = df[df[InputThermalColumns.STUDY_SCENARIO].str.contains("|".join(scenario_types), case=False, na=False)]
+    if df.empty:
+        # We want to raise as soon as possible to have a clear error msg
+        raise ValueError(f"No input data matched the given study scenario for the given years {years}")
     return df

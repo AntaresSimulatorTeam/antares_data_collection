@@ -25,7 +25,11 @@ from antares.data_collection.thermal.constants import (
 )
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
 from antares.data_collection.thermal.technical_parameters.parsing import ThermalSpecificParametersParser
-from antares.data_collection.thermal.utils import filter_thermal_input_file_based_on_commission_date, parse_input_file
+from antares.data_collection.thermal.utils import (
+    filter_input_based_on_study_scenarios,
+    filter_thermal_input_file_based_on_commission_date,
+    parse_input_file,
+)
 
 
 class ThermalParser:
@@ -90,22 +94,6 @@ class ThermalParser:
             return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
         return df
 
-    def _filter_values_based_on_study_scenarios(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
-        Other scenarios present in the input file will be ignored.
-        """
-        scenario_types = list(self.main_params.get_scenario_types(years=self.years))
-
-        if not scenario_types:
-            return df
-
-        df = df[df[InputThermalColumns.STUDY_SCENARIO].str.contains("|".join(scenario_types), case=False, na=False)]
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            raise ValueError(f"No input data matched the given study scenario for the given years {self.years}")
-        return df
-
     def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
         """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
         return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
@@ -150,7 +138,7 @@ class ThermalParser:
         df = self._filter_values_based_on_op_stat(df)
         df = self._filter_non_declared_areas(df)
         df = self._filter_non_declared_clusters(df)
-        df = self._filter_values_based_on_study_scenarios(df)
+        df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
         df = filter_thermal_input_file_based_on_commission_date(df, self.years)
         df = self._add_antares_cluster_name_colum(df)
         df = self._split_clusters_with_biomass_rule(df)
