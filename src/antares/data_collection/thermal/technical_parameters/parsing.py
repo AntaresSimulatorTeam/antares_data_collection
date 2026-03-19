@@ -15,7 +15,8 @@ from typing import TypeAlias
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constants import InputThermalColumns
+from antares.data_collection.thermal.constants import InputThermalColumns, ANTARES_CLUSTER_NAME_COLUMN, \
+    ANTARES_NODE_NAME_COLUMN
 from antares.data_collection.thermal.technical_parameters.constants import (
     DERATING_INDEX_NAME,
     GROUP_DERATING_INDEX_NAME,
@@ -93,9 +94,18 @@ class ThermalSpecificParametersParser:
         df = filter_input_based_on_study_scenarios(df, self.main_params, [year])
         df = filter_thermal_input_file_based_on_commission_date(df, [year])
         useful_columns = [
-            InputThermalColumns.MARKET_NODE
+            InputThermalColumns.ZONE,
+            InputThermalColumns.MARKET_NODE,
+            InputThermalColumns.NET_MAX_GEN_CAP,
+            InputThermalColumns.GRP_MRUN_CURVE_ID,
+            InputThermalColumns.GEN_UNT_MRUN_CURVE_ID,
+            InputThermalColumns.GRP_D_CURVE_ID,
+            InputThermalColumns.GEN_UNT_D_CURVE_ID,
+            InputThermalColumns.GEN_UNT_INELASTIC_ID,
+            ANTARES_CLUSTER_NAME_COLUMN,
+            ANTARES_NODE_NAME_COLUMN
         ]
-        return df
+        return df[useful_columns]
 
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         inelastic_index_df = self._parse_inelastic_index()
