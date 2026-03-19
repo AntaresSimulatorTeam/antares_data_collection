@@ -172,7 +172,39 @@ class ThermalSpecificParametersParser:
             group_derating=InternalMapping(index=group_derating_index_mapping, data=group_derating),
         )
 
+
+    def _build_must_run(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries):
+        must_run_cols = [
+            InputThermalColumns.GRP_MRUN_CURVE_ID,
+            InputThermalColumns.GEN_UNT_MRUN_CURVE_ID,
+            InputThermalColumns.GEN_UNT_INELASTIC_ID,
+            ANTARES_CLUSTER_NAME_COLUMN,
+            InputThermalColumns.ZONE,
+        ]
+        must_run_groups = df[must_run_cols].groupby(by=must_run_cols, dropna=False)
+        for (group, _) in must_run_groups:
+            zone = group[4]
+            assert isinstance(zone, ZoneId)
+            grp_must_run_value: str = group[0]  # type: ignore
+
+            # We want to select the Series with the lowest mean
+            ts_tracker = ()
+
+            if not pd.isna(grp_must_run_value):
+                if grp_must_run_value in index_to_ts.group_must_run.index[zone]:
+                    curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.group_must_run.data[curve_id]
+                        ts_mean = ts.mean()
+                        if not ts_tracker or ts_tracker[0] > ts_mean:
+                            ts_tracker = (ts, ts_mean)
+
+            print(ts_tracker)
+
+
+    # Deprecated
     def _build_the_output_data(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> OutputData:
+        self._build_must_run(df, index_to_ts)
         zones = list(df[InputThermalColumns.ZONE])
         group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
         unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
