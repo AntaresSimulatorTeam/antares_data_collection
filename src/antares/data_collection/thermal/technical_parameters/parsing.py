@@ -186,12 +186,13 @@ class ThermalSpecificParametersParser:
         for (group, _) in must_run_groups:
             zone = group[4]
             assert isinstance(zone, ZoneId)
-            grp_must_run_value: str = group[0]  # type: ignore
 
             # We want to select the Series with the lowest mean
             lowest_mean = math.inf
             final_ts = pd.Series()
 
+            # Group Must Run column
+            grp_must_run_value: str = group[0]  # type: ignore
             if not pd.isna(grp_must_run_value):
                 if grp_must_run_value in index_to_ts.group_must_run.index[zone]:
                     curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
@@ -202,6 +203,16 @@ class ThermalSpecificParametersParser:
                             final_ts = ts
                             lowest_mean = ts_mean
 
+            # Must Run column
+
+            # Inelastic column
+
+            # Use default value for empty rows
+            if final_ts.empty:
+                final_ts = DEFAULT_MUST_RUN_TS
+
+            # Put everything in some object
+            # do the same thing in another function for Derating
             print(final_ts)
 
 
