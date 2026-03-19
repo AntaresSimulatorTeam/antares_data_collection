@@ -35,7 +35,9 @@ from antares.data_collection.thermal.technical_parameters.constants import (
     INELASTIC_NAME,
     MUST_RUN_INDEX_NAME,
     MUST_RUN_NAME,
+    MUST_RUN_OUTPUT_NAME,
     SCENARIO_TO_ALWAYS_CONSIDER,
+    TECHNICAL_PARAMS_FOLDER,
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
 )
@@ -170,7 +172,7 @@ class ThermalSpecificParametersParser:
             group_derating=InternalMapping(index=group_derating_index_mapping, data=group_derating),
         )
 
-    def _builds_the_output_data(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> OutputData:
+    def _build_the_output_data(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> OutputData:
         zones = list(df[InputThermalColumns.ZONE])
         group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
         unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
@@ -261,6 +263,20 @@ class ThermalSpecificParametersParser:
 
         return output_data
 
+    def _write_must_run_file(self, year: int, output_data: OutputData, df: pd.DataFrame) -> None:
+        antares_zones = list(df[ANTARES_NODE_NAME_COLUMN])
+        antares_clusters = list(df[ANTARES_CLUSTER_NAME_COLUMN])
+        net_max_capacities = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
+
+        for k in range(len(df)):
+            antares_zone = antares_zones[k]
+            antares_cluster = antares_clusters[k]
+            net_max_capacity = net_max_capacities[k]
+            print(net_max_capacity)
+
+        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         # Parse Index files
         inelastic_index_df = self._parse_inelastic_index()
@@ -293,5 +309,7 @@ class ThermalSpecificParametersParser:
             )
 
             thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
-            output_data = self._builds_the_output_data(thermal_df_year, index_to_timeseries)
-            print(output_data)
+            output_data = self._build_the_output_data(thermal_df_year, index_to_timeseries)
+
+            # Write the `Must Run` file
+            self._write_must_run_file(year, output_data, thermal_df_year)
