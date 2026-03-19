@@ -9,7 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
+import time
 from pathlib import Path
 
 from antares.data_collection.referential_data.main_params import parse_main_params
@@ -22,7 +22,12 @@ def test_nominal_case(tmp_path: Path) -> None:
     main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
 
     # Build the thermal specific parameters files
+    start = time.time()
     parser = ThermalParser(
         RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
+    end = time.time()
+    print("Duration 1", end - start)
     parser.build_specific_parameters()
+    end = time.time()
+    print("Duration 2", end - start)

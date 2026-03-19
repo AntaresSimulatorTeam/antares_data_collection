@@ -15,6 +15,7 @@ from typing import TypeAlias
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
+from antares.data_collection.thermal.constants import InputThermalColumns
 from antares.data_collection.thermal.technical_parameters.constants import (
     DERATING_INDEX_NAME,
     GROUP_DERATING_INDEX_NAME,
@@ -88,6 +89,14 @@ class ThermalSpecificParametersParser:
             mapping.setdefault(area, {})[cluster] = list(grouped_df[curve_id_col])
         return mapping
 
+    def _filter_thermal_input_file(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
+        df = filter_input_based_on_study_scenarios(df, self.main_params, [year])
+        df = filter_thermal_input_file_based_on_commission_date(df, [year])
+        useful_columns = [
+            InputThermalColumns.MARKET_NODE
+        ]
+        return df
+
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         inelastic_index_df = self._parse_inelastic_index()
         group_must_run_index_df = self._parse_group_must_run_index()
@@ -95,8 +104,7 @@ class ThermalSpecificParametersParser:
         group_derating_index_df = self._parse_group_derating_index()
         must_run_index_df = self._parse_must_run_index()
         for year in self.years:
-            thermal_df = filter_input_based_on_study_scenarios(thermal_df, self.main_params, [year])
-            thermal_df = filter_thermal_input_file_based_on_commission_date(thermal_df, [year])
+            thermal_df = self._filter_thermal_input_file(thermal_df, year)
 
             inelastic_index_mapping = self._build_index_mapping(df=inelastic_index_df, year=year)
             derating_index_mapping = self._build_index_mapping(df=derating_index_df, year=year)
