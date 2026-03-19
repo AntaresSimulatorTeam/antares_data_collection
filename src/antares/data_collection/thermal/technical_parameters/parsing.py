@@ -20,6 +20,7 @@ from antares.data_collection.thermal.technical_parameters.constants import (
     SCENARIO_TO_ALWAYS_CONSIDER,
     InputInelasticIndexColumns,
 )
+from antares.data_collection.thermal.utils import parse_input_file
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
@@ -35,20 +36,7 @@ class ThermalSpecificParametersParser:
         self.years = years
 
     def _parse_inelastic_index(self) -> pd.DataFrame:
-        input_file_path = self.input_folder / INELASTIC_INDEX_NAME
-        if not input_file_path.exists():
-            raise ValueError(f"Inelastic index file {input_file_path} not found")
-
-        # Checks that all expected columns exist
-        df = pd.read_csv(input_file_path)
-        existing_cols = set(df.columns)
-        expected_cols = list(InputInelasticIndexColumns)
-        for expected_column in expected_cols:
-            if expected_column not in existing_cols:
-                raise ValueError(f"Column {expected_column} not found in {input_file_path}")
-
-        # Keep useful columns only
-        return df[expected_cols]
+        return parse_input_file(self.input_folder / INELASTIC_INDEX_NAME, list(InputInelasticIndexColumns))
 
     def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
         scenario = self.main_params.get_scenario_type(year=year)

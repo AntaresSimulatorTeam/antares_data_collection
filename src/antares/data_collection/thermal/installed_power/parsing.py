@@ -23,12 +23,12 @@ from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     FUEL_MAPPING,
     InputThermalColumns,
-    get_starting_and_ending_timestamps_for_outputs,
 )
 from antares.data_collection.thermal.installed_power.constants import (
     THERMAL_INSTALL_POWER_FOLDER,
     OutputThermalInstallPowerColumns,
 )
+from antares.data_collection.thermal.utils import get_starting_and_ending_timestamps_for_outputs
 
 
 class ThermalInstallerPowerParser:

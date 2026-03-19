@@ -28,6 +28,7 @@ from antares.data_collection.thermal.constants import (
 )
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
 from antares.data_collection.thermal.technical_parameters.parsing import ThermalSpecificParametersParser
+from antares.data_collection.thermal.utils import parse_input_file
 
 
 @dataclass
@@ -53,20 +54,7 @@ class ThermalParser:
         self.filtered_dataframe = self._build_filtered_dataframe()
 
     def _read_input_file(self) -> pd.DataFrame:
-        input_file_path = self.input_folder.joinpath(THERMAL_INPUT_FILE)
-        if not input_file_path.exists():
-            raise ValueError(f"Thermal input file {input_file_path} not found")
-
-        # Checks that all expected columns exist
-        df = pd.read_csv(input_file_path)
-        existing_cols = set(df.columns)
-        expected_cols = list(InputThermalColumns)
-        for expected_column in expected_cols:
-            if expected_column not in existing_cols:
-                raise ValueError(f"Column {expected_column} not found in {input_file_path}")
-
-        # Return the dataframe with the useful columns only
-        return df[expected_cols]
+        return parse_input_file(self.input_folder.joinpath(THERMAL_INPUT_FILE), list(InputThermalColumns))
 
     def _filter_values_based_on_op_stat(self, df: pd.DataFrame) -> pd.DataFrame:
         """We want to keep only the lines were the OP_STAT value matches the user given ones"""
