@@ -41,7 +41,6 @@ DERATING_NAME = "Derating.csv"
 GROUP_DERATING_NAME = "Group Derating.csv"
 
 
-
 class InputIndexColumns(StrEnum):
     ZONE = "ZONE"
     ID = "ID"

@@ -54,6 +54,7 @@ class InternalMapping:
     index: IndexMapping
     data: pd.DataFrame
 
+
 @dataclass(frozen=True)
 class IndexesToTimeSeries:
     inelastic: InternalMapping
@@ -61,6 +62,15 @@ class IndexesToTimeSeries:
     must_run: InternalMapping
     derating: InternalMapping
     group_derating: InternalMapping
+
+
+Curves: TypeAlias = dict[int, tuple[pd.Series, float]]
+
+
+@dataclass
+class OutputData:
+    must_run: Curves
+    derating: Curves
 
 
 class ThermalSpecificParametersParser:
@@ -155,37 +165,86 @@ class ThermalSpecificParametersParser:
             group_must_run=InternalMapping(index=group_must_run_index_mapping, data=group_must_run),
             must_run=InternalMapping(index=must_run_index_mapping, data=must_run),
             derating=InternalMapping(index=derating_index_mapping, data=derating),
-            group_derating=InternalMapping(index=group_derating_index_mapping, data=group_derating)
+            group_derating=InternalMapping(index=group_derating_index_mapping, data=group_derating),
         )
 
-    def _truc(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries):
+    def _builds_the_output_data(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> OutputData:
         zones = list(df[InputThermalColumns.ZONE])
-        net_max_gen_caps = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
         group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
         unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
         group_deratings = list(df[InputThermalColumns.GRP_D_CURVE_ID])
         unit_deratings = list(df[InputThermalColumns.GEN_UNT_D_CURVE_ID])
         inelastics = list(df[InputThermalColumns.GEN_UNT_INELASTIC_ID])
-        antares_zones = list(df[ANTARES_NODE_NAME_COLUMN])
-        antares_clusters = list(df[ANTARES_CLUSTER_NAME_COLUMN])
 
-        # Builds the Must Run dataframe
+        # Builds output data object
+        output_data = OutputData(must_run={}, derating={})
+
         for k in range(len(df)):
+            zone = zones[k]
+
+            # Group Must Run
             grp_must_run_value = group_must_runs[k]
             if not pd.isna(grp_must_run_value):
-                if grp_must_run_value not in index_to_ts.group_must_run.index[zones[k]]:
+                if grp_must_run_value not in index_to_ts.group_must_run.index[zone]:
                     continue
-                curve_ids = index_to_ts.group_must_run.index[zones[k]][grp_must_run_value]
+                curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
                 for curve_id in curve_ids:
                     ts = index_to_ts.group_must_run.data[curve_id]
-                    print(ts)
+                    ts_mean = ts.mean()
+                    if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
+                        output_data.must_run[k] = (ts, ts_mean)
 
+            # Must Run
+            must_run_value = unit_must_runs[k]
+            if not pd.isna(must_run_value):
+                if must_run_value not in index_to_ts.must_run.index[zone]:
+                    continue
+                curve_ids = index_to_ts.must_run.index[zone][must_run_value]
+                for curve_id in curve_ids:
+                    ts = index_to_ts.must_run.data[curve_id]
+                    ts_mean = ts.mean()
+                    if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
+                        output_data.must_run[k] = (ts, ts_mean)
 
-    # 1- Fair toutes es lignes
-    # 2- Si aucune valeur est remplie, noter un truc
-    # 3- Si une valeur est remplie aller prendre le mapping associé
-    # Il faut construire un objet interne pour ça non ?
-    # Du genre le IndexMapping mais avec ce dont on a vraiment besoin mais faudrait aussi le type ...
+            # Group Derating
+            group_derating_value = group_deratings[k]
+            if not pd.isna(group_derating_value):
+                if group_derating_value not in index_to_ts.group_derating.index[zone]:
+                    continue
+                curve_ids = index_to_ts.group_derating.index[zone][group_derating_value]
+                for curve_id in curve_ids:
+                    ts = index_to_ts.group_derating.data[curve_id]
+                    ts_mean = ts.mean()
+                    if k not in output_data.derating or output_data.derating[k][1] > ts_mean:
+                        output_data.derating[k] = (ts, ts_mean)
+
+            # Derating
+            derating_value = unit_deratings[k]
+            if not pd.isna(derating_value):
+                if derating_value not in index_to_ts.derating.index[zone]:
+                    continue
+                curve_ids = index_to_ts.derating.index[zone][derating_value]
+                for curve_id in curve_ids:
+                    ts = index_to_ts.derating.data[curve_id]
+                    ts_mean = ts.mean()
+                    if k not in output_data.derating or output_data.derating[k][1] > ts_mean:
+                        output_data.derating[k] = (ts, ts_mean)
+
+            # Inelastic
+            inelastic_value = inelastics[k]
+            if not pd.isna(inelastic_value):
+                if inelastic_value not in index_to_ts.inelastic.index[zone]:
+                    continue
+                curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
+                for curve_id in curve_ids:
+                    ts = index_to_ts.inelastic.data[curve_id]
+                    ts_mean = ts.mean()
+                    if k not in output_data.derating or output_data.derating[k][1] > ts_mean:
+                        output_data.derating[k] = (ts, ts_mean)
+                    if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
+                        output_data.must_run[k] = (ts, ts_mean)
+
+        return output_data
 
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         # Parse Index files
@@ -215,8 +274,8 @@ class ThermalSpecificParametersParser:
                 derating=derating_df,
                 group_derating=group_derating_df,
                 must_run=must_run_df,
-                group_must_run=group_must_run_df
+                group_must_run=group_must_run_df,
             )
 
             thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
-            self._truc(thermal_df_year, index_to_timeseries)
+            self._builds_the_output_data(thermal_df_year, index_to_timeseries)
