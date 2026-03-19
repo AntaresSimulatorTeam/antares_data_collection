@@ -269,8 +269,7 @@ class ThermalSpecificParametersParser:
         net_max_capacities = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
 
         for k in range(len(df)):
-            antares_zone = antares_zones[k]
-            antares_cluster = antares_clusters[k]
+            column_name = f"{antares_zones[k]}_{antares_clusters[k]}"
             net_max_capacity = net_max_capacities[k]
             print(net_max_capacity)
 
