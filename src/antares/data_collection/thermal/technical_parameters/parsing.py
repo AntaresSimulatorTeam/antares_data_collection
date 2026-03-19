@@ -119,7 +119,7 @@ class ThermalSpecificParametersParser:
         ]
         return df[useful_columns]
 
-    def _truc(self, df: pd.DataFrame):
+    def _truc(self, df: pd.DataFrame, index_mappings: AllIndexMappings):
         """
         zones = list(df[InputThermalColumns.ZONE])
         net_max_gen_caps = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
@@ -182,5 +182,5 @@ class ThermalSpecificParametersParser:
                 must_run_index_df,
                 group_must_run_index_df,
             )
-            print(index_mappings)
-            self._truc(thermal_df_year)
+
+            self._truc(thermal_df_year, index_mappings)
