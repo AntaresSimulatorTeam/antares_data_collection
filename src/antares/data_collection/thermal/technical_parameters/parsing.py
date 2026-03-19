@@ -119,29 +119,6 @@ class ThermalSpecificParametersParser:
         ]
         return df[useful_columns]
 
-    def _truc(self, df: pd.DataFrame, index_mappings: AllIndexMappings):
-        """
-        zones = list(df[InputThermalColumns.ZONE])
-        net_max_gen_caps = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
-        group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
-        unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
-        group_deratings = list(df[InputThermalColumns.GRP_D_CURVE_ID])
-        unit_deratings = list(df[InputThermalColumns.GEN_UNT_D_CURVE_ID])
-        inelastics = list(df[InputThermalColumns.GEN_UNT_INELASTIC_ID])
-        antares_zones = list(df[ANTARES_NODE_NAME_COLUMN])
-        antares_clusters = list(df[ANTARES_CLUSTER_NAME_COLUMN])
-
-        for k in range(len(df)):
-            if not pd.isna(group_must_runs[k]):
-                print(group_must_runs[k])
-        """
-
-    # 1- Fair toutes es lignes
-    # 2- Si aucune valeur est remplie, noter un truc
-    # 3- Si une valeur est remplie aller prendre le mapping associé
-    # Il faut construire un objet interne pour ça non ?
-    # Du genre le IndexMapping mais avec ce dont on a vraiment besoin mais faudrait aussi le type ...
-
     def _build_mapping_dataclass(
         self,
         year: int,
@@ -165,15 +142,37 @@ class ThermalSpecificParametersParser:
             group_derating=group_derating_index_mapping,
         )
 
+    def _truc(self, df: pd.DataFrame, index_mappings: AllIndexMappings):
+        """
+        zones = list(df[InputThermalColumns.ZONE])
+        net_max_gen_caps = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
+        group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
+        unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
+        group_deratings = list(df[InputThermalColumns.GRP_D_CURVE_ID])
+        unit_deratings = list(df[InputThermalColumns.GEN_UNT_D_CURVE_ID])
+        inelastics = list(df[InputThermalColumns.GEN_UNT_INELASTIC_ID])
+        antares_zones = list(df[ANTARES_NODE_NAME_COLUMN])
+        antares_clusters = list(df[ANTARES_CLUSTER_NAME_COLUMN])
+
+        for k in range(len(df)):
+            if not pd.isna(group_must_runs[k]):
+                print(group_must_runs[k])
+        """
+
+    # 1- Fair toutes es lignes
+    # 2- Si aucune valeur est remplie, noter un truc
+    # 3- Si une valeur est remplie aller prendre le mapping associé
+    # Il faut construire un objet interne pour ça non ?
+    # Du genre le IndexMapping mais avec ce dont on a vraiment besoin mais faudrait aussi le type ...
+
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         inelastic_index_df = self._parse_inelastic_index()
         group_must_run_index_df = self._parse_group_must_run_index()
         derating_index_df = self._parse_derating_index()
         group_derating_index_df = self._parse_group_derating_index()
         must_run_index_df = self._parse_must_run_index()
-        for year in self.years:
-            thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
 
+        for year in self.years:
             index_mappings = self._build_mapping_dataclass(
                 year,
                 inelastic_index_df,
@@ -183,4 +182,5 @@ class ThermalSpecificParametersParser:
                 group_must_run_index_df,
             )
 
+            thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
             self._truc(thermal_df_year, index_mappings)
