@@ -28,7 +28,7 @@ from antares.data_collection.thermal.utils import parse_input_file
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
 CurveIds: TypeAlias = list[str]
-InelasticIndexMapping: TypeAlias = dict[ZoneId, dict[ClusterId, CurveIds]]
+IndexMapping: TypeAlias = dict[ZoneId, dict[ClusterId, CurveIds]]
 
 
 class ThermalSpecificParametersParser:
@@ -52,18 +52,18 @@ class ThermalSpecificParametersParser:
         acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
         return df[df[InputInelasticIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
 
-    def _build_inelastic_index_mapping(self, df: pd.DataFrame, year: int) -> InelasticIndexMapping:
+    def _build_inelastic_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
         columns_to_group = [InputInelasticIndexColumns.ZONE.value, InputInelasticIndexColumns.ID.value]
         return self._build_index_mapping(df, year, columns_to_group, InputInelasticIndexColumns.CURVE_UID)
 
-    def _build_group_must_run_index_mapping(self, df: pd.DataFrame, year: int) -> InelasticIndexMapping:
+    def _build_group_must_run_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
         columns_to_group = [InputGroupMustRunIndexColumns.ZONE.value, InputGroupMustRunIndexColumns.ID.value]
         return self._build_index_mapping(df, year, columns_to_group, InputGroupMustRunIndexColumns.CURVE_UID)
 
-    def _build_index_mapping(self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str) -> InelasticIndexMapping:
+    def _build_index_mapping(self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str) -> IndexMapping:
         df = self._filter_index_files_with_year(df=df, year=year)
         groups = df.groupby(by=cols_to_group, as_index=False)
-        mapping: InelasticIndexMapping = {}
+        mapping: IndexMapping = {}
         for (area, cluster), grouped_df in groups:
             assert isinstance(area, ZoneId)
             assert isinstance(cluster, ClusterId)
@@ -76,4 +76,3 @@ class ThermalSpecificParametersParser:
         for year in self.years:
             inelastic_index_mapping = self._build_inelastic_index_mapping(df=inelastic_index_df, year=year)
             group_must_run_index_mapping = self._build_group_must_run_index_mapping(df=group_must_run_index_df, year=year)
-
