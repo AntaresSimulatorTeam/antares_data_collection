@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import time
 
 from pathlib import Path
 
@@ -25,10 +26,16 @@ def test_nominal_case(tmp_path: Path) -> None:
     main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
 
     # Build a thermal installed power file
+    start = time.time()
     parser = ThermalParser(
         RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
+    end = time.time()
+    print("Duration IP 1: ", end - start)
+    start = time.time()
     parser.build_installed_power()
+    end = time.time()
+    print("Duration IP 2: ", end - start)
 
     # Asserts the file is created
     generated_file_path = tmp_path / THERMAL_INSTALL_POWER_FOLDER / "thermal_installed_power.xlsx"

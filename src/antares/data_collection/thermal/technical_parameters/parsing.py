@@ -15,8 +15,11 @@ from typing import TypeAlias
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constants import InputThermalColumns, ANTARES_CLUSTER_NAME_COLUMN, \
-    ANTARES_NODE_NAME_COLUMN
+from antares.data_collection.thermal.constants import (
+    ANTARES_CLUSTER_NAME_COLUMN,
+    ANTARES_NODE_NAME_COLUMN,
+    InputThermalColumns,
+)
 from antares.data_collection.thermal.technical_parameters.constants import (
     DERATING_INDEX_NAME,
     GROUP_DERATING_INDEX_NAME,
@@ -103,7 +106,7 @@ class ThermalSpecificParametersParser:
             InputThermalColumns.GEN_UNT_D_CURVE_ID,
             InputThermalColumns.GEN_UNT_INELASTIC_ID,
             ANTARES_CLUSTER_NAME_COLUMN,
-            ANTARES_NODE_NAME_COLUMN
+            ANTARES_NODE_NAME_COLUMN,
         ]
         return df[useful_columns]
 
@@ -114,7 +117,7 @@ class ThermalSpecificParametersParser:
         group_derating_index_df = self._parse_group_derating_index()
         must_run_index_df = self._parse_must_run_index()
         for year in self.years:
-            thermal_df = self._filter_thermal_input_file(thermal_df, year)
+            thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
 
             inelastic_index_mapping = self._build_index_mapping(df=inelastic_index_df, year=year)
             derating_index_mapping = self._build_index_mapping(df=derating_index_df, year=year)
@@ -128,3 +131,4 @@ class ThermalSpecificParametersParser:
             print(group_derating_index_mapping)
             print(must_run_index_mapping)
             print(group_must_run_index_mapping)
+            print(thermal_df_year)
