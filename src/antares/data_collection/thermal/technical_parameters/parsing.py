@@ -192,26 +192,24 @@ class ThermalSpecificParametersParser:
             # Group Must Run
             grp_must_run_value = group_must_runs[k]
             if not pd.isna(grp_must_run_value):
-                if grp_must_run_value not in index_to_ts.group_must_run.index[zone]:
-                    continue
-                curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
-                for curve_id in curve_ids:
-                    ts = index_to_ts.group_must_run.data[curve_id]
-                    ts_mean = ts.mean()
-                    if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
-                        output_data.must_run[k] = (ts, ts_mean)
+                if grp_must_run_value in index_to_ts.group_must_run.index[zone]:
+                    curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.group_must_run.data[curve_id]
+                        ts_mean = ts.mean()
+                        if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
+                            output_data.must_run[k] = (ts, ts_mean)
 
             # Must Run
             must_run_value = unit_must_runs[k]
             if not pd.isna(must_run_value):
-                if must_run_value not in index_to_ts.must_run.index[zone]:
-                    continue
-                curve_ids = index_to_ts.must_run.index[zone][must_run_value]
-                for curve_id in curve_ids:
-                    ts = index_to_ts.must_run.data[curve_id]
-                    ts_mean = ts.mean()
-                    if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
-                        output_data.must_run[k] = (ts, ts_mean)
+                if must_run_value in index_to_ts.must_run.index[zone]:
+                    curve_ids = index_to_ts.must_run.index[zone][must_run_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.must_run.data[curve_id]
+                        ts_mean = ts.mean()
+                        if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
+                            output_data.must_run[k] = (ts, ts_mean)
 
             # Then we handle the `Derating` part.
             # We want to select the Series with the highest mean
@@ -219,41 +217,38 @@ class ThermalSpecificParametersParser:
             # Group Derating
             group_derating_value = group_deratings[k]
             if not pd.isna(group_derating_value):
-                if group_derating_value not in index_to_ts.group_derating.index[zone]:
-                    continue
-                curve_ids = index_to_ts.group_derating.index[zone][group_derating_value]
-                for curve_id in curve_ids:
-                    ts = index_to_ts.group_derating.data[curve_id]
-                    ts_mean = ts.mean()
-                    if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
-                        output_data.derating[k] = (ts, ts_mean)
+                if group_derating_value in index_to_ts.group_derating.index[zone]:
+                    curve_ids = index_to_ts.group_derating.index[zone][group_derating_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.group_derating.data[curve_id]
+                        ts_mean = ts.mean()
+                        if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
+                            output_data.derating[k] = (ts, ts_mean)
 
             # Derating
             derating_value = unit_deratings[k]
             if not pd.isna(derating_value):
-                if derating_value not in index_to_ts.derating.index[zone]:
-                    continue
-                curve_ids = index_to_ts.derating.index[zone][derating_value]
-                for curve_id in curve_ids:
-                    ts = index_to_ts.derating.data[curve_id]
-                    ts_mean = ts.mean()
-                    if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
-                        output_data.derating[k] = (ts, ts_mean)
+                if derating_value in index_to_ts.derating.index[zone]:
+                    curve_ids = index_to_ts.derating.index[zone][derating_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.derating.data[curve_id]
+                        ts_mean = ts.mean()
+                        if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
+                            output_data.derating[k] = (ts, ts_mean)
 
             # Inelastic
             inelastic_value = inelastics[k]
             if not pd.isna(inelastic_value):
-                if inelastic_value not in index_to_ts.inelastic.index[zone]:
-                    continue
-                curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
-                for curve_id in curve_ids:
-                    ts = index_to_ts.inelastic.data[curve_id]
-                    ts_mean = ts.mean()
-                    # Inelastic should be considered for both `derating` and `must_run`
-                    if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
-                        output_data.derating[k] = (ts, ts_mean)
-                    if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
-                        output_data.must_run[k] = (ts, ts_mean)
+                if inelastic_value in index_to_ts.inelastic.index[zone]:
+                    curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.inelastic.data[curve_id]
+                        ts_mean = ts.mean()
+                        # Inelastic should be considered for both `derating` and `must_run`
+                        if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
+                            output_data.derating[k] = (ts, ts_mean)
+                        if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
+                            output_data.must_run[k] = (ts, ts_mean)
 
             # If no value exists, fill the object with the default dataframes.
             if k not in output_data.derating:
@@ -271,7 +266,7 @@ class ThermalSpecificParametersParser:
         for k in range(len(df)):
             column_name = f"{antares_zones[k]}_{antares_clusters[k]}"
             net_max_capacity = net_max_capacities[k]
-            print(net_max_capacity)
+            print(output_data.must_run[k])
 
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
         file_path.parent.mkdir(parents=True, exist_ok=True)
