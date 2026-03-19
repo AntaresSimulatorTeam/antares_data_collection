@@ -22,8 +22,10 @@ MUST_RUN_NAME = f"MR_{FOLDER_NAME}"
 # Input constants
 
 SCENARIO_TO_ALWAYS_CONSIDER = "All_years_ERAA_TYNDP"
+GROUP_MUST_RUN_LABEL = "Must run ratio"
 
 INELASTIC_INDEX_NAME = "Inelastic Index.csv"
+GROUP_MUST_RUN_INDEX_NAME = "Group Must-run Index.csv"
 INELASTIC_NAME = "Inelastic.csv"
 
 
@@ -32,3 +34,10 @@ class InputInelasticIndexColumns(StrEnum):
     ID = "ID"
     TARGET_YEAR = "TARGET_YEAR"
     CURVE_UID = "CURVE_UID"
+
+class InputGroupMustRunIndexColumns(StrEnum):
+    ZONE = "ZONE"
+    ID = "ID"
+    TARGET_YEAR = "TARGET_YEAR"
+    CURVE_UID = "CURVE_UID"
+    LABEL = "LABEL"
