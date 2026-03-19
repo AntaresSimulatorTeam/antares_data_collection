@@ -1,0 +1,65 @@
+"CURVE_UID","TARGET_YEAR","WEATHER_SCENARIO","ZONE","ID","LABEL","COUNT"
+"BE:Group_Must_run_GMust01_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","GMust01","Must run ratio",1
+"BE:Group_Must_run_GMust01_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","GMust01","Must-run units",1
+"BE:Group_Must_run_GMust02_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","GMust02","Must run ratio",1
+"BE:Group_Must_run_GMust02_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","GMust02","Must-run units",1
+"CY:Group_Must_run_DHEK_MR_ERAA_2028_All__other__weather_scenarios:Must run ratio","ERAA_2028","All (other) weather scenarios","CY","DHEK-MR","Must run ratio",1
+"CY:Group_Must_run_DHEK_MR_ERAA_2028_All__other__weather_scenarios:Must-run units","ERAA_2028","All (other) weather scenarios","CY","DHEK-MR","Must-run units",1
+"CY:Group_Must_run_MR_TYNDP_All_years_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_TYNDP","All (other) weather scenarios","CY","MR-TYNDP","Must run ratio",1
+"CY:Group_Must_run_MR_TYNDP_All_years_TYNDP_All__other__weather_scenarios:Must-run units","All_years_TYNDP","All (other) weather scenarios","CY","MR-TYNDP","Must-run units",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2028_All__other__weather_scenarios:Must run ratio","ERAA_2028","All (other) weather scenarios","CY","MR-TYNDP","Must run ratio",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2028_All__other__weather_scenarios:Must-run units","ERAA_2028","All (other) weather scenarios","CY","MR-TYNDP","Must-run units",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2030_All__other__weather_scenarios:Must run ratio","ERAA_2030","All (other) weather scenarios","CY","MR-TYNDP","Must run ratio",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2030_All__other__weather_scenarios:Must-run units","ERAA_2030","All (other) weather scenarios","CY","MR-TYNDP","Must-run units",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2033_All__other__weather_scenarios:Must run ratio","ERAA_2033","All (other) weather scenarios","CY","MR-TYNDP","Must run ratio",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2033_All__other__weather_scenarios:Must-run units","ERAA_2033","All (other) weather scenarios","CY","MR-TYNDP","Must-run units",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2035_All__other__weather_scenarios:Must run ratio","ERAA_2035","All (other) weather scenarios","CY","MR-TYNDP","Must run ratio",1
+"CY:Group_Must_run_MR_TYNDP_ERAA_2035_All__other__weather_scenarios:Must-run units","ERAA_2035","All (other) weather scenarios","CY","MR-TYNDP","Must-run units",1
+"CZ:Group_Must_run_Plant_EDUK_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","Plant EDUK","Must run ratio",1
+"CZ:Group_Must_run_Plant_EDUK_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","Plant EDUK","Must-run units",1
+"CZ:Group_Must_run_Plant_ETEM_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","Plant ETEM","Must run ratio",1
+"CZ:Group_Must_run_Plant_ETEM_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","Plant ETEM","Must-run units",1
+"FI:Group_Must_run_CHP_DH_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","FI","CHP DH","Must run ratio",52
+"FI:Group_Must_run_CHP_DH_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","FI","CHP DH","Must-run units",1
+"FI:Group_Must_run_CHP_IND_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","FI","CHP IND","Must run ratio",50
+"FI:Group_Must_run_CHP_IND_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","FI","CHP IND","Must-run units",1
+"FR:Group_Must_run_Nuclear_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Nuclear","Must run ratio",1
+"FR:Group_Must_run_Nuclear_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Nuclear","Must-run units",1
+"HU:Group_Must_run_Ajka_Units_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Ajka_Units","Must run ratio",11
+"HU:Group_Must_run_Ajka_Units_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Ajka_Units","Must-run units",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2028_All__other__weather_scenarios:Must run ratio","ERAA_2028","All (other) weather scenarios","IE","IE_Min_Thermal","Must run ratio",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2028_All__other__weather_scenarios:Must-run units","ERAA_2028","All (other) weather scenarios","IE","IE_Min_Thermal","Must-run units",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2030_All__other__weather_scenarios:Must run ratio","ERAA_2030","All (other) weather scenarios","IE","IE_Min_Thermal","Must run ratio",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2030_All__other__weather_scenarios:Must-run units","ERAA_2030","All (other) weather scenarios","IE","IE_Min_Thermal","Must-run units",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2033_All__other__weather_scenarios:Must run ratio","ERAA_2033","All (other) weather scenarios","IE","IE_Min_Thermal","Must run ratio",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2033_All__other__weather_scenarios:Must-run units","ERAA_2033","All (other) weather scenarios","IE","IE_Min_Thermal","Must-run units",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2035_All__other__weather_scenarios:Must run ratio","ERAA_2035","All (other) weather scenarios","IE","IE_Min_Thermal","Must run ratio",1
+"IE:Group_Must_run_IE_Min_Thermal_ERAA_2035_All__other__weather_scenarios:Must-run units","ERAA_2035","All (other) weather scenarios","IE","IE_Min_Thermal","Must-run units",1
+"MD:Group_Must_run_TPP_CHP_2_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP CHP 2 Must-run curve","Must run ratio",7
+"MD:Group_Must_run_TPP_CHP_2_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP CHP 2 Must-run curve","Must-run units",5
+"MD:Group_Must_run_TPP_CHP_North_GTU_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP CHP North GTU Must-run curve","Must run ratio",3
+"MD:Group_Must_run_TPP_CHP_North_GTU_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP CHP North GTU Must-run curve","Must-run units",3
+"MD:Group_Must_run_TPP_CHP_North_G_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP CHP North G Must-run curve","Must run ratio",3
+"MD:Group_Must_run_TPP_CHP_North_G_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP CHP North G Must-run curve","Must-run units",3
+"MD:Group_Must_run_TPP_MGRES_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP MGRES Must-run curve","Must run ratio",1
+"MD:Group_Must_run_TPP_MGRES_Must_run_curve_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","MD","TPP MGRES Must-run curve","Must-run units",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2028_All__other__weather_scenarios:Must run ratio","ERAA_2028","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must run ratio",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2028_All__other__weather_scenarios:Must-run units","ERAA_2028","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must-run units",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2030_All__other__weather_scenarios:Must run ratio","ERAA_2030","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must run ratio",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2030_All__other__weather_scenarios:Must-run units","ERAA_2030","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must-run units",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2033_All__other__weather_scenarios:Must run ratio","ERAA_2033","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must run ratio",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2033_All__other__weather_scenarios:Must-run units","ERAA_2033","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must-run units",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2035_All__other__weather_scenarios:Must run ratio","ERAA_2035","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must run ratio",1
+"NI:Group_Must_run_UKNI_Min_Thermal_ERAA_2035_All__other__weather_scenarios:Must-run units","ERAA_2035","All (other) weather scenarios","NI","UKNI_Min_Thermal","Must-run units",1
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2028_All__other__weather_scenarios:Must run ratio","ERAA_2028","All (other) weather scenarios","RO","Group Bucuresti","Must run ratio",8
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2028_All__other__weather_scenarios:Must-run units","ERAA_2028","All (other) weather scenarios","RO","Group Bucuresti","Must-run units",6
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2030_All__other__weather_scenarios:Must run ratio","ERAA_2030","All (other) weather scenarios","RO","Group Bucuresti","Must run ratio",8
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2030_All__other__weather_scenarios:Must-run units","ERAA_2030","All (other) weather scenarios","RO","Group Bucuresti","Must-run units",6
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2033_All__other__weather_scenarios:Must run ratio","ERAA_2033","All (other) weather scenarios","RO","Group Bucuresti","Must run ratio",8
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2033_All__other__weather_scenarios:Must-run units","ERAA_2033","All (other) weather scenarios","RO","Group Bucuresti","Must-run units",6
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2035_All__other__weather_scenarios:Must run ratio","ERAA_2035","All (other) weather scenarios","RO","Group Bucuresti","Must run ratio",8
+"RO:Group_Must_run_Group_Bucuresti_ERAA_2035_All__other__weather_scenarios:Must-run units","ERAA_2035","All (other) weather scenarios","RO","Group Bucuresti","Must-run units",6
+"RO:Group_Must_run_Group_Craiova_m_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Group Craiova_m","Must run ratio",3
+"RO:Group_Must_run_Group_Craiova_m_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Group Craiova_m","Must-run units",1
+"SI:Group_Must_run_TETOL_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must run ratio","All_years_ERAA_TYNDP","All (other) weather scenarios","SI","TETOL","Must run ratio",8358
+"SI:Group_Must_run_TETOL_All_years_ERAA_TYNDP_All__other__weather_scenarios:Must-run units","All_years_ERAA_TYNDP","All (other) weather scenarios","SI","TETOL","Must-run units",1

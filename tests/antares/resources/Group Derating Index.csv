@@ -1,0 +1,43 @@
+"CURVE_UID","TARGET_YEAR","WEATHER_SCENARIO","ZONE","ID","LABEL","COUNT"
+"CY:Group_Derating_Paramount_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CY","Paramount","Derating ratio",1
+"CY:Group_Derating_VASS_FL_ERAA_2028_All__other__weather_scenarios","ERAA_2028","All (other) weather scenarios","CY","VASS_FL","Derating ratio",1
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS01","All_years_ERAA","ERAA-WS01","FR","ERAA_NUCLEAR","Derating ratio",232
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS02","All_years_ERAA","ERAA-WS02","FR","ERAA_NUCLEAR","Derating ratio",251
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS03","All_years_ERAA","ERAA-WS03","FR","ERAA_NUCLEAR","Derating ratio",257
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS04","All_years_ERAA","ERAA-WS04","FR","ERAA_NUCLEAR","Derating ratio",324
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS05","All_years_ERAA","ERAA-WS05","FR","ERAA_NUCLEAR","Derating ratio",204
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS06","All_years_ERAA","ERAA-WS06","FR","ERAA_NUCLEAR","Derating ratio",325
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS07","All_years_ERAA","ERAA-WS07","FR","ERAA_NUCLEAR","Derating ratio",255
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS08","All_years_ERAA","ERAA-WS08","FR","ERAA_NUCLEAR","Derating ratio",245
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS09","All_years_ERAA","ERAA-WS09","FR","ERAA_NUCLEAR","Derating ratio",236
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS10","All_years_ERAA","ERAA-WS10","FR","ERAA_NUCLEAR","Derating ratio",299
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS11","All_years_ERAA","ERAA-WS11","FR","ERAA_NUCLEAR","Derating ratio",238
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS12","All_years_ERAA","ERAA-WS12","FR","ERAA_NUCLEAR","Derating ratio",223
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS13","All_years_ERAA","ERAA-WS13","FR","ERAA_NUCLEAR","Derating ratio",248
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS14","All_years_ERAA","ERAA-WS14","FR","ERAA_NUCLEAR","Derating ratio",240
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS15","All_years_ERAA","ERAA-WS15","FR","ERAA_NUCLEAR","Derating ratio",248
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS16","All_years_ERAA","ERAA-WS16","FR","ERAA_NUCLEAR","Derating ratio",270
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS17","All_years_ERAA","ERAA-WS17","FR","ERAA_NUCLEAR","Derating ratio",248
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS18","All_years_ERAA","ERAA-WS18","FR","ERAA_NUCLEAR","Derating ratio",245
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS19","All_years_ERAA","ERAA-WS19","FR","ERAA_NUCLEAR","Derating ratio",322
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS20","All_years_ERAA","ERAA-WS20","FR","ERAA_NUCLEAR","Derating ratio",229
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS21","All_years_ERAA","ERAA-WS21","FR","ERAA_NUCLEAR","Derating ratio",246
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS22","All_years_ERAA","ERAA-WS22","FR","ERAA_NUCLEAR","Derating ratio",232
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS23","All_years_ERAA","ERAA-WS23","FR","ERAA_NUCLEAR","Derating ratio",230
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS24","All_years_ERAA","ERAA-WS24","FR","ERAA_NUCLEAR","Derating ratio",303
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS25","All_years_ERAA","ERAA-WS25","FR","ERAA_NUCLEAR","Derating ratio",233
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS26","All_years_ERAA","ERAA-WS26","FR","ERAA_NUCLEAR","Derating ratio",226
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS27","All_years_ERAA","ERAA-WS27","FR","ERAA_NUCLEAR","Derating ratio",234
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS28","All_years_ERAA","ERAA-WS28","FR","ERAA_NUCLEAR","Derating ratio",231
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS29","All_years_ERAA","ERAA-WS29","FR","ERAA_NUCLEAR","Derating ratio",261
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS30","All_years_ERAA","ERAA-WS30","FR","ERAA_NUCLEAR","Derating ratio",226
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS31","All_years_ERAA","ERAA-WS31","FR","ERAA_NUCLEAR","Derating ratio",255
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS32","All_years_ERAA","ERAA-WS32","FR","ERAA_NUCLEAR","Derating ratio",253
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS33","All_years_ERAA","ERAA-WS33","FR","ERAA_NUCLEAR","Derating ratio",239
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS34","All_years_ERAA","ERAA-WS34","FR","ERAA_NUCLEAR","Derating ratio",231
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS35","All_years_ERAA","ERAA-WS35","FR","ERAA_NUCLEAR","Derating ratio",244
+"FR:Group_Derating_ERAA_NUCLEAR_All_years_ERAA_ERAA_WS36","All_years_ERAA","ERAA-WS36","FR","ERAA_NUCLEAR","Derating ratio",249
+"GR:Group_Derating_Gas_Derating_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","GR","Gas Derating","Derating ratio",52
+"RO:Group_Derating_Group_Craiova_d_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Group Craiova_d","Derating ratio",3
+"RO:Group_Derating_Group_Progresu_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Group Progresu","Derating ratio",1
+"RO:Group_Derating_Group__Buc_S_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Group  Buc S","Derating ratio",1

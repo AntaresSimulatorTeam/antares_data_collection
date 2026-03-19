@@ -27,6 +27,7 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
+from antares.data_collection.thermal.technical_parameters.parsing import ThermalSpecificParametersParser
 
 
 @dataclass
@@ -237,5 +238,5 @@ class ThermalParser:
         parser.build_thermal_installed_power(self.filtered_dataframe)
 
     def build_specific_parameters(self) -> None:
-        pass
-        # todo
+        parser = ThermalSpecificParametersParser(self.input_folder, self.output_folder, self.main_params, self.years)
+        parser._parse_inelastic_index()
