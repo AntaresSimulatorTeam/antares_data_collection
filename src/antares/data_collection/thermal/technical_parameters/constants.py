@@ -38,6 +38,7 @@ class InputIndexColumns(StrEnum):
     TARGET_YEAR = "TARGET_YEAR"
     CURVE_UID = "CURVE_UID"
 
+
 class InputGroupMustRunIndexColumns(StrEnum):
     ZONE = "ZONE"
     ID = "ID"

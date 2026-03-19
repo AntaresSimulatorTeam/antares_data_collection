@@ -1,6 +1,10 @@
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterator
 
 import pandas as pd
+
+from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns
 
 
 def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.DataFrame:
@@ -25,3 +29,66 @@ def get_starting_and_ending_timestamps_for_outputs(year: int) -> tuple[pd.Timest
     Example: 2030 : 1st July 2029 -> 30 June 2030
     """
     return pd.Timestamp(year - 1, 7, 1), pd.Timestamp(year, 6, 30)
+
+
+@dataclass
+class CommissioningDateLimits:
+    last_possible_commissioning_date: pd.Timestamp
+    earliest_possible_decommissioning_date: pd.Timestamp
+
+
+def get_starting_and_ending_timestamps(years: list[int]) -> Iterator[CommissioningDateLimits]:
+    """
+    For each year in `years`, we should consider:
+    - 31st December of the year -> Each cluster with a commissioning date after this will not be considered.
+    - 1st January of previous year -> Each cluster with a decommissioning date before this will not be considered.
+    """
+    for year in years:
+        yield CommissioningDateLimits(
+            last_possible_commissioning_date=pd.Timestamp(year=year, month=12, day=31),
+            earliest_possible_decommissioning_date=pd.Timestamp(year=year - 1, month=1, day=1),
+        )
+
+
+def filter_thermal_input_file_based_on_commission_date(df: pd.DataFrame, years: list[int]) -> pd.DataFrame:
+    if not years:
+        return df
+
+    # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
+    df[InputThermalColumns.COMMISSIONING_DATE] = pd.to_datetime(df[InputThermalColumns.COMMISSIONING_DATE])
+
+    # Some values might be missing inside `DECOMMISSIONING_DATE_EXPECTED`.
+    # If so, we should consider the decommissioning year to be 2100.
+    df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] = pd.to_datetime(
+        df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+    ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
+
+    # Reindex the dataframe to use Series freely
+    df.index = pd.RangeIndex(len(df))
+
+    commissioning_limits = list(get_starting_and_ending_timestamps(years))
+    start_dates = df[InputThermalColumns.COMMISSIONING_DATE]
+    end_dates = df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
+    index_to_drop = []
+    for k in range(len(df)):
+        start_date = start_dates[k]
+        end_date = end_dates[k]
+        invalid_limits = 0
+        for limit in commissioning_limits:
+            if (
+                start_date > limit.last_possible_commissioning_date
+                or end_date < limit.earliest_possible_decommissioning_date
+            ):
+                invalid_limits += 1
+
+        # If no year matches the commissioning dates, we don't want to consider the row.
+        if invalid_limits == len(commissioning_limits):
+            index_to_drop.append(k)
+
+    df = df.drop(index_to_drop)
+
+    if df.empty:
+        # We want to raise as soon as possible to have a clear error msg
+        msg = f"No input data matched the given (de)commissioning dates for the given years {years}"
+        raise ValueError(msg)
+    return df

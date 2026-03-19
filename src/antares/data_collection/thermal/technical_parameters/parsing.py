@@ -54,7 +54,7 @@ class ThermalSpecificParametersParser:
         return parse_input_file(self.input_folder / MUST_RUN_INDEX_NAME, list(InputIndexColumns))
 
     def _parse_group_must_run_index(self) -> pd.DataFrame:
-        df =  parse_input_file(self.input_folder / GROUP_MUST_RUN_INDEX_NAME, list(InputGroupMustRunIndexColumns))
+        df = parse_input_file(self.input_folder / GROUP_MUST_RUN_INDEX_NAME, list(InputGroupMustRunIndexColumns))
         df = df[df[InputGroupMustRunIndexColumns.LABEL] == GROUP_MUST_RUN_LABEL]
         df = df.drop(columns=[InputGroupMustRunIndexColumns.LABEL])
         return df
@@ -72,7 +72,9 @@ class ThermalSpecificParametersParser:
         columns_to_group = [InputGroupMustRunIndexColumns.ZONE.value, InputGroupMustRunIndexColumns.ID.value]
         return self._build_index_internal_mapping(df, year, columns_to_group, InputGroupMustRunIndexColumns.CURVE_UID)
 
-    def _build_index_internal_mapping(self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str) -> IndexMapping:
+    def _build_index_internal_mapping(
+        self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
+    ) -> IndexMapping:
         df = self._filter_index_files_with_year(df=df, year=year)
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
@@ -93,4 +95,13 @@ class ThermalSpecificParametersParser:
             derating_index_mapping = self._build_index_mapping(df=derating_index_df, year=year)
             group_derating_index_mapping = self._build_index_mapping(df=group_derating_index_df, year=year)
             must_run_index_mapping = self._build_index_mapping(df=must_run_index_df, year=year)
-            group_must_run_index_mapping = self._build_group_must_run_index_mapping(df=group_must_run_index_df, year=year)
+            group_must_run_index_mapping = self._build_group_must_run_index_mapping(
+                df=group_must_run_index_df, year=year
+            )
+
+            # for ruff
+            print(inelastic_index_mapping)
+            print(derating_index_mapping)
+            print(group_derating_index_mapping)
+            print(must_run_index_mapping)
+            print(group_must_run_index_mapping)
