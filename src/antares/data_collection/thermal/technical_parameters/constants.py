@@ -12,6 +12,8 @@
 from enum import StrEnum
 from pathlib import Path
 
+import pandas as pd
+
 ##########
 # Output Constants
 ##########
@@ -20,6 +22,9 @@ FOLDER_NAME = "PEMMDB"
 TECHNICAL_PARAMS_FOLDER = Path("thermal") / "technical parameters" / "param_modulation" / FOLDER_NAME
 CAPACITY_MODULATION_NAME = f"CM_{FOLDER_NAME}"
 MUST_RUN_OUTPUT_NAME = f"MR_{FOLDER_NAME}"
+
+DEFAULT_MUST_RUN_TS = pd.Series(8760 * [0])
+DEFAULT_CAPACITY_MODULATION_TS = pd.Series(8760 * [1])
 
 ##########
 # Input Constants

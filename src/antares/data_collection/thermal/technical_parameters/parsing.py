@@ -22,6 +22,8 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 from antares.data_collection.thermal.technical_parameters.constants import (
+    DEFAULT_CAPACITY_MODULATION_TS,
+    DEFAULT_MUST_RUN_TS,
     DERATING_INDEX_NAME,
     DERATING_NAME,
     GROUP_DERATING_INDEX_NAME,
@@ -182,6 +184,9 @@ class ThermalSpecificParametersParser:
         for k in range(len(df)):
             zone = zones[k]
 
+            # First we handle the `Must Run` part.
+            # We want to select the Series with the lowest mean
+
             # Group Must Run
             grp_must_run_value = group_must_runs[k]
             if not pd.isna(grp_must_run_value):
@@ -206,6 +211,9 @@ class ThermalSpecificParametersParser:
                     if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
                         output_data.must_run[k] = (ts, ts_mean)
 
+            # Then we handle the `Derating` part.
+            # We want to select the Series with the highest mean
+
             # Group Derating
             group_derating_value = group_deratings[k]
             if not pd.isna(group_derating_value):
@@ -215,7 +223,7 @@ class ThermalSpecificParametersParser:
                 for curve_id in curve_ids:
                     ts = index_to_ts.group_derating.data[curve_id]
                     ts_mean = ts.mean()
-                    if k not in output_data.derating or output_data.derating[k][1] > ts_mean:
+                    if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
                         output_data.derating[k] = (ts, ts_mean)
 
             # Derating
@@ -227,7 +235,7 @@ class ThermalSpecificParametersParser:
                 for curve_id in curve_ids:
                     ts = index_to_ts.derating.data[curve_id]
                     ts_mean = ts.mean()
-                    if k not in output_data.derating or output_data.derating[k][1] > ts_mean:
+                    if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
                         output_data.derating[k] = (ts, ts_mean)
 
             # Inelastic
@@ -239,10 +247,17 @@ class ThermalSpecificParametersParser:
                 for curve_id in curve_ids:
                     ts = index_to_ts.inelastic.data[curve_id]
                     ts_mean = ts.mean()
-                    if k not in output_data.derating or output_data.derating[k][1] > ts_mean:
+                    # Inelastic should be considered for both `derating` and `must_run`
+                    if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
                         output_data.derating[k] = (ts, ts_mean)
                     if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
                         output_data.must_run[k] = (ts, ts_mean)
+
+            # If no value exists, fill the object with the default dataframes.
+            if k not in output_data.derating:
+                output_data.derating[k] = (DEFAULT_CAPACITY_MODULATION_TS, 1)
+            if k not in output_data.must_run:
+                output_data.must_run[k] = (DEFAULT_MUST_RUN_TS, 0)
 
         return output_data
 
@@ -278,4 +293,5 @@ class ThermalSpecificParametersParser:
             )
 
             thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
-            self._builds_the_output_data(thermal_df_year, index_to_timeseries)
+            output_data = self._builds_the_output_data(thermal_df_year, index_to_timeseries)
+            print(output_data)
