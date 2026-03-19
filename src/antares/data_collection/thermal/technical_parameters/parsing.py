@@ -16,12 +16,15 @@ import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.technical_parameters.constants import (
+    DERATING_INDEX_NAME,
+    GROUP_DERATING_INDEX_NAME,
     GROUP_MUST_RUN_INDEX_NAME,
     GROUP_MUST_RUN_LABEL,
     INELASTIC_INDEX_NAME,
+    MUST_RUN_INDEX_NAME,
     SCENARIO_TO_ALWAYS_CONSIDER,
     InputGroupMustRunIndexColumns,
-    InputInelasticIndexColumns,
+    InputIndexColumns,
 )
 from antares.data_collection.thermal.utils import parse_input_file
 
@@ -39,7 +42,16 @@ class ThermalSpecificParametersParser:
         self.years = years
 
     def _parse_inelastic_index(self) -> pd.DataFrame:
-        return parse_input_file(self.input_folder / INELASTIC_INDEX_NAME, list(InputInelasticIndexColumns))
+        return parse_input_file(self.input_folder / INELASTIC_INDEX_NAME, list(InputIndexColumns))
+
+    def _parse_derating_index(self) -> pd.DataFrame:
+        return parse_input_file(self.input_folder / DERATING_INDEX_NAME, list(InputIndexColumns))
+
+    def _parse_group_derating_index(self) -> pd.DataFrame:
+        return parse_input_file(self.input_folder / GROUP_DERATING_INDEX_NAME, list(InputIndexColumns))
+
+    def _parse_must_run_index(self) -> pd.DataFrame:
+        return parse_input_file(self.input_folder / MUST_RUN_INDEX_NAME, list(InputIndexColumns))
 
     def _parse_group_must_run_index(self) -> pd.DataFrame:
         df =  parse_input_file(self.input_folder / GROUP_MUST_RUN_INDEX_NAME, list(InputGroupMustRunIndexColumns))
@@ -50,17 +62,17 @@ class ThermalSpecificParametersParser:
     def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
         scenario = self.main_params.get_scenario_type(year=year)
         acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
-        return df[df[InputInelasticIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
+        return df[df[InputIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
 
-    def _build_inelastic_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
-        columns_to_group = [InputInelasticIndexColumns.ZONE.value, InputInelasticIndexColumns.ID.value]
-        return self._build_index_mapping(df, year, columns_to_group, InputInelasticIndexColumns.CURVE_UID)
+    def _build_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
+        columns_to_group = [InputIndexColumns.ZONE.value, InputIndexColumns.ID.value]
+        return self._build_index_internal_mapping(df, year, columns_to_group, InputIndexColumns.CURVE_UID)
 
     def _build_group_must_run_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
         columns_to_group = [InputGroupMustRunIndexColumns.ZONE.value, InputGroupMustRunIndexColumns.ID.value]
-        return self._build_index_mapping(df, year, columns_to_group, InputGroupMustRunIndexColumns.CURVE_UID)
+        return self._build_index_internal_mapping(df, year, columns_to_group, InputGroupMustRunIndexColumns.CURVE_UID)
 
-    def _build_index_mapping(self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str) -> IndexMapping:
+    def _build_index_internal_mapping(self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str) -> IndexMapping:
         df = self._filter_index_files_with_year(df=df, year=year)
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
@@ -73,6 +85,12 @@ class ThermalSpecificParametersParser:
     def build_thermal_specific_parameters(self, df: pd.DataFrame) -> None:
         inelastic_index_df = self._parse_inelastic_index()
         group_must_run_index_df = self._parse_group_must_run_index()
+        derating_index_df = self._parse_derating_index()
+        group_derating_index_df = self._parse_group_derating_index()
+        must_run_index_df = self._parse_must_run_index()
         for year in self.years:
-            inelastic_index_mapping = self._build_inelastic_index_mapping(df=inelastic_index_df, year=year)
+            inelastic_index_mapping = self._build_index_mapping(df=inelastic_index_df, year=year)
+            derating_index_mapping = self._build_index_mapping(df=derating_index_df, year=year)
+            group_derating_index_mapping = self._build_index_mapping(df=group_derating_index_df, year=year)
+            must_run_index_mapping = self._build_index_mapping(df=must_run_index_df, year=year)
             group_must_run_index_mapping = self._build_group_must_run_index_mapping(df=group_must_run_index_df, year=year)
