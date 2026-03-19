@@ -26,7 +26,11 @@ from antares.data_collection.thermal.technical_parameters.constants import (
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
 )
-from antares.data_collection.thermal.utils import parse_input_file
+from antares.data_collection.thermal.utils import (
+    filter_input_based_on_study_scenarios,
+    filter_thermal_input_file_based_on_commission_date,
+    parse_input_file,
+)
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
@@ -84,20 +88,21 @@ class ThermalSpecificParametersParser:
             mapping.setdefault(area, {})[cluster] = list(grouped_df[curve_id_col])
         return mapping
 
-    def build_thermal_specific_parameters(self, df: pd.DataFrame) -> None:
+    def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         inelastic_index_df = self._parse_inelastic_index()
         group_must_run_index_df = self._parse_group_must_run_index()
         derating_index_df = self._parse_derating_index()
         group_derating_index_df = self._parse_group_derating_index()
         must_run_index_df = self._parse_must_run_index()
         for year in self.years:
+            thermal_df = filter_input_based_on_study_scenarios(thermal_df, self.main_params, [year])
+            thermal_df = filter_thermal_input_file_based_on_commission_date(thermal_df, [year])
+
             inelastic_index_mapping = self._build_index_mapping(df=inelastic_index_df, year=year)
             derating_index_mapping = self._build_index_mapping(df=derating_index_df, year=year)
             group_derating_index_mapping = self._build_index_mapping(df=group_derating_index_df, year=year)
             must_run_index_mapping = self._build_index_mapping(df=must_run_index_df, year=year)
-            group_must_run_index_mapping = self._build_group_must_run_index_mapping(
-                df=group_must_run_index_df, year=year
-            )
+            group_must_run_index_mapping = self._build_group_must_run_index_mapping(group_must_run_index_df, year)
 
             # for ruff
             print(inelastic_index_mapping)
