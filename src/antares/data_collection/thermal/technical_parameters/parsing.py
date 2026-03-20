@@ -17,6 +17,7 @@ from typing import TypeAlias
 
 import pandas as pd
 
+from antares.data_collection.constants import FLOAT_FORMAT
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -80,7 +81,7 @@ class OutputData:
 
 @dataclass
 class TimeSeriesAndClusterPair:
-    count: int
+    weight: float
     series: pd.Series
 
 ClusterGroupTsRepartition: TypeAlias = dict[ZoneId, dict[ClusterId, list[TimeSeriesAndClusterPair]]]
@@ -192,7 +193,8 @@ class ThermalSpecificParametersParser:
             ANTARES_CLUSTER_NAME_COLUMN,
             InputThermalColumns.ZONE,
         ]
-        must_run_groups = df[must_run_cols].groupby(by=must_run_cols, dropna=False)
+        useful_cols = must_run_cols + [InputThermalColumns.NET_MAX_GEN_CAP]
+        must_run_groups = df[useful_cols].groupby(by=must_run_cols, dropna=False)
         for (group, data) in must_run_groups:
 
             zone = group[4]
@@ -245,7 +247,8 @@ class ThermalSpecificParametersParser:
                 final_ts = DEFAULT_MUST_RUN_TS
 
             # Fill the result
-            ts_pair = TimeSeriesAndClusterPair(series=final_ts, count=len(data))
+            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].mean()
+            ts_pair = TimeSeriesAndClusterPair(series=final_ts, weight=weight)
             result.setdefault(zone, {}).setdefault(cluster_id, []).append(ts_pair)
 
         return result
@@ -253,7 +256,9 @@ class ThermalSpecificParametersParser:
 
     # Deprecated
     def _build_the_output_data(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> OutputData:
-        self._build_must_run(df, index_to_ts)
+        must_run_cluster_group_ts_repartition = self._build_must_run(df, index_to_ts)
+
+
         zones = list(df[InputThermalColumns.ZONE])
         group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
         unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
@@ -339,17 +344,32 @@ class ThermalSpecificParametersParser:
 
         return output_data
 
-    def _write_must_run_file(self, year: int, output_data: OutputData, df: pd.DataFrame) -> None:
-        antares_zones = list(df[ANTARES_NODE_NAME_COLUMN])
-        antares_clusters = list(df[ANTARES_CLUSTER_NAME_COLUMN])
-        net_max_capacities = list(df[InputThermalColumns.NET_MAX_GEN_CAP])
+    def _build_pegase_dataframe(self, data_repartition: ClusterGroupTsRepartition) -> pd.DataFrame:
+        pegase_df_as_dict = {}
+        # Sort values for output reproduction
+        for zone in sorted(data_repartition):
+            for cluster in sorted(data_repartition[zone]):
+                ts_list = data_repartition[zone][cluster]
+                if len(ts_list) == 1:
+                    # We just need to write the TS as is
+                    final_ts = ts_list[0].series
+                else:
+                    # We have to merge all TS in just one using the weights and the values of each TS
+                    total_weight = sum(ts.weight for ts in ts_list)
+                    final_ts = sum(ts.weight * ts.series for ts in ts_list) / total_weight  # type: ignore
 
-        for k in range(len(df)):
-            column_name = f"{antares_zones[k]}_{antares_clusters[k]}"
-            net_max_capacity = net_max_capacities[k]
+                column_name = f"{zone}_{cluster}"
+                pegase_df_as_dict[column_name] = final_ts
+
+        return pd.DataFrame.from_dict(pegase_df_as_dict)
+
+    def _write_must_run_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
+        df = self._build_pegase_dataframe(data_repartition)
+        # todo: we should add the hour column
 
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
         file_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(file_path, sep=",", float_format=FLOAT_FORMAT)
 
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         # Parse Index files
@@ -383,7 +403,9 @@ class ThermalSpecificParametersParser:
             )
 
             thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
-            output_data = self._build_the_output_data(thermal_df_year, index_to_timeseries)
 
             # Write the `Must Run` file
-            self._write_must_run_file(year, output_data, thermal_df_year)
+            must_run_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
+            self._write_must_run_file(year, must_run_cluster_group_ts_repartition)
+
+            # todo: do the same for `Nominal capacity`
