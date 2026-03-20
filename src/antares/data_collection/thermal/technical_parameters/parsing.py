@@ -10,6 +10,7 @@
 #
 # This file is part of the Antares project.
 import math
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias
@@ -76,6 +77,13 @@ Curves: TypeAlias = dict[int, tuple[pd.Series, float]]
 class OutputData:
     must_run: Curves
     derating: Curves
+
+@dataclass
+class TimeSeriesAndClusterPair:
+    count: int
+    series: pd.Series
+
+ClusterGroupTsRepartition: TypeAlias = dict[ZoneId, dict[ClusterId, list[TimeSeriesAndClusterPair]]]
 
 
 class ThermalSpecificParametersParser:
@@ -174,7 +182,9 @@ class ThermalSpecificParametersParser:
         )
 
 
-    def _build_must_run(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries):
+    def _build_must_run(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> ClusterGroupTsRepartition:
+        result: ClusterGroupTsRepartition = {}
+
         must_run_cols = [
             InputThermalColumns.GRP_MRUN_CURVE_ID,
             InputThermalColumns.GEN_UNT_MRUN_CURVE_ID,
@@ -183,9 +193,12 @@ class ThermalSpecificParametersParser:
             InputThermalColumns.ZONE,
         ]
         must_run_groups = df[must_run_cols].groupby(by=must_run_cols, dropna=False)
-        for (group, _) in must_run_groups:
+        for (group, data) in must_run_groups:
+
             zone = group[4]
             assert isinstance(zone, ZoneId)
+            cluster_id = group[3]
+            assert isinstance(cluster_id, ClusterId)
 
             # We want to select the Series with the lowest mean
             lowest_mean = math.inf
@@ -204,16 +217,38 @@ class ThermalSpecificParametersParser:
                             lowest_mean = ts_mean
 
             # Must Run column
+            must_run_value: str = group[1]  # type: ignore
+            if not pd.isna(must_run_value):
+                if must_run_value in index_to_ts.must_run.index[zone]:
+                    curve_ids = index_to_ts.must_run.index[zone][must_run_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.must_run.data[curve_id]
+                        ts_mean = ts.mean()
+                        if lowest_mean > ts_mean:
+                            final_ts = ts
+                            lowest_mean = ts_mean
 
             # Inelastic column
+            inelastic_value: str = group[2]  # type: ignore
+            if not pd.isna(inelastic_value):
+                if inelastic_value in index_to_ts.inelastic.index[zone]:
+                    curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
+                    for curve_id in curve_ids:
+                        ts = index_to_ts.inelastic.data[curve_id]
+                        ts_mean = ts.mean()
+                        if lowest_mean > ts_mean:
+                            final_ts = ts
+                            lowest_mean = ts_mean
 
             # Use default value for empty rows
             if final_ts.empty:
                 final_ts = DEFAULT_MUST_RUN_TS
 
-            # Put everything in some object
-            # do the same thing in another function for Derating
-            print(final_ts)
+            # Fill the result
+            ts_pair = TimeSeriesAndClusterPair(series=final_ts, count=len(data))
+            result.setdefault(zone, {}).setdefault(cluster_id, []).append(ts_pair)
+
+        return result
 
 
     # Deprecated
