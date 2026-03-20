@@ -1,0 +1,338 @@
+"CURVE_UID","TARGET_YEAR","WEATHER_SCENARIO","ZONE","ID","LABEL","COUNT"
+"CY:Derating_CCGT_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CY","CCGT","Derating ratio",3
+"CY:Derating_DPS_ST6_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CY","DPS-ST6","Derating ratio",1
+"CY:Derating_OCGT_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CY","OCGT","Derating ratio",5
+"CY:Derating_VPS_ST_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CY","VPS-ST","Derating ratio",1
+"DK:Derating_Maintenance_Agg_Gas_OCGT_new_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","DK","Maintenance_Agg_Gas OCGT new","Derating ratio",13
+"DK:Derating_Maintenance_Agg_Gas_OCGT_old_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","DK","Maintenance_Agg_Gas OCGT old","Derating ratio",13
+"DK:Derating_Maintenance_Agg_Hard_coal_old_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","DK","Maintenance_Agg_Hard coal old 1","Derating ratio",13
+"EE:Derating_Other_non_RES_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","EE","Other non-RES","Derating ratio",1
+"ES:Derating_DER_ID10_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID10","Derating ratio",1
+"ES:Derating_DER_ID11_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID11","Derating ratio",1
+"ES:Derating_DER_ID12_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID12","Derating ratio",1
+"ES:Derating_DER_ID13_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID13","Derating ratio",1
+"ES:Derating_DER_ID14_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID14","Derating ratio",1
+"ES:Derating_DER_ID15_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID15","Derating ratio",1
+"ES:Derating_DER_ID16_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID16","Derating ratio",1
+"ES:Derating_DER_ID17_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID17","Derating ratio",1
+"ES:Derating_DER_ID18_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID18","Derating ratio",1
+"ES:Derating_DER_ID19_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID19","Derating ratio",1
+"ES:Derating_DER_ID1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID1","Derating ratio",1
+"ES:Derating_DER_ID20_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID20","Derating ratio",1
+"ES:Derating_DER_ID21_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID21","Derating ratio",1
+"ES:Derating_DER_ID22_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID22","Derating ratio",1
+"ES:Derating_DER_ID23_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID23","Derating ratio",1
+"ES:Derating_DER_ID24_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID24","Derating ratio",1
+"ES:Derating_DER_ID25_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID25","Derating ratio",1
+"ES:Derating_DER_ID26_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID26","Derating ratio",1
+"ES:Derating_DER_ID27_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID27","Derating ratio",1
+"ES:Derating_DER_ID28_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID28","Derating ratio",1
+"ES:Derating_DER_ID29_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID29","Derating ratio",1
+"ES:Derating_DER_ID2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID2","Derating ratio",1
+"ES:Derating_DER_ID30_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID30","Derating ratio",1
+"ES:Derating_DER_ID31_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID31","Derating ratio",1
+"ES:Derating_DER_ID32_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID32","Derating ratio",1
+"ES:Derating_DER_ID33_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID33","Derating ratio",1
+"ES:Derating_DER_ID34_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID34","Derating ratio",1
+"ES:Derating_DER_ID35_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID35","Derating ratio",1
+"ES:Derating_DER_ID36_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID36","Derating ratio",1
+"ES:Derating_DER_ID37_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID37","Derating ratio",1
+"ES:Derating_DER_ID38_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID38","Derating ratio",1
+"ES:Derating_DER_ID39_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID39","Derating ratio",1
+"ES:Derating_DER_ID3_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID3","Derating ratio",1
+"ES:Derating_DER_ID40_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID40","Derating ratio",1
+"ES:Derating_DER_ID41_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID41","Derating ratio",1
+"ES:Derating_DER_ID42_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID42","Derating ratio",1
+"ES:Derating_DER_ID43_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID43","Derating ratio",1
+"ES:Derating_DER_ID44_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID44","Derating ratio",1
+"ES:Derating_DER_ID45_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID45","Derating ratio",1
+"ES:Derating_DER_ID46_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID46","Derating ratio",1
+"ES:Derating_DER_ID47_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID47","Derating ratio",1
+"ES:Derating_DER_ID48_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID48","Derating ratio",1
+"ES:Derating_DER_ID49_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID49","Derating ratio",1
+"ES:Derating_DER_ID4_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID4","Derating ratio",1
+"ES:Derating_DER_ID50_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID50","Derating ratio",1
+"ES:Derating_DER_ID5_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID5","Derating ratio",1
+"ES:Derating_DER_ID6_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID6","Derating ratio",1
+"ES:Derating_DER_ID7_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID7","Derating ratio",1
+"ES:Derating_DER_ID8_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID8","Derating ratio",1
+"ES:Derating_DER_ID9_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","DER_ID9","Derating ratio",1
+"FR:Derating_TYNDP_NUCLEAR_All_years_TYNDP_All__other__weather_scenarios","All_years_TYNDP","All (other) weather scenarios","FR","TYNDP_NUCLEAR","Derating ratio",12
+"FR:Derating_Virtual_CHP_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Virtual_CHP","Derating ratio",3
+"FR:Derating_Virtual_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Virtual_Waste","Derating ratio",1
+"GR:Derating_CHAN_CCGT_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","GR","CHAN_CCGT","Derating ratio",1
+"HU:Derating_Liter_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Liter","Derating ratio",141
+"HU:Derating_Lorinci_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Lorinci","Derating ratio",130
+"HU:Derating_Paks_2_NPP_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Paks_2_NPP","Derating ratio",3
+"HU:Derating_Sajoszoged_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Sajoszoged","Derating ratio",122
+"IE:Derating_TER_Adj_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IE","TER_Adj","Derating ratio",1
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITCA","Derating ratio",6637
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITCA","Derating ratio",6724
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITCA","Derating ratio",6540
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITCA","Derating ratio",6694
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITCA","Derating ratio",6541
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITCA","Derating ratio",6511
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITCA","Derating ratio",6712
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITCA","Derating ratio",6825
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITCA","Derating ratio",6640
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITCA","Derating ratio",6648
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITCA","Derating ratio",6700
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITCA","Derating ratio",6820
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITCA","Derating ratio",6916
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITCA","Derating ratio",7010
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITCA","Derating ratio",6948
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITCA","Derating ratio",7022
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITCA","Derating ratio",6839
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITCA","Derating ratio",6987
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITCA","Derating ratio",6655
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITCA","Derating ratio",6890
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITCA","Derating ratio",6899
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITCA","Derating ratio",6975
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITCA","Derating ratio",6999
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITCA","Derating ratio",7071
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITCA","Derating ratio",6960
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITCA","Derating ratio",6840
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITCA","Derating ratio",6868
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITCA","Derating ratio",6812
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITCA","Derating ratio",6868
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITCA","Derating ratio",6808
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITCA","Derating ratio",6684
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITCA","Derating ratio",6927
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITCA","Derating ratio",6801
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITCA","Derating ratio",6971
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITCA","Derating ratio",6904
+"IT:Derating_UP_AVG_ITCA_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITCA","Derating ratio",6862
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITCN","Derating ratio",6255
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITCN","Derating ratio",6310
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITCN","Derating ratio",6152
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITCN","Derating ratio",6152
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITCN","Derating ratio",6300
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITCN","Derating ratio",6126
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITCN","Derating ratio",6437
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITCN","Derating ratio",6464
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITCN","Derating ratio",6201
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITCN","Derating ratio",6450
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITCN","Derating ratio",6326
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITCN","Derating ratio",6409
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITCN","Derating ratio",6381
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITCN","Derating ratio",6764
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITCN","Derating ratio",6531
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITCN","Derating ratio",6702
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITCN","Derating ratio",6317
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITCN","Derating ratio",6443
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITCN","Derating ratio",6183
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITCN","Derating ratio",6548
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITCN","Derating ratio",6486
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITCN","Derating ratio",6648
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITCN","Derating ratio",6627
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITCN","Derating ratio",6591
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITCN","Derating ratio",6600
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITCN","Derating ratio",6276
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITCN","Derating ratio",6388
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITCN","Derating ratio",6135
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITCN","Derating ratio",6264
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITCN","Derating ratio",6129
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITCN","Derating ratio",6193
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITCN","Derating ratio",6512
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITCN","Derating ratio",6251
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITCN","Derating ratio",6315
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITCN","Derating ratio",6291
+"IT:Derating_UP_AVG_ITCN_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITCN","Derating ratio",6304
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITCS","Derating ratio",6976
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITCS","Derating ratio",7042
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITCS","Derating ratio",6939
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITCS","Derating ratio",6946
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITCS","Derating ratio",6922
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITCS","Derating ratio",6806
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITCS","Derating ratio",7138
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITCS","Derating ratio",7188
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITCS","Derating ratio",7032
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITCS","Derating ratio",7122
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITCS","Derating ratio",7116
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITCS","Derating ratio",7089
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITCS","Derating ratio",7066
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITCS","Derating ratio",7288
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITCS","Derating ratio",7065
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITCS","Derating ratio",7278
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITCS","Derating ratio",7074
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITCS","Derating ratio",7153
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITCS","Derating ratio",6818
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITCS","Derating ratio",7084
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITCS","Derating ratio",7136
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITCS","Derating ratio",7250
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITCS","Derating ratio",7256
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITCS","Derating ratio",7297
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITCS","Derating ratio",7128
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITCS","Derating ratio",6809
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITCS","Derating ratio",7025
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITCS","Derating ratio",6822
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITCS","Derating ratio",7007
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITCS","Derating ratio",6828
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITCS","Derating ratio",6841
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITCS","Derating ratio",7086
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITCS","Derating ratio",6961
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITCS","Derating ratio",6980
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITCS","Derating ratio",6935
+"IT:Derating_UP_AVG_ITCS_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITCS","Derating ratio",6912
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITN1","Derating ratio",6035
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITN1","Derating ratio",6159
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITN1","Derating ratio",5992
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITN1","Derating ratio",6101
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITN1","Derating ratio",6086
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITN1","Derating ratio",6064
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITN1","Derating ratio",6315
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITN1","Derating ratio",6520
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITN1","Derating ratio",6192
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITN1","Derating ratio",6361
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITN1","Derating ratio",6361
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITN1","Derating ratio",6251
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITN1","Derating ratio",6294
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITN1","Derating ratio",6622
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITN1","Derating ratio",6307
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITN1","Derating ratio",6723
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITN1","Derating ratio",6112
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITN1","Derating ratio",6293
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITN1","Derating ratio",5582
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITN1","Derating ratio",6298
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITN1","Derating ratio",6348
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITN1","Derating ratio",6542
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITN1","Derating ratio",6330
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITN1","Derating ratio",6534
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITN1","Derating ratio",6567
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITN1","Derating ratio",6146
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITN1","Derating ratio",6147
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITN1","Derating ratio",5931
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITN1","Derating ratio",5927
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITN1","Derating ratio",5807
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITN1","Derating ratio",5985
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITN1","Derating ratio",6395
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITN1","Derating ratio",5954
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITN1","Derating ratio",6216
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITN1","Derating ratio",5978
+"IT:Derating_UP_AVG_ITN1_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITN1","Derating ratio",6103
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITS1","Derating ratio",7275
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITS1","Derating ratio",7387
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITS1","Derating ratio",7245
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITS1","Derating ratio",7287
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITS1","Derating ratio",7328
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITS1","Derating ratio",7279
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITS1","Derating ratio",7410
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITS1","Derating ratio",7556
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITS1","Derating ratio",7288
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITS1","Derating ratio",7284
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITS1","Derating ratio",7449
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITS1","Derating ratio",7464
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITS1","Derating ratio",7335
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITS1","Derating ratio",7463
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITS1","Derating ratio",7397
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITS1","Derating ratio",7488
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITS1","Derating ratio",7255
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITS1","Derating ratio",7318
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITS1","Derating ratio",7264
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITS1","Derating ratio",7377
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITS1","Derating ratio",7349
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITS1","Derating ratio",7495
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITS1","Derating ratio",7441
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITS1","Derating ratio",7458
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITS1","Derating ratio",7474
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITS1","Derating ratio",7225
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITS1","Derating ratio",7319
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITS1","Derating ratio",7299
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITS1","Derating ratio",7387
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITS1","Derating ratio",7244
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITS1","Derating ratio",7265
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITS1","Derating ratio",7426
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITS1","Derating ratio",7323
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITS1","Derating ratio",7311
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITS1","Derating ratio",7343
+"IT:Derating_UP_AVG_ITS1_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITS1","Derating ratio",7334
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITSA","Derating ratio",7189
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITSA","Derating ratio",7318
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITSA","Derating ratio",7150
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITSA","Derating ratio",7285
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITSA","Derating ratio",7288
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITSA","Derating ratio",7175
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITSA","Derating ratio",7311
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITSA","Derating ratio",7501
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITSA","Derating ratio",7261
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITSA","Derating ratio",7257
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITSA","Derating ratio",7306
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITSA","Derating ratio",7394
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITSA","Derating ratio",7290
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITSA","Derating ratio",7444
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITSA","Derating ratio",7316
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITSA","Derating ratio",7486
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITSA","Derating ratio",7163
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITSA","Derating ratio",7310
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITSA","Derating ratio",7151
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITSA","Derating ratio",7325
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITSA","Derating ratio",7274
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITSA","Derating ratio",7443
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITSA","Derating ratio",7391
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITSA","Derating ratio",7436
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITSA","Derating ratio",7409
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITSA","Derating ratio",7154
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITSA","Derating ratio",7245
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITSA","Derating ratio",7289
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITSA","Derating ratio",7301
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITSA","Derating ratio",7187
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITSA","Derating ratio",7185
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITSA","Derating ratio",7339
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITSA","Derating ratio",7265
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITSA","Derating ratio",7288
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITSA","Derating ratio",7213
+"IT:Derating_UP_AVG_ITSA_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITSA","Derating ratio",7308
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS01","All_years_ERAA_TYNDP","ERAA-WS01","IT","UP_AVG_ITSI","Derating ratio",6990
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS02","All_years_ERAA_TYNDP","ERAA-WS02","IT","UP_AVG_ITSI","Derating ratio",6946
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS03","All_years_ERAA_TYNDP","ERAA-WS03","IT","UP_AVG_ITSI","Derating ratio",6836
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS04","All_years_ERAA_TYNDP","ERAA-WS04","IT","UP_AVG_ITSI","Derating ratio",6988
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS05","All_years_ERAA_TYNDP","ERAA-WS05","IT","UP_AVG_ITSI","Derating ratio",6886
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS06","All_years_ERAA_TYNDP","ERAA-WS06","IT","UP_AVG_ITSI","Derating ratio",6911
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS07","All_years_ERAA_TYNDP","ERAA-WS07","IT","UP_AVG_ITSI","Derating ratio",6944
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS08","All_years_ERAA_TYNDP","ERAA-WS08","IT","UP_AVG_ITSI","Derating ratio",7004
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS09","All_years_ERAA_TYNDP","ERAA-WS09","IT","UP_AVG_ITSI","Derating ratio",6918
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS10","All_years_ERAA_TYNDP","ERAA-WS10","IT","UP_AVG_ITSI","Derating ratio",6980
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS11","All_years_ERAA_TYNDP","ERAA-WS11","IT","UP_AVG_ITSI","Derating ratio",6980
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS12","All_years_ERAA_TYNDP","ERAA-WS12","IT","UP_AVG_ITSI","Derating ratio",7051
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS13","All_years_ERAA_TYNDP","ERAA-WS13","IT","UP_AVG_ITSI","Derating ratio",6997
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS14","All_years_ERAA_TYNDP","ERAA-WS14","IT","UP_AVG_ITSI","Derating ratio",7158
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS15","All_years_ERAA_TYNDP","ERAA-WS15","IT","UP_AVG_ITSI","Derating ratio",7083
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS16","All_years_ERAA_TYNDP","ERAA-WS16","IT","UP_AVG_ITSI","Derating ratio",7066
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS17","All_years_ERAA_TYNDP","ERAA-WS17","IT","UP_AVG_ITSI","Derating ratio",6966
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS18","All_years_ERAA_TYNDP","ERAA-WS18","IT","UP_AVG_ITSI","Derating ratio",7109
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS19","All_years_ERAA_TYNDP","ERAA-WS19","IT","UP_AVG_ITSI","Derating ratio",6904
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS20","All_years_ERAA_TYNDP","ERAA-WS20","IT","UP_AVG_ITSI","Derating ratio",7096
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS21","All_years_ERAA_TYNDP","ERAA-WS21","IT","UP_AVG_ITSI","Derating ratio",7023
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS22","All_years_ERAA_TYNDP","ERAA-WS22","IT","UP_AVG_ITSI","Derating ratio",7037
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS23","All_years_ERAA_TYNDP","ERAA-WS23","IT","UP_AVG_ITSI","Derating ratio",7173
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS24","All_years_ERAA_TYNDP","ERAA-WS24","IT","UP_AVG_ITSI","Derating ratio",7243
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS25","All_years_ERAA_TYNDP","ERAA-WS25","IT","UP_AVG_ITSI","Derating ratio",7098
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS26","All_years_ERAA_TYNDP","ERAA-WS26","IT","UP_AVG_ITSI","Derating ratio",6859
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS27","All_years_ERAA_TYNDP","ERAA-WS27","IT","UP_AVG_ITSI","Derating ratio",6944
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS28","All_years_ERAA_TYNDP","ERAA-WS28","IT","UP_AVG_ITSI","Derating ratio",6891
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS29","All_years_ERAA_TYNDP","ERAA-WS29","IT","UP_AVG_ITSI","Derating ratio",6988
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS30","All_years_ERAA_TYNDP","ERAA-WS30","IT","UP_AVG_ITSI","Derating ratio",6928
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS31","All_years_ERAA_TYNDP","ERAA-WS31","IT","UP_AVG_ITSI","Derating ratio",6869
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS32","All_years_ERAA_TYNDP","ERAA-WS32","IT","UP_AVG_ITSI","Derating ratio",7028
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS33","All_years_ERAA_TYNDP","ERAA-WS33","IT","UP_AVG_ITSI","Derating ratio",6944
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS34","All_years_ERAA_TYNDP","ERAA-WS34","IT","UP_AVG_ITSI","Derating ratio",7027
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS35","All_years_ERAA_TYNDP","ERAA-WS35","IT","UP_AVG_ITSI","Derating ratio",7023
+"IT:Derating_UP_AVG_ITSI_All_years_ERAA_TYNDP_ERAA_WS36","All_years_ERAA_TYNDP","ERAA-WS36","IT","UP_AVG_ITSI","Derating ratio",6943
+"IT:Derating_Virtual_Zero_Cost_Non_market_Other_non_RES_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","Virtual_Zero_Cost/Non-market_Other_non-RES","Derating ratio",1
+"NI:Derating_TER_Adj_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","NI","TER_Adj","Derating ratio",1
+"NL:Derating_ONR_FOR_PMOR_15_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","NL","ONR_FOR_PMOR_15","Derating ratio",1
+"RO:Derating_Unit_Brazi_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Unit Brazi","Derating ratio",1
+"RO:Derating_Unit_BucV_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Unit BucV","Derating ratio",1
+"RO:Derating_Unit_Grozavesti_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Unit Grozavesti","Derating ratio",1
+"RO:Derating_Unit_Paroseni_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Unit Paroseni","Derating ratio",1
+"RO:Derating_Unit_Tsud_d_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Unit Tsud_d","Derating ratio",1
+"RS:Derating_CHPP_NS_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","CHPP NS 1","Derating ratio",3
+"RS:Derating_CHPP_NS_2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","CHPP NS 2","Derating ratio",3
+"RS:Derating_Kostolac_A1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","Kostolac A1","Derating ratio",3
+"RS:Derating_Kostolac_A1__incr__All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","Kostolac A1 (incr)","Derating ratio",3
+"RS:Derating_Kostolac_A2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","Kostolac A2","Derating ratio",3
+"RS:Derating_Kostolac_A2__incr__All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","Kostolac A2 (incr)","Derating ratio",3
+"RS:Derating_TENT_A1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","TENT A1","Derating ratio",3
+"RS:Derating_TENT_A1__incr__All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","TENT A1 (incr)","Derating ratio",3
+"RS:Derating_TENT_A2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","TENT A2","Derating ratio",3
+"RS:Derating_TENT_A2__incr__All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","TENT A2 (incr)","Derating ratio",3

@@ -24,17 +24,9 @@ ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
 ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
-def get_starting_and_ending_timestamps_for_outputs(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
-    """
-    Implicit rule: For a given year, we have to consider the year starts in July of the previous year
-    and ends in June of the current year.
-    Example: 2030 : 1st July 2029 -> 30 June 2030
-    """
-    return pd.Timestamp(year - 1, 7, 1), pd.Timestamp(year, 6, 30)
-
-
 class InputThermalColumns(StrEnum):
     STUDY_SCENARIO = "STUDY_SCENARIO"
+    ZONE = "ZONE"
     MARKET_NODE = "MARKET_NODE"
     COMMISSIONING_DATE = "COMMISSIONING_DATE"
     DECOMMISSIONING_DATE_EXPECTED = "DECOMMISSIONING_DATE_EXPECTED"

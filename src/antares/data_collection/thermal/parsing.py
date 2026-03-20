@@ -10,9 +10,7 @@
 #
 # This file is part of the Antares project.
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
 
 import pandas as pd
 
@@ -22,17 +20,16 @@ from antares.data_collection.thermal.constants import (
     ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
-    DEFAULT_DECOMMISSIONING_DATE,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
 )
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
-
-
-@dataclass
-class CommissioningDateLimits:
-    last_possible_commissioning_date: pd.Timestamp
-    earliest_possible_decommissioning_date: pd.Timestamp
+from antares.data_collection.thermal.technical_parameters.parsing import ThermalSpecificParametersParser
+from antares.data_collection.thermal.utils import (
+    filter_input_based_on_study_scenarios,
+    filter_thermal_input_file_based_on_commission_date,
+    parse_input_file,
+)
 
 
 class ThermalParser:
@@ -52,20 +49,7 @@ class ThermalParser:
         self.filtered_dataframe = self._build_filtered_dataframe()
 
     def _read_input_file(self) -> pd.DataFrame:
-        input_file_path = self.input_folder.joinpath(THERMAL_INPUT_FILE)
-        if not input_file_path.exists():
-            raise ValueError(f"Thermal input file {input_file_path} not found")
-
-        # Checks that all expected columns exist
-        df = pd.read_csv(input_file_path)
-        existing_cols = set(df.columns)
-        expected_cols = list(InputThermalColumns)
-        for expected_column in expected_cols:
-            if expected_column not in existing_cols:
-                raise ValueError(f"Column {expected_column} not found in {input_file_path}")
-
-        # Return the dataframe with the useful columns only
-        return df[expected_cols]
+        return parse_input_file(self.input_folder.joinpath(THERMAL_INPUT_FILE), list(InputThermalColumns))
 
     def _filter_values_based_on_op_stat(self, df: pd.DataFrame) -> pd.DataFrame:
         """We want to keep only the lines were the OP_STAT value matches the user given ones"""
@@ -110,80 +94,9 @@ class ThermalParser:
             return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
         return df
 
-    def _filter_values_based_on_study_scenarios(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
-        Other scenarios present in the input file will be ignored.
-        """
-        scenario_types = list(self.main_params.get_scenario_types(years=self.years))
-
-        if not scenario_types:
-            return df
-
-        df = df[df[InputThermalColumns.STUDY_SCENARIO].str.contains("|".join(scenario_types), case=False, na=False)]
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            raise ValueError(f"No input data matched the given study scenario for the given years {self.years}")
-        return df
-
-    def _filter_values_based_on_commission_date(self, df: pd.DataFrame) -> pd.DataFrame:
-        if not self.years:
-            return df
-
-        # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
-        df[InputThermalColumns.COMMISSIONING_DATE] = pd.to_datetime(df[InputThermalColumns.COMMISSIONING_DATE])
-
-        # Some values might be missing inside `DECOMMISSIONING_DATE_EXPECTED`.
-        # If so, we should consider the decommissioning year to be 2100.
-        df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] = pd.to_datetime(
-            df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
-        ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
-
-        # Reindex the dataframe to use Series freely
-        df.index = pd.RangeIndex(len(df))
-
-        commissioning_limits = list(self._get_starting_and_ending_timestamps())
-        start_dates = df[InputThermalColumns.COMMISSIONING_DATE]
-        end_dates = df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
-        index_to_drop = []
-        for k in range(len(df)):
-            start_date = start_dates[k]
-            end_date = end_dates[k]
-            invalid_limits = 0
-            for limit in commissioning_limits:
-                if (
-                    start_date > limit.last_possible_commissioning_date
-                    or end_date < limit.earliest_possible_decommissioning_date
-                ):
-                    invalid_limits += 1
-
-            # If no year matches the commissioning dates, we don't want to consider the row.
-            if invalid_limits == len(commissioning_limits):
-                index_to_drop.append(k)
-
-        df = df.drop(index_to_drop)
-
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            msg = f"No input data matched the given (de)commissioning dates for the given years {self.years}"
-            raise ValueError(msg)
-        return df
-
     def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
         """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
         return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
-
-    def _get_starting_and_ending_timestamps(self) -> Iterator[CommissioningDateLimits]:
-        """
-        For each year in `self.years`, we should consider:
-        - 31st December of the year -> Each cluster with a commissioning date after this will not be considered.
-        - 1st January of previous year -> Each cluster with a decommissioning date before this will not be considered.
-        """
-        for year in self.years:
-            yield CommissioningDateLimits(
-                last_possible_commissioning_date=pd.Timestamp(year=year, month=12, day=31),
-                earliest_possible_decommissioning_date=pd.Timestamp(year=year - 1, month=1, day=1),
-            )
 
     def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
         cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
@@ -225,8 +138,8 @@ class ThermalParser:
         df = self._filter_values_based_on_op_stat(df)
         df = self._filter_non_declared_areas(df)
         df = self._filter_non_declared_clusters(df)
-        df = self._filter_values_based_on_study_scenarios(df)
-        df = self._filter_values_based_on_commission_date(df)
+        df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
+        df = filter_thermal_input_file_based_on_commission_date(df, self.years)
         df = self._add_antares_cluster_name_colum(df)
         df = self._split_clusters_with_biomass_rule(df)
         df = self._filter_values_based_on_net_max_gen_cap(df)
@@ -237,5 +150,5 @@ class ThermalParser:
         parser.build_thermal_installed_power(self.filtered_dataframe)
 
     def build_specific_parameters(self) -> None:
-        pass
-        # todo
+        parser = ThermalSpecificParametersParser(self.input_folder, self.output_folder, self.main_params, self.years)
+        parser.build_thermal_specific_parameters(self.filtered_dataframe)
