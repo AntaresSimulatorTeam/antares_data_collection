@@ -17,7 +17,6 @@ from typing import TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import FLOAT_FORMAT
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -50,6 +49,7 @@ from antares.data_collection.thermal.utils import (
     filter_thermal_input_file_based_on_commission_date,
     parse_input_file,
 )
+from antares.data_collection.utils import write_csv_file
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
@@ -333,23 +333,23 @@ class ThermalSpecificParametersParser:
                 column_name = f"{zone}_{cluster}"
                 pegase_df_as_dict[column_name] = final_ts
 
+        # todo: add the hour
+        """
+        colonne DATE_HEURE : Date au format 01/07/2028  00:00:00
+        colonne heure : numéro de l'heure dans l'année (pour le 1er juillet année N cest heure 0, pour le 30 Juin de l'année N+1 cest 8760)
+        """
+
         return pd.DataFrame.from_dict(pegase_df_as_dict)
 
     def _write_must_run_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition)
-        # todo: we should add the hour column
-
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(file_path, sep=",", float_format=FLOAT_FORMAT)
+        write_csv_file(file_path, df)
 
     def _write_capacity_modulation_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition)
-        # todo: we should add the hour column
-
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year}.csv"
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(file_path, sep=",", float_format=FLOAT_FORMAT)
+        write_csv_file(file_path, df)
 
     def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
         # Parse Index files

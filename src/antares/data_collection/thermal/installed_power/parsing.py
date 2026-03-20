@@ -15,7 +15,6 @@ from typing import Any, Iterator
 
 import pandas as pd
 
-from antares.data_collection.constants import MAX_DECIMAL_DIGITS
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -29,6 +28,7 @@ from antares.data_collection.thermal.installed_power.constants import (
     OutputThermalInstallPowerColumns,
 )
 from antares.data_collection.thermal.utils import get_starting_and_ending_timestamps_for_outputs
+from antares.data_collection.utils import MAX_DECIMAL_DIGITS
 
 
 class ThermalInstallerPowerParser:
