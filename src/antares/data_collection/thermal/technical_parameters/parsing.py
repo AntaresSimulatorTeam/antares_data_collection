@@ -333,7 +333,12 @@ class ThermalSpecificParametersParser:
                 column_name = f"{zone}_{cluster}"
                 pegase_df_as_dict[column_name] = final_ts
 
-        # todo: add the hour
+        df = pd.DataFrame.from_dict(pegase_df_as_dict)
+
+        # todo
+        # Add the Hours columns
+        # First hour is 1st July at midnight according to the SPEC but in the file I see it's the 1st of January.
+        df["heure"] = range(0, len(df))
         """
         colonne DATE_HEURE : Date au format 01/07/2028  00:00:00
         colonne heure : numéro de l'heure dans l'année (pour le 1er juillet année N cest heure 0, pour le 30 Juin de l'année N+1 cest 8760)
