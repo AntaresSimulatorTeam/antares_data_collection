@@ -25,6 +25,7 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 from antares.data_collection.thermal.technical_parameters.constants import (
+    CAPACITY_MODULATION_NAME,
     DEFAULT_CAPACITY_MODULATION_TS,
     DEFAULT_MUST_RUN_TS,
     DERATING_INDEX_NAME,
@@ -71,18 +72,11 @@ class IndexesToTimeSeries:
     group_derating: InternalMapping
 
 
-Curves: TypeAlias = dict[int, tuple[pd.Series, float]]
-
-
-@dataclass
-class OutputData:
-    must_run: Curves
-    derating: Curves
-
 @dataclass
 class TimeSeriesAndClusterPair:
     weight: float
     series: pd.Series
+
 
 ClusterGroupTsRepartition: TypeAlias = dict[ZoneId, dict[ClusterId, list[TimeSeriesAndClusterPair]]]
 
@@ -182,7 +176,6 @@ class ThermalSpecificParametersParser:
             group_derating=InternalMapping(index=group_derating_index_mapping, data=group_derating),
         )
 
-
     def _build_must_run(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> ClusterGroupTsRepartition:
         result: ClusterGroupTsRepartition = {}
 
@@ -195,8 +188,7 @@ class ThermalSpecificParametersParser:
         ]
         useful_cols = must_run_cols + [InputThermalColumns.NET_MAX_GEN_CAP]
         must_run_groups = df[useful_cols].groupby(by=must_run_cols, dropna=False)
-        for (group, data) in must_run_groups:
-
+        for group, data in must_run_groups:
             zone = group[4]
             assert isinstance(zone, ZoneId)
             cluster_id = group[3]
@@ -253,96 +245,76 @@ class ThermalSpecificParametersParser:
 
         return result
 
+    def _build_capacity_modulation(
+        self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries
+    ) -> ClusterGroupTsRepartition:
+        result: ClusterGroupTsRepartition = {}
 
-    # Deprecated
-    def _build_the_output_data(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> OutputData:
-        must_run_cluster_group_ts_repartition = self._build_must_run(df, index_to_ts)
+        must_run_cols = [
+            InputThermalColumns.GRP_D_CURVE_ID,
+            InputThermalColumns.GEN_UNT_D_CURVE_ID,
+            InputThermalColumns.GEN_UNT_INELASTIC_ID,
+            ANTARES_CLUSTER_NAME_COLUMN,
+            InputThermalColumns.ZONE,
+        ]
+        useful_cols = must_run_cols + [InputThermalColumns.NET_MAX_GEN_CAP]
+        must_run_groups = df[useful_cols].groupby(by=must_run_cols, dropna=False)
+        for group, data in must_run_groups:
+            zone = group[4]
+            assert isinstance(zone, ZoneId)
+            cluster_id = group[3]
+            assert isinstance(cluster_id, ClusterId)
 
-
-        zones = list(df[InputThermalColumns.ZONE])
-        group_must_runs = list(df[InputThermalColumns.GRP_MRUN_CURVE_ID])
-        unit_must_runs = list(df[InputThermalColumns.GEN_UNT_MRUN_CURVE_ID])
-        group_deratings = list(df[InputThermalColumns.GRP_D_CURVE_ID])
-        unit_deratings = list(df[InputThermalColumns.GEN_UNT_D_CURVE_ID])
-        inelastics = list(df[InputThermalColumns.GEN_UNT_INELASTIC_ID])
-
-        # Builds output data object
-        output_data = OutputData(must_run={}, derating={})
-
-        for k in range(len(df)):
-            zone = zones[k]
-
-            # First we handle the `Must Run` part.
-            # We want to select the Series with the lowest mean
-
-            # Group Must Run
-            grp_must_run_value = group_must_runs[k]
-            if not pd.isna(grp_must_run_value):
-                if grp_must_run_value in index_to_ts.group_must_run.index[zone]:
-                    curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.group_must_run.data[curve_id]
-                        ts_mean = ts.mean()
-                        if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
-                            output_data.must_run[k] = (ts, ts_mean)
-
-            # Must Run
-            must_run_value = unit_must_runs[k]
-            if not pd.isna(must_run_value):
-                if must_run_value in index_to_ts.must_run.index[zone]:
-                    curve_ids = index_to_ts.must_run.index[zone][must_run_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.must_run.data[curve_id]
-                        ts_mean = ts.mean()
-                        if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
-                            output_data.must_run[k] = (ts, ts_mean)
-
-            # Then we handle the `Derating` part.
             # We want to select the Series with the highest mean
+            lowest_mean = math.inf
+            final_ts = pd.Series()
 
-            # Group Derating
-            group_derating_value = group_deratings[k]
-            if not pd.isna(group_derating_value):
-                if group_derating_value in index_to_ts.group_derating.index[zone]:
-                    curve_ids = index_to_ts.group_derating.index[zone][group_derating_value]
+            # Group Derating column
+            grp_derating_value: str = group[0]  # type: ignore
+            if not pd.isna(grp_derating_value):
+                if grp_derating_value in index_to_ts.group_derating.index[zone]:
+                    curve_ids = index_to_ts.group_derating.index[zone][grp_derating_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.group_derating.data[curve_id]
                         ts_mean = ts.mean()
-                        if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
-                            output_data.derating[k] = (ts, ts_mean)
+                        if lowest_mean < ts_mean:
+                            final_ts = ts
+                            lowest_mean = ts_mean
 
-            # Derating
-            derating_value = unit_deratings[k]
+            # Derating column
+            derating_value: str = group[1]  # type: ignore
             if not pd.isna(derating_value):
                 if derating_value in index_to_ts.derating.index[zone]:
                     curve_ids = index_to_ts.derating.index[zone][derating_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.derating.data[curve_id]
                         ts_mean = ts.mean()
-                        if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
-                            output_data.derating[k] = (ts, ts_mean)
+                        if lowest_mean < ts_mean:
+                            final_ts = ts
+                            lowest_mean = ts_mean
 
-            # Inelastic
-            inelastic_value = inelastics[k]
+            # Inelastic column
+            inelastic_value: str = group[2]  # type: ignore
             if not pd.isna(inelastic_value):
                 if inelastic_value in index_to_ts.inelastic.index[zone]:
                     curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.inelastic.data[curve_id]
                         ts_mean = ts.mean()
-                        # Inelastic should be considered for both `derating` and `must_run`
-                        if k not in output_data.derating or output_data.derating[k][1] < ts_mean:
-                            output_data.derating[k] = (ts, ts_mean)
-                        if k not in output_data.must_run or output_data.must_run[k][1] > ts_mean:
-                            output_data.must_run[k] = (ts, ts_mean)
+                        if lowest_mean < ts_mean:
+                            final_ts = ts
+                            lowest_mean = ts_mean
 
-            # If no value exists, fill the object with the default dataframes.
-            if k not in output_data.derating:
-                output_data.derating[k] = (DEFAULT_CAPACITY_MODULATION_TS, 1)
-            if k not in output_data.must_run:
-                output_data.must_run[k] = (DEFAULT_MUST_RUN_TS, 0)
+            # Use default value for empty rows
+            if final_ts.empty:
+                final_ts = DEFAULT_CAPACITY_MODULATION_TS
 
-        return output_data
+            # Fill the result
+            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].mean()
+            ts_pair = TimeSeriesAndClusterPair(series=final_ts, weight=weight)
+            result.setdefault(zone, {}).setdefault(cluster_id, []).append(ts_pair)
+
+        return result
 
     def _build_pegase_dataframe(self, data_repartition: ClusterGroupTsRepartition) -> pd.DataFrame:
         pegase_df_as_dict = {}
@@ -368,6 +340,14 @@ class ThermalSpecificParametersParser:
         # todo: we should add the hour column
 
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(file_path, sep=",", float_format=FLOAT_FORMAT)
+
+    def _write_capacity_modulation_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
+        df = self._build_pegase_dataframe(data_repartition)
+        # todo: we should add the hour column
+
+        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year}.csv"
         file_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(file_path, sep=",", float_format=FLOAT_FORMAT)
 
@@ -408,4 +388,6 @@ class ThermalSpecificParametersParser:
             must_run_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
             self._write_must_run_file(year, must_run_cluster_group_ts_repartition)
 
-            # todo: do the same for `Nominal capacity`
+            # Write the `Capacity Modulation` file
+            capacity_modulation_repartition = self._build_capacity_modulation(thermal_df_year, index_to_timeseries)
+            self._write_capacity_modulation_file(year, capacity_modulation_repartition)
