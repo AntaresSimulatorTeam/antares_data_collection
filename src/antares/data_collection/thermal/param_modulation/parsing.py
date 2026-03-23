@@ -23,7 +23,7 @@ from antares.data_collection.thermal.constants import (
     ANTARES_NODE_NAME_COLUMN,
     InputThermalColumns,
 )
-from antares.data_collection.thermal.technical_parameters.constants import (
+from antares.data_collection.thermal.param_modulation.constants import (
     CAPACITY_MODULATION_NAME,
     DEFAULT_CAPACITY_MODULATION_TS,
     DEFAULT_MUST_RUN_TS,
