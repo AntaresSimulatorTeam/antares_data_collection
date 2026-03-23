@@ -15,8 +15,8 @@ from pathlib import Path
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import parse_main_params
-from antares.data_collection.thermal.constant_specific import SPECIFIC_PARAM_FOLDER
-from antares.data_collection.thermal.parsing.specific_param import ThermalSpecificParamParser
+from antares.data_collection.thermal.specific_param.constants import SPECIFIC_PARAM_FOLDER
+from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from tests.conftest import RESOURCE_PATH
 
 

@@ -11,12 +11,20 @@
 # This file is part of the Antares project.
 
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constant_specific import (
+from antares.data_collection.thermal.constants import (
+    ANTARES_CLUSTER_NAME_COLUMN,
+    ANTARES_NODE_NAME_COLUMN,
+    BIOMASS_CLUSTER_SUFFIX,
+    BIOMASS_SNCD_FUEL_VALUE,
+    DEFAULT_DECOMMISSIONING_DATE,
+    THERMAL_INPUT_FILE,
+)
+from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
     P_COLUMNS,
     P_COLUMNS_WINTER,
@@ -24,17 +32,6 @@ from antares.data_collection.thermal.constant_specific import (
     InputThermalColumns,
     OutputThermalSpecificColumns,
     weighted_avg,
-)
-from antares.data_collection.thermal.constants import (
-    BIOMASS_CLUSTER_SUFFIX,
-    BIOMASS_SNCD_FUEL_VALUE,
-    DEFAULT_DECOMMISSIONING_DATE,
-    THERMAL_INPUT_FILE,
-)
-from antares.data_collection.thermal.parsing.installed_power import (
-    ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
-    CommissioningDateLimits,
 )
 
 
@@ -155,18 +152,6 @@ class ThermalSpecificParamParser:
     def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
         """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
         return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
-
-    def _get_starting_and_ending_timestamps(self) -> Iterator[CommissioningDateLimits]:
-        """
-        For each year in `self.years`, we should consider:
-        - 31st December of the year -> Each cluster with a commissioning date after this will not be considered.
-        - 1st January of previous year -> Each cluster with a decommissioning date before this will not be considered.
-        """
-        for year in self.years:
-            yield CommissioningDateLimits(
-                last_possible_commissioning_date=pd.Timestamp(year=year, month=12, day=31),
-                earliest_possible_decommissioning_date=pd.Timestamp(year=year - 1, month=1, day=1),
-            )
 
     def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
         cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
