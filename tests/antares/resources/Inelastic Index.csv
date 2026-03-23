@@ -1,0 +1,163 @@
+"CURVE_UID","TARGET_YEAR","WEATHER_SCENARIO","ZONE","ID","LABEL","COUNT"
+"AT:Inelastic_Non_market_Other_non_RES_Inelastic_Industry_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","AT","Non-market_Other_non-RES_Inelastic_Industry","Inelastic profile",1
+"BE:Inelastic_Other_non_RES_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Other_non-RES","Inelastic profile",8190
+"CH:Inelastic_biogas_2028_ERAA_2028_All__other__weather_scenarios","ERAA_2028","All (other) weather scenarios","CH","biogas_2028","Inelastic profile",1
+"CH:Inelastic_biogas_2030_ERAA_2030_All__other__weather_scenarios","ERAA_2030","All (other) weather scenarios","CH","biogas_2030","Inelastic profile",1
+"CH:Inelastic_biogas_2030_TYNDP_2030_All__other__weather_scenarios","TYNDP_2030","All (other) weather scenarios","CH","biogas_2030","Inelastic profile",1
+"CH:Inelastic_biogas_2033_ERAA_2033_All__other__weather_scenarios","ERAA_2033","All (other) weather scenarios","CH","biogas_2033","Inelastic profile",1
+"CH:Inelastic_biogas_2035_ERAA_2035_All__other__weather_scenarios","ERAA_2035","All (other) weather scenarios","CH","biogas_2035","Inelastic profile",1
+"CH:Inelastic_biogas_2035_TYNDP_2035_All__other__weather_scenarios","TYNDP_2035","All (other) weather scenarios","CH","biogas_2035","Inelastic profile",1
+"CH:Inelastic_biogas_2040_TYNDP_2040_All__other__weather_scenarios","TYNDP_2040","All (other) weather scenarios","CH","biogas_2040","Inelastic profile",1
+"CH:Inelastic_biogas_2050_TYNDP_2050_All__other__weather_scenarios","TYNDP_2050","All (other) weather scenarios","CH","biogas_2050","Inelastic profile",1
+"CH:Inelastic_onr_2028_ERAA_2028_All__other__weather_scenarios","ERAA_2028","All (other) weather scenarios","CH","onr_2028","Inelastic profile",1
+"CH:Inelastic_onr_2030_ERAA_2030_All__other__weather_scenarios","ERAA_2030","All (other) weather scenarios","CH","onr_2030","Inelastic profile",1
+"CH:Inelastic_onr_2030_TYNDP_2030_All__other__weather_scenarios","TYNDP_2030","All (other) weather scenarios","CH","onr_2030","Inelastic profile",1
+"CH:Inelastic_onr_2033_ERAA_2033_All__other__weather_scenarios","ERAA_2033","All (other) weather scenarios","CH","onr_2033","Inelastic profile",1
+"CH:Inelastic_onr_2035_ERAA_2035_All__other__weather_scenarios","ERAA_2035","All (other) weather scenarios","CH","onr_2035","Inelastic profile",1
+"CH:Inelastic_onr_2035_TYNDP_2035_All__other__weather_scenarios","TYNDP_2035","All (other) weather scenarios","CH","onr_2035","Inelastic profile",1
+"CH:Inelastic_onr_2040_TYNDP_2040_All__other__weather_scenarios","TYNDP_2040","All (other) weather scenarios","CH","onr_2040","Inelastic profile",1
+"CH:Inelastic_onr_2050_TYNDP_2050_All__other__weather_scenarios","TYNDP_2050","All (other) weather scenarios","CH","onr_2050","Inelastic profile",1
+"CZ:Inelastic_NonRes1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","NonRes1","Inelastic profile",5079
+"CZ:Inelastic_NonRes2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","NonRes2","Inelastic profile",1549
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS01","All_years_ERAA","ERAA-WS01","DE","CD_ONR","Inelastic profile",4092
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS02","All_years_ERAA","ERAA-WS02","DE","CD_ONR","Inelastic profile",4206
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS03","All_years_ERAA","ERAA-WS03","DE","CD_ONR","Inelastic profile",4468
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS04","All_years_ERAA","ERAA-WS04","DE","CD_ONR","Inelastic profile",4360
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS05","All_years_ERAA","ERAA-WS05","DE","CD_ONR","Inelastic profile",4232
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS06","All_years_ERAA","ERAA-WS06","DE","CD_ONR","Inelastic profile",4297
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS07","All_years_ERAA","ERAA-WS07","DE","CD_ONR","Inelastic profile",4296
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS08","All_years_ERAA","ERAA-WS08","DE","CD_ONR","Inelastic profile",4639
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS09","All_years_ERAA","ERAA-WS09","DE","CD_ONR","Inelastic profile",4550
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS10","All_years_ERAA","ERAA-WS10","DE","CD_ONR","Inelastic profile",3982
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS11","All_years_ERAA","ERAA-WS11","DE","CD_ONR","Inelastic profile",3803
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS12","All_years_ERAA","ERAA-WS12","DE","CD_ONR","Inelastic profile",4300
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS13","All_years_ERAA","ERAA-WS13","DE","CD_ONR","Inelastic profile",3971
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS14","All_years_ERAA","ERAA-WS14","DE","CD_ONR","Inelastic profile",4342
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS15","All_years_ERAA","ERAA-WS15","DE","CD_ONR","Inelastic profile",3735
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS16","All_years_ERAA","ERAA-WS16","DE","CD_ONR","Inelastic profile",4661
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS17","All_years_ERAA","ERAA-WS17","DE","CD_ONR","Inelastic profile",3870
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS18","All_years_ERAA","ERAA-WS18","DE","CD_ONR","Inelastic profile",3730
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS19","All_years_ERAA","ERAA-WS19","DE","CD_ONR","Inelastic profile",3483
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS20","All_years_ERAA","ERAA-WS20","DE","CD_ONR","Inelastic profile",3854
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS21","All_years_ERAA","ERAA-WS21","DE","CD_ONR","Inelastic profile",4319
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS22","All_years_ERAA","ERAA-WS22","DE","CD_ONR","Inelastic profile",4580
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS23","All_years_ERAA","ERAA-WS23","DE","CD_ONR","Inelastic profile",4141
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS24","All_years_ERAA","ERAA-WS24","DE","CD_ONR","Inelastic profile",4568
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS25","All_years_ERAA","ERAA-WS25","DE","CD_ONR","Inelastic profile",3988
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS26","All_years_ERAA","ERAA-WS26","DE","CD_ONR","Inelastic profile",4043
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS27","All_years_ERAA","ERAA-WS27","DE","CD_ONR","Inelastic profile",4047
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS28","All_years_ERAA","ERAA-WS28","DE","CD_ONR","Inelastic profile",3941
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS29","All_years_ERAA","ERAA-WS29","DE","CD_ONR","Inelastic profile",3790
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS30","All_years_ERAA","ERAA-WS30","DE","CD_ONR","Inelastic profile",3943
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS31","All_years_ERAA","ERAA-WS31","DE","CD_ONR","Inelastic profile",3910
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS32","All_years_ERAA","ERAA-WS32","DE","CD_ONR","Inelastic profile",3870
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS33","All_years_ERAA","ERAA-WS33","DE","CD_ONR","Inelastic profile",4442
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS34","All_years_ERAA","ERAA-WS34","DE","CD_ONR","Inelastic profile",4496
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS35","All_years_ERAA","ERAA-WS35","DE","CD_ONR","Inelastic profile",3960
+"DE:Inelastic_CD_ONR_All_years_ERAA_ERAA_WS36","All_years_ERAA","ERAA-WS36","DE","CD_ONR","Inelastic profile",4234
+"DE:Inelastic_CD_ONR_All_years_TYNDP_All__other__weather_scenarios","All_years_TYNDP","All (other) weather scenarios","DE","CD_ONR","Inelastic profile",4445
+"DK:Inelastic_MR_backpressure_Industrial_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","DK","MR-backpressure-Industrial","Inelastic profile",51
+"ES:Inelastic_OtherNon_RES_Gas_CCGT_old_2_All_years_ERAA_All__other__weather_scenarios","All_years_ERAA","All (other) weather scenarios","ES","OtherNon-RES/Gas/CCGT old 2","Inelastic profile",7911
+"ES:Inelastic_OtherNon_RES_Gas_CCGT_old_2_TYNDP_2030_All__other__weather_scenarios","TYNDP_2030","All (other) weather scenarios","ES","OtherNon-RES/Gas/CCGT old 2","Inelastic profile",7911
+"ES:Inelastic_OtherNon_RES_Gas_CCGT_old_2_TYNDP_2035_All__other__weather_scenarios","TYNDP_2035","All (other) weather scenarios","ES","OtherNon-RES/Gas/CCGT old 2","Inelastic profile",7911
+"ES:Inelastic_OtherNon_RES_Gas_CCGT_old_2_TYNDP_2040_All__other__weather_scenarios","TYNDP_2040","All (other) weather scenarios","ES","OtherNon-RES/Gas/CCGT old 2","Inelastic profile",7277
+"ES:Inelastic_OtherNon_RES_Gas_CCGT_old_2_TYNDP_2050_All__other__weather_scenarios","TYNDP_2050","All (other) weather scenarios","ES","OtherNon-RES/Gas/CCGT old 2","Inelastic profile",7277
+"GR:Inelastic_SmallCHP_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","GR","SmallCHP","Inelastic profile",1
+"IT:Inelastic_ITA_Inelastic_CenterSouth_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-CenterSouth","Inelastic profile",9
+"IT:Inelastic_ITA_Inelastic_North_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-North","Inelastic profile",11
+"IT:Inelastic_ITA_Inelastic_Sardinia_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-Sardinia","Inelastic profile",11
+"IT:Inelastic_ITA_Inelastic_Sicily_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-Sicily","Inelastic profile",12
+"IT:Inelastic_ITA_Inelastic_South_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-South","Inelastic profile",7
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS01","All_years_ERAA","ERAA-WS01","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5396
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS02","All_years_ERAA","ERAA-WS02","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5560
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS03","All_years_ERAA","ERAA-WS03","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5634
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS04","All_years_ERAA","ERAA-WS04","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5631
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS05","All_years_ERAA","ERAA-WS05","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5286
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS06","All_years_ERAA","ERAA-WS06","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5707
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS07","All_years_ERAA","ERAA-WS07","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5902
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS08","All_years_ERAA","ERAA-WS08","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",6029
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS09","All_years_ERAA","ERAA-WS09","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5887
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS10","All_years_ERAA","ERAA-WS10","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",6253
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS11","All_years_ERAA","ERAA-WS11","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5794
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS12","All_years_ERAA","ERAA-WS12","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5746
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS13","All_years_ERAA","ERAA-WS13","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5616
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS14","All_years_ERAA","ERAA-WS14","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5592
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS15","All_years_ERAA","ERAA-WS15","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5059
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS16","All_years_ERAA","ERAA-WS16","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",6019
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS17","All_years_ERAA","ERAA-WS17","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5644
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS18","All_years_ERAA","ERAA-WS18","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5394
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS19","All_years_ERAA","ERAA-WS19","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5102
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS20","All_years_ERAA","ERAA-WS20","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5723
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS21","All_years_ERAA","ERAA-WS21","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5666
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS22","All_years_ERAA","ERAA-WS22","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",6025
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS23","All_years_ERAA","ERAA-WS23","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5602
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS24","All_years_ERAA","ERAA-WS24","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5727
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS25","All_years_ERAA","ERAA-WS25","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5709
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS26","All_years_ERAA","ERAA-WS26","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5689
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS27","All_years_ERAA","ERAA-WS27","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5622
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS28","All_years_ERAA","ERAA-WS28","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5523
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS29","All_years_ERAA","ERAA-WS29","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5649
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS30","All_years_ERAA","ERAA-WS30","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5530
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS31","All_years_ERAA","ERAA-WS31","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5341
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS32","All_years_ERAA","ERAA-WS32","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5846
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS33","All_years_ERAA","ERAA-WS33","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5421
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS34","All_years_ERAA","ERAA-WS34","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5778
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS35","All_years_ERAA","ERAA-WS35","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5529
+"PL:Inelastic_Virtual_curve_id_Climate_dependent_other_non_RES_Band_1_All_years_ERAA_ERAA_WS36","All_years_ERAA","ERAA-WS36","PL","Virtual_curve_id_Climate_dependent_other_non-RES_Band_1","Inelastic profile",5499
+"PL:Inelastic_Virtual_curve_id_Zero_Cost_Non_market_Other_non_RES_1__capacity__MW__All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PL","Virtual_curve_id_Zero_Cost/Non-market_Other_non-RES_1__capacity_(MW)","Inelastic profile",6119
+"PT:Inelastic_Non_market_Other_non_RES_2028_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Non-market_Other_non-RES_2028","Inelastic profile",7123
+"PT:Inelastic_Non_market_Other_non_RES_2030_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Non-market_Other_non-RES_2030","Inelastic profile",7303
+"PT:Inelastic_Non_market_Other_non_RES_2033_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Non-market_Other_non-RES_2033","Inelastic profile",7303
+"PT:Inelastic_Non_market_Other_non_RES_2035_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Non-market_Other_non-RES_2035","Inelastic profile",7369
+"PT:Inelastic_Non_market_Other_non_RES_2040_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Non-market_Other_non-RES_2040","Inelastic profile",7165
+"SI:Inelastic_NEK_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SI","NEK","Inelastic profile",1
+"SI:Inelastic_Nonstop_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SI","Nonstop 1","Inelastic profile",1
+"SK:Inelastic_AmY_MstRun_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","AmY_MstRun_1","Inelastic profile",12
+"SK:Inelastic_BA2_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","BA2_MstRun","Inelastic profile",4789
+"SK:Inelastic_BATV_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","BATV_MstRun","Inelastic profile",1924
+"SK:Inelastic_BATZ_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","BATZ_MstRun","Inelastic profile",1955
+"SK:Inelastic_BaW_MstRun_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","BaW_MstRun_1","Inelastic profile",5812
+"SK:Inelastic_BuA_MstRun_2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","BuA_MstRun_2","Inelastic profile",1
+"SK:Inelastic_BuL_MstRun_2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","BuL_MstRun_2","Inelastic profile",3
+"SK:Inelastic_ChE_MsTRun_4_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ChE_MsTRun_4","Inelastic profile",4178
+"SK:Inelastic_ChT_MstRun_7_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ChT_MstRun_7","Inelastic profile",4995
+"SK:Inelastic_CmE_MstRun_9_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","CmE_MstRun_9","Inelastic profile",3756
+"SK:Inelastic_DuS_MstRun_8_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","DuS_MstRun_8","Inelastic profile",118
+"SK:Inelastic_GtR_MstRun_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","GtR_MstRun_1","Inelastic profile",8362
+"SK:Inelastic_KE_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","KE_MstRun","Inelastic profile",8172
+"SK:Inelastic_LV_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","LV_MstRun","Inelastic profile",8679
+"SK:Inelastic_MT_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","MT_MstRun","Inelastic profile",7956
+"SK:Inelastic_MoN_MsTRun_3_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","MoN_MsTRun_3","Inelastic profile",6783
+"SK:Inelastic_ORES1_2018_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES1_2018","Inelastic profile",3580
+"SK:Inelastic_ORES1_2019_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES1_2019","Inelastic profile",3580
+"SK:Inelastic_ORES1_2020_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES1_2020","Inelastic profile",3580
+"SK:Inelastic_ORES1_2021_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES1_2021","Inelastic profile",3580
+"SK:Inelastic_ORES2_2018_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2018","Inelastic profile",8412
+"SK:Inelastic_ORES2_2019_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2019","Inelastic profile",8412
+"SK:Inelastic_ORES2_2020_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2020","Inelastic profile",8412
+"SK:Inelastic_ORES2_2021_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2021","Inelastic profile",8412
+"SK:Inelastic_ORES2_2022_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2022","Inelastic profile",8412
+"SK:Inelastic_ORES2_2023_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2023","Inelastic profile",8412
+"SK:Inelastic_ORES2_2024_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2024","Inelastic profile",8412
+"SK:Inelastic_ORES2_2025_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2025","Inelastic profile",8412
+"SK:Inelastic_ORES2_2026_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2026","Inelastic profile",8412
+"SK:Inelastic_ORES2_2027_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2027","Inelastic profile",8412
+"SK:Inelastic_ORES2_2028_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2028","Inelastic profile",8412
+"SK:Inelastic_ORES2_2029_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2029","Inelastic profile",8412
+"SK:Inelastic_ORES2_2030_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2030","Inelastic profile",8412
+"SK:Inelastic_ORES2_2031_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2031","Inelastic profile",8412
+"SK:Inelastic_ORES2_2032_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2032","Inelastic profile",8412
+"SK:Inelastic_ORES2_2033_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2033","Inelastic profile",8412
+"SK:Inelastic_ORES2_2034_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2034","Inelastic profile",8412
+"SK:Inelastic_ORES2_2035_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2035","Inelastic profile",8412
+"SK:Inelastic_ORES2_2036_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2036","Inelastic profile",8412
+"SK:Inelastic_ORES2_2037_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2037","Inelastic profile",8412
+"SK:Inelastic_ORES2_2038_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2038","Inelastic profile",8412
+"SK:Inelastic_ORES2_2039_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2039","Inelastic profile",8412
+"SK:Inelastic_ORES2_2040_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ORES2_2040","Inelastic profile",8412
+"SK:Inelastic_PB_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","PB_MstRun","Inelastic profile",8411
+"SK:Inelastic_PdB_MstRun_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","PdB_MstRun_1","Inelastic profile",8543
+"SK:Inelastic_UsS_MstRun_5_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","UsS_MstRun_5","Inelastic profile",9
+"SK:Inelastic_ZA_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ZA_MstRun","Inelastic profile",7787
+"SK:Inelastic_ZV_MstRun_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ZV_MstRun","Inelastic profile",6539
+"SK:Inelastic_ZsN_MstRun_6_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","ZsN_MstRun_6","Inelastic profile",8216
