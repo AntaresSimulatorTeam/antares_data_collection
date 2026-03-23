@@ -19,17 +19,13 @@ from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
-    BIOMASS_CLUSTER_SUFFIX,
-    BIOMASS_SNCD_FUEL_VALUE,
-    DEFAULT_DECOMMISSIONING_DATE,
-    THERMAL_INPUT_FILE,
+    InputThermalColumns,
 )
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
     P_COLUMNS,
     P_COLUMNS_WINTER,
     SPECIFIC_PARAM_FOLDER,
-    InputThermalColumns,
     OutputThermalSpecificColumns,
     weighted_avg,
 )
@@ -39,154 +35,15 @@ from antares.data_collection.thermal.specific_param.constants import (
 class ThermalSpecificParamParser:
     def __init__(
         self,
-        input_folder: Path,
         output_folder: Path,
-        op_stat_values: list[str],
         main_params: MainParams,
         years: list[int],
         scenario_name: str,
     ):
-        self.input_folder = input_folder
         self.output_folder = output_folder
-        self.op_stat_values = op_stat_values
         self.main_params = main_params
         self.years = years
         self.scenario_name = scenario_name
-
-    def _read_input_file(self) -> pd.DataFrame:
-        input_file_path = self.input_folder.joinpath(THERMAL_INPUT_FILE)
-        if not input_file_path.exists():
-            raise ValueError(f"Thermal input file {input_file_path} not found")
-
-        # Checks that all expected columns exist
-        df = pd.read_csv(input_file_path)
-        existing_cols = set(df.columns)
-        expected_cols = list(InputThermalColumns)
-        for expected_column in expected_cols:
-            if expected_column not in existing_cols:
-                raise ValueError(f"Column {expected_column} not found in {input_file_path}")
-
-        # Return the dataframe with the useful columns only
-        return df[expected_cols]
-
-    def _filter_values_based_on_op_stat(self, df: pd.DataFrame) -> pd.DataFrame:
-        """We want to keep only the lines were the OP_STAT value matches the user given ones"""
-        if not self.op_stat_values:
-            return df
-        df = df[df[InputThermalColumns.OP_STAT].isin(self.op_stat_values)]
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            raise ValueError(f"The given op_stat values {self.op_stat_values} are not present in the dataframe")
-        return df
-
-    def _filter_non_declared_areas(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
-        We don't want to consider them.
-        We simply log a message for each area we find in this case
-        """
-        all_market_nodes = set(df[InputThermalColumns.MARKET_NODE])
-        missing_nodes = []
-        for node in all_market_nodes:
-            antares_code = self.main_params.get_antares_code(node)
-            if not antares_code:
-                missing_nodes.append(node)
-        return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
-
-    def _filter_values_based_on_study_scenarios(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Using MainParams and the user given years, we retrieve the study scenarios we have to consider.
-        Other scenarios present in the input file will be ignored.
-        """
-        scenario_types = list(self.main_params.get_scenario_types(years=self.years))
-
-        if not scenario_types:
-            return df
-
-        df = df[df[InputThermalColumns.STUDY_SCENARIO].str.contains("|".join(scenario_types), case=False, na=False)]
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            raise ValueError(f"No input data matched the given study scenario for the given years {self.years}")
-        return df
-
-    def _filter_values_based_on_commission_date(self, df: pd.DataFrame) -> pd.DataFrame:
-        if not self.years:
-            return df
-
-        # Dates objects are stored as Strings for the moment, we have to change this to perform checks.
-        df[InputThermalColumns.COMMISSIONING_DATE] = pd.to_datetime(df[InputThermalColumns.COMMISSIONING_DATE])
-
-        # Some values might be missing inside `DECOMMISSIONING_DATE_EXPECTED`.
-        # If so, we should consider the decommissioning year to be 2100.
-        df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] = pd.to_datetime(
-            df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
-        ).fillna(value=DEFAULT_DECOMMISSIONING_DATE)
-
-        # # Some rows are exactly the same except for the capacity.
-        # # We want to merge them by summing their capacity as in the end they'll be merged for PEGASE format
-        # columns_to_group_on = df.columns.drop(InputThermalColumns.NET_MAX_GEN_CAP).tolist()
-        # df = df.groupby(columns_to_group_on, as_index=False, dropna=False).sum()
-        #
-        # filtered_dfs = []
-        # for commissioning_limits in self._get_starting_and_ending_timestamps():
-        #     # For each year we only keep the values with fitting dates
-        #     filtered_df = df.loc[
-        #         (df[
-        #              InputThermalColumns.COMMISSIONING_DATE] <= commissioning_limits.last_possible_commissioning_date)
-        #         & (
-        #                 df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED]
-        #                 >= commissioning_limits.earliest_possible_decommissioning_date
-        #         )
-        #         ]
-        #     filtered_dfs.append(filtered_df)
-        #
-        # # In the end we concatenate them and drop duplicated lines
-        # df = pd.concat(filtered_dfs).drop_duplicates().reset_index(drop=True)
-
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            msg = f"No input data matched the given (de)commissioning dates for the given years {self.years}"
-            raise ValueError(msg)
-        return df
-
-    def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
-        """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
-        return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
-
-    def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
-        cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
-        df[ANTARES_CLUSTER_NAME_COLUMN] = self.main_params.get_clusters_bp(cluster_list)
-        return df
-
-    def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        If the column `SNCD_FUEL` is set to `Bio`, we have to split the PEMMDB Cluster into 2 Antares ones.
-        We split its capacity based on its `SNCD_FUEL_RT` value.
-        """
-        # Create a boolean mask for biomass rows
-        biomass_mask = df[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE
-
-        # Get the biomass rows
-        biomass_rows = df[biomass_mask].copy()
-
-        # Create new biomass lines
-        biomass_rows[ANTARES_CLUSTER_NAME_COLUMN] += f" {BIOMASS_CLUSTER_SUFFIX}"
-        biomass_rows[InputThermalColumns.NET_MAX_GEN_CAP] *= biomass_rows[InputThermalColumns.SCND_FUEL_RT]
-
-        # Update the original rows
-        df.loc[biomass_mask, InputThermalColumns.NET_MAX_GEN_CAP] *= (
-            1 - df.loc[biomass_mask, InputThermalColumns.SCND_FUEL_RT]
-        )
-
-        # Concatenate the original and new biomass rows
-        df = pd.concat([df, biomass_rows], ignore_index=True)
-
-        return df
-
-    def _add_code_antares_colum(self, df: pd.DataFrame) -> pd.DataFrame:
-        node_list = df[InputThermalColumns.MARKET_NODE].tolist()
-        df[ANTARES_NODE_NAME_COLUMN] = self.main_params.get_antares_codes(node_list)
-        return df
 
     def _update_existing_columns_with_commondata(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -436,23 +293,23 @@ class ThermalSpecificParamParser:
                     index=False,
                 )
 
-    def build_specific_param(self) -> None:
-        input_df = self._read_input_file()
-        df = self._filter_values_based_on_op_stat(input_df)
-        df = self._filter_values_based_on_study_scenarios(df)
-
-        df = self._filter_non_declared_areas(df)
-
-        df = self._filter_values_based_on_commission_date(df)
-        df = self._add_antares_cluster_name_colum(df)
-        df = self._filter_values_based_on_net_max_gen_cap(df)
+    def build_thermal_specific_param(self, df: pd.DataFrame) -> None:
+        # df = self._filter_values_based_on_op_stat(input_df)
+        # df = self._filter_values_based_on_study_scenarios(df)
+        #
+        # df = self._filter_non_declared_areas(df)
+        #
+        # df = self._filter_values_based_on_commission_date(df)
+        # df = self._add_antares_cluster_name_colum(df)
+        # df = self._filter_values_based_on_net_max_gen_cap(df)
 
         df = self._update_existing_columns_with_commondata(df)
 
-        df = self._split_clusters_with_biomass_rule(df)
-        df = self._filter_values_based_on_net_max_gen_cap(df)
+        # df = self._split_clusters_with_biomass_rule(df)
+        # df = self._filter_values_based_on_net_max_gen_cap(df)
+        #
+        # df = self._add_code_antares_colum(df)
 
-        df = self._add_code_antares_colum(df)
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
         self._export_specific_param_dataframe(df)

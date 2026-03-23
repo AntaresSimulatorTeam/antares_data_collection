@@ -35,32 +35,6 @@ def weighted_avg(df: pd.DataFrame, value_col: str, weight_col: str) -> float:
     return float(np.average(df[value_col], weights=df[weight_col]))
 
 
-class InputThermalColumns(StrEnum):
-    STUDY_SCENARIO = "STUDY_SCENARIO"
-    MARKET_NODE = "MARKET_NODE"
-    COMMISSIONING_DATE = "COMMISSIONING_DATE"
-    DECOMMISSIONING_DATE_EXPECTED = "DECOMMISSIONING_DATE_EXPECTED"
-    OP_STAT = "OP_STAT"
-    SCND_FUEL = "SCND_FUEL"
-    SCND_FUEL_RT = "SCND_FUEL_RT"
-    NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
-    PEMMDB_TECHNOLOGY = "PEMMDB_TECHNOLOGY"
-
-    # added for 'specif param' part
-    STD_EFF_NCV = "STD_EFF_NCV"
-    FORCED_OUTAGE_RATE = "FORCED_OUTAGE_RATE"
-    MEAN_TIME_REPAIR = "MEAN_TIME_REPAIR"
-    PLAN_OUTAGE_ANNUAL_DAYS = "PLAN_OUTAGE_ANNUAL_DAYS"
-    PLAN_OUTAGE_WINTER = "PLAN_OUTAGE_WINTER"
-    NET_MIN_STAB_GEN = "NET_MIN_STAB_GEN"
-
-    GRP_MRUN_CURVE_ID = "GRP_MRUN_CURVE_ID"
-    GEN_UNT_MRUN_CURVE_ID = "GEN_UNT_MRUN_CURVE_ID"
-    GEN_UNT_INELASTIC_ID = "GEN_UNT_INELASTIC_ID"
-    GEN_UNT_D_CURVE_ID = "GEN_UNT_D_CURVE_ID"
-    GRP_D_CURVE_ID = "GRP_D_CURVE_ID"
-
-
 class OutputThermalSpecificColumns(StrEnum):
     NODE = "node"
     CLUSTER = "Cluster"
