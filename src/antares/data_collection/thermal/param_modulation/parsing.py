@@ -81,7 +81,7 @@ class TimeSeriesAndClusterPair:
 ClusterGroupTsRepartition: TypeAlias = dict[ZoneId, dict[ClusterId, list[TimeSeriesAndClusterPair]]]
 
 
-class ThermalSpecificParametersParser:
+class ThermalParamModulationParser:
     def __init__(self, input_folder: Path, output_folder: Path, main_params: MainParams, years: list[int]):
         self.input_folder = input_folder
         self.output_folder = output_folder
@@ -356,7 +356,7 @@ class ThermalSpecificParametersParser:
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year}.csv"
         write_csv_file(file_path, df)
 
-    def build_thermal_specific_parameters(self, thermal_df: pd.DataFrame) -> None:
+    def build_param_modulation(self, thermal_df: pd.DataFrame) -> None:
         # Parse Index files
         inelastic_index_df = self._parse_inelastic_index()
         group_must_run_index_df = self._parse_group_must_run_index()
