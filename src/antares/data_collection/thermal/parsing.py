@@ -24,7 +24,10 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
-from antares.data_collection.thermal.param_modulation.parsing import ThermalSpecificParametersParser
+from antares.data_collection.thermal.param_modulation.parsing import (
+    ThermalParamModulationParser,
+)
+from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from antares.data_collection.thermal.utils import (
     filter_input_based_on_study_scenarios,
     filter_thermal_input_file_based_on_commission_date,
@@ -149,6 +152,10 @@ class ThermalParser:
         parser = ThermalInstallerPowerParser(self.output_folder, self.main_params, self.years)
         parser.build_thermal_installed_power(self.filtered_dataframe)
 
-    def build_specific_parameters(self) -> None:
-        parser = ThermalSpecificParametersParser(self.input_folder, self.output_folder, self.main_params, self.years)
-        parser.build_thermal_specific_parameters(self.filtered_dataframe)
+    def build_param_modulation(self) -> None:
+        parser = ThermalParamModulationParser(self.input_folder, self.output_folder, self.main_params, self.years)
+        parser.build_param_modulation(self.filtered_dataframe)
+
+    def build_specific_param(self) -> None:
+        parser = ThermalSpecificParamParser(self.output_folder, self.main_params, self.years)
+        parser.build_thermal_specific_param(self.filtered_dataframe)
