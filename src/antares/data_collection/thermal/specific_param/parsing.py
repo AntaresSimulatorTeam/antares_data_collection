@@ -19,6 +19,7 @@ from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
+    BIOMASS_CLUSTER_SUFFIX,
     InputThermalColumns,
 )
 from antares.data_collection.thermal.specific_param.constants import (
@@ -26,6 +27,7 @@ from antares.data_collection.thermal.specific_param.constants import (
     P_COLUMNS,
     P_COLUMNS_WINTER,
     SPECIFIC_PARAM_FOLDER,
+    SPECIFIC_PARAM_NAME_FILE,
     OutputThermalSpecificColumns,
     weighted_avg,
 )
@@ -33,17 +35,10 @@ from antares.data_collection.thermal.specific_param.constants import (
 
 # TODO most of method are similar to installed power parser, we should refactor them
 class ThermalSpecificParamParser:
-    def __init__(
-        self,
-        output_folder: Path,
-        main_params: MainParams,
-        years: list[int],
-        scenario_name: str,
-    ):
+    def __init__(self, output_folder: Path, main_params: MainParams, years: list[int]):
         self.output_folder = output_folder
         self.main_params = main_params
         self.years = years
-        self.scenario_name = scenario_name
 
     def _update_existing_columns_with_commondata(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -108,6 +103,10 @@ class ThermalSpecificParamParser:
     ) -> pd.DataFrame:
         df_to_fill = dftofill.copy()
         clusters = df_to_fill.loc[mask, ANTARES_CLUSTER_NAME_COLUMN].tolist()
+
+        # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
+        clusters = [cluster.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}") for cluster in clusters]
+
         values = [getattr(x, attr) for x in self.main_params.get_antares_clusters_technology_and_fuel(clusters)]
         df_to_fill.loc[mask, column] = values
 
@@ -276,7 +275,7 @@ class ThermalSpecificParamParser:
         parent_dir = self.output_folder / SPECIFIC_PARAM_FOLDER
         parent_dir.mkdir(parents=True, exist_ok=True)
 
-        output_path = parent_dir / f"specific_param_{self.scenario_name}.xlsx"
+        output_path = parent_dir / SPECIFIC_PARAM_NAME_FILE
 
         with pd.ExcelWriter(output_path) as writer:
             for year, year_df in df.sort_values("YEAR").groupby("YEAR"):

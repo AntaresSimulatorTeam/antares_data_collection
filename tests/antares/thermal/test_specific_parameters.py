@@ -24,12 +24,7 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # Build the thermal specific parameters files
     parser = ThermalParser(
-        RESOURCE_PATH,
-        tmp_path,
-        ["Available on market", "Inelastic supply / fixed profile"],
-        main_params,
-        [2030, 2035],
-        "test",
+        RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
     start = time.time()
     parser.build_specific_parameters()

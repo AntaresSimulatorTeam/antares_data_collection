@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import time
 
 from pathlib import Path
 
@@ -28,11 +29,15 @@ def test_nominal_case(tmp_path: Path) -> None:
     # Build a thermal specific param file
     op_stat_filter = ["Available on market", "Inelastic supply / fixed profile"]
 
-    parser = ThermalParser(RESOURCE_PATH, tmp_path, op_stat_filter, main_params, [2030, 2035], "test")
+    parser = ThermalParser(RESOURCE_PATH, tmp_path, op_stat_filter, main_params, [2030, 2035])
+
+    start = time.time()
     parser.build_specific_param()
+    end = time.time()
+    print("Duration Specific param", end - start)
 
     # Asserts the file is created
-    generated_file_path = tmp_path / SPECIFIC_PARAM_FOLDER / "specific_param_test.xlsx"
+    generated_file_path = tmp_path / SPECIFIC_PARAM_FOLDER / "specific_param_PEMMDB.xlsx"
     assert generated_file_path.exists()
 
     # read Excel workbook, one sheet by year

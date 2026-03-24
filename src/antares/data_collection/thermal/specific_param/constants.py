@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 
 SPECIFIC_PARAM_FOLDER = Path("thermal") / "technicalParameters"
+SPECIFIC_PARAM_NAME_FILE = "specific_param_PEMMDB.xlsx"
 
 
 def weighted_avg(df: pd.DataFrame, value_col: str, weight_col: str) -> float:

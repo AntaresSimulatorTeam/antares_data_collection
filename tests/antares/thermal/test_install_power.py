@@ -26,12 +26,7 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # Build a thermal installed power file
     parser = ThermalParser(
-        RESOURCE_PATH,
-        tmp_path,
-        ["Available on market", "Inelastic supply / fixed profile"],
-        main_params,
-        [2030, 2035],
-        "test",
+        RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
     parser.build_installed_power()
 
