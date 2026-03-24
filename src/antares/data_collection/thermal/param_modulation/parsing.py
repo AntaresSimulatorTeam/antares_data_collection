@@ -43,6 +43,7 @@ from antares.data_collection.thermal.param_modulation.constants import (
     TECHNICAL_PARAMS_FOLDER,
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
+    OutputHoursColumns,
 )
 from antares.data_collection.thermal.utils import (
     filter_input_based_on_study_scenarios,
@@ -316,7 +317,7 @@ class ThermalParamModulationParser:
 
         return result
 
-    def _build_pegase_dataframe(self, data_repartition: ClusterGroupTsRepartition) -> pd.DataFrame:
+    def _build_pegase_dataframe(self, data_repartition: ClusterGroupTsRepartition, year: int) -> pd.DataFrame:
         pegase_df_as_dict = {}
         # Sort values for output reproduction
         for zone in sorted(data_repartition):
@@ -335,24 +336,28 @@ class ThermalParamModulationParser:
 
         df = pd.DataFrame.from_dict(pegase_df_as_dict)
 
-        # todo
         # Add the Hours columns
-        # First hour is 1st July at midnight according to the SPEC but in the file I see it's the 1st of January.
-        df["heure"] = range(0, len(df))
-        """
-        colonne DATE_HEURE : Date au format 01/07/2028  00:00:00
-        colonne heure : numéro de l'heure dans l'année (pour le 1er juillet année N cest heure 0, pour le 30 Juin de l'année N+1 cest 8760)
-        """
+        df[OutputHoursColumns.HOUR] = range(1, len(df) + 1)
+        start_time = pd.to_datetime(f"01/01/{year} 00:00:00")
+        df[OutputHoursColumns.DATE] = [start_time + pd.Timedelta(hours=i) for i in range(len(df))]
 
-        return pd.DataFrame.from_dict(pegase_df_as_dict)
+        # We should put them as the first 2 columns for the user readability
+        df = df[[OutputHoursColumns.DATE, OutputHoursColumns.HOUR] + list(df.columns)]
+
+        # We want our dataframe to start on the 1st of July at midnight for PEGASE.
+        # So we have to reindex it at the right index
+        time_delta = pd.Timestamp(year=year, month=7, day=1, hour=0) - pd.Timestamp(year=year, month=1, day=1, hour=0)
+        first_index = time_delta.days * 24
+        new_index = list(range(first_index, len(df))) + list(range(1, first_index))
+        return df.reindex(new_index)
 
     def _write_must_run_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
-        df = self._build_pegase_dataframe(data_repartition)
+        df = self._build_pegase_dataframe(data_repartition, year)
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
         write_csv_file(file_path, df)
 
     def _write_capacity_modulation_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
-        df = self._build_pegase_dataframe(data_repartition)
+        df = self._build_pegase_dataframe(data_repartition, year)
         file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year}.csv"
         write_csv_file(file_path, df)
 
