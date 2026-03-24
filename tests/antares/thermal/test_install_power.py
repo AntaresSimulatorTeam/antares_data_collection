@@ -36,6 +36,6 @@ def test_nominal_case(tmp_path: Path) -> None:
     generated_df = pd.read_excel(generated_file_path)
 
     # Compare its content with the expected one
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal_installed_power.xlsx"
+    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "thermal_installed_power.xlsx"
     expected_df = pd.read_excel(expected_file_path)
     pd.testing.assert_frame_equal(generated_df, expected_df, check_dtype=False)
