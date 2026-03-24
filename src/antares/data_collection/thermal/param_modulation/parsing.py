@@ -202,7 +202,7 @@ class ThermalParamModulationParser:
             # Group Must Run column
             grp_must_run_value: str = group[0]  # type: ignore
             if not pd.isna(grp_must_run_value):
-                if grp_must_run_value in index_to_ts.group_must_run.index[zone]:
+                if grp_must_run_value in index_to_ts.group_must_run.index.get(zone, {}):
                     curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.group_must_run.data[curve_id]
@@ -214,7 +214,7 @@ class ThermalParamModulationParser:
             # Must Run column
             must_run_value: str = group[1]  # type: ignore
             if not pd.isna(must_run_value):
-                if must_run_value in index_to_ts.must_run.index[zone]:
+                if must_run_value in index_to_ts.must_run.index.get(zone, {}):
                     curve_ids = index_to_ts.must_run.index[zone][must_run_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.must_run.data[curve_id]
@@ -226,7 +226,7 @@ class ThermalParamModulationParser:
             # Inelastic column
             inelastic_value: str = group[2]  # type: ignore
             if not pd.isna(inelastic_value):
-                if inelastic_value in index_to_ts.inelastic.index[zone]:
+                if inelastic_value in index_to_ts.inelastic.index.get(zone, {}):
                     curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.inelastic.data[curve_id]
@@ -273,7 +273,7 @@ class ThermalParamModulationParser:
             # Group Derating column
             grp_derating_value: str = group[0]  # type: ignore
             if not pd.isna(grp_derating_value):
-                if grp_derating_value in index_to_ts.group_derating.index[zone]:
+                if grp_derating_value in index_to_ts.group_derating.index.get(zone, {}):
                     curve_ids = index_to_ts.group_derating.index[zone][grp_derating_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.group_derating.data[curve_id]
@@ -285,7 +285,7 @@ class ThermalParamModulationParser:
             # Derating column
             derating_value: str = group[1]  # type: ignore
             if not pd.isna(derating_value):
-                if derating_value in index_to_ts.derating.index[zone]:
+                if derating_value in index_to_ts.derating.index.get(zone, {}):
                     curve_ids = index_to_ts.derating.index[zone][derating_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.derating.data[curve_id]
@@ -297,7 +297,7 @@ class ThermalParamModulationParser:
             # Inelastic column
             inelastic_value: str = group[2]  # type: ignore
             if not pd.isna(inelastic_value):
-                if inelastic_value in index_to_ts.inelastic.index[zone]:
+                if inelastic_value in index_to_ts.inelastic.index.get(zone, {}):
                     curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
                     for curve_id in curve_ids:
                         ts = index_to_ts.inelastic.data[curve_id]
