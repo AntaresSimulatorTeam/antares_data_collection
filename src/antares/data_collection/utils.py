@@ -12,11 +12,12 @@
 from pathlib import Path
 
 import pandas as pd
+import polars as pl
 
 MAX_DECIMAL_DIGITS = 3
-FLOAT_FORMAT = f"%.{MAX_DECIMAL_DIGITS}f"
 
 
 def write_csv_file(file_path: Path, df: pd.DataFrame) -> None:
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(file_path, sep=",", float_format=FLOAT_FORMAT, index=False)
+    polars_df = pl.from_pandas(df)
+    polars_df.write_csv(file_path, separator=",", float_precision=MAX_DECIMAL_DIGITS)
