@@ -45,22 +45,22 @@ def test_nominal_case(tmp_path: Path) -> None:
     assert mr_2030_path.exists()
     assert mr_2035_path.exists()
 
-    generated_cm_2030 = pd.read_csv(cm_2030_path, index_col=0)
-    generated_cm_2035 = pd.read_csv(cm_2035_path, index_col=0)
-    generated_mr_2030 = pd.read_csv(mr_2030_path, index_col=0)
-    generated_mr_2035 = pd.read_csv(mr_2035_path, index_col=0)
+    generated_cm_2030 = pd.read_csv(cm_2030_path)
+    generated_cm_2035 = pd.read_csv(cm_2035_path)
+    generated_mr_2030 = pd.read_csv(mr_2030_path)
+    generated_mr_2035 = pd.read_csv(mr_2035_path)
 
     # Compare their contents with the expected ones
     expected_folder_path = RESOURCE_PATH / "expected_output_files" / "thermal"
 
-    expected_cm_2030 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2030.csv", index_col=0)
+    expected_cm_2030 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2030.csv")
     pd.testing.assert_frame_equal(generated_cm_2030, expected_cm_2030, check_dtype=False)
 
-    expected_cm_2035 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2035.csv", index_col=0)
+    expected_cm_2035 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2035.csv")
     pd.testing.assert_frame_equal(generated_cm_2035, expected_cm_2035, check_dtype=False)
 
-    expected_mr_2030 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2030.csv", index_col=0)
+    expected_mr_2030 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2030.csv")
     pd.testing.assert_frame_equal(generated_mr_2030, expected_mr_2030, check_dtype=False)
 
-    expected_mr_2035 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2035.csv", index_col=0)
+    expected_mr_2035 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2035.csv")
     pd.testing.assert_frame_equal(generated_mr_2035, expected_mr_2035, check_dtype=False)
