@@ -59,7 +59,7 @@ class ThermalInstallerPowerParser:
         for pattern, value in FUEL_MAPPING.items():
             if pattern in unit_name:
                 return value
-        return self.main_params.get_antares_cluster_technology_and_fuel(unit_name).fuel
+        return self.main_params.get_antares_cluster_common_data_params(unit_name).fuel
 
     def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         date_ranges = list(self._get_start_and_end_timestamps_for_outputs())
@@ -99,7 +99,7 @@ class ThermalInstallerPowerParser:
             for cluster in sorted(cluster_groups[area]):
                 # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
                 unit_name = cluster.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}")
-                technology = self.main_params.get_antares_cluster_technology_and_fuel(unit_name).technology
+                technology = self.main_params.get_antares_cluster_common_data_params(unit_name).technology
                 fuel = self._find_fuel(unit_name)
                 output_data[OutputThermalInstallPowerColumns.AREA] += 2 * [area]
                 output_data[OutputThermalInstallPowerColumns.FUEL] += 2 * [fuel]

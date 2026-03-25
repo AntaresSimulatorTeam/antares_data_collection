@@ -24,9 +24,7 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
-from antares.data_collection.thermal.param_modulation.parsing import (
-    ThermalParamModulationParser,
-)
+from antares.data_collection.thermal.param_modulation.parsing import ThermalParamModulationParser
 from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from antares.data_collection.thermal.utils import (
     filter_input_based_on_study_scenarios,

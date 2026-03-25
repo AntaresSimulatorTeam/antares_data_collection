@@ -33,7 +33,6 @@ from antares.data_collection.thermal.specific_param.constants import (
 )
 
 
-# TODO most of method are similar to installed power parser, we should refactor them
 class ThermalSpecificParamParser:
     def __init__(self, output_folder: Path, main_params: MainParams, years: list[int]):
         self.output_folder = output_folder
@@ -107,7 +106,7 @@ class ThermalSpecificParamParser:
         # We have to handle `Bio` clusters as we don't have their mapping inside the `MainParams` class
         clusters = [cluster.removesuffix(f" {BIOMASS_CLUSTER_SUFFIX}") for cluster in clusters]
 
-        values = [getattr(x, attr) for x in self.main_params.get_antares_clusters_technology_and_fuel(clusters)]
+        values = [getattr(x, attr) for x in self.main_params.get_antares_clusters_common_data_params(clusters)]
         df_to_fill.loc[mask, column] = values
 
         return df_to_fill

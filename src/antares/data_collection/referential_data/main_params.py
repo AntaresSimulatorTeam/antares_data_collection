@@ -149,13 +149,13 @@ class MainParams:
     def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
-    def get_antares_cluster_technology_and_fuel(self, antares_cluster: str) -> ClusterParams:
+    def get_antares_cluster_common_data_params(self, antares_cluster: str) -> ClusterParams:
         if antares_cluster not in self._cluster_antares:
             raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
         return self._cluster_antares[antares_cluster]
 
-    def get_antares_clusters_technology_and_fuel(self, antares_clusters: list[str]) -> list[ClusterParams]:
-        return [self.get_antares_cluster_technology_and_fuel(c) for c in antares_clusters]
+    def get_antares_clusters_common_data_params(self, antares_clusters: list[str]) -> list[ClusterParams]:
+        return [self.get_antares_cluster_common_data_params(c) for c in antares_clusters]
 
 
 def parse_main_params(file_path: Path) -> MainParams:
@@ -237,7 +237,7 @@ def parse_main_params(file_path: Path) -> MainParams:
     # Parse the `Common Data` sheet
     df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
     actual_cols = set(df.columns)
-    for common_col in [CommonDataColumnsNames.CLUSTER_BP, CommonDataColumnsNames.FUEL]:
+    for common_col in CommonDataColumnsNames:
         if common_col.value not in actual_cols:
             raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
 
