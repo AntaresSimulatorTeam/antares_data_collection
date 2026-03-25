@@ -293,22 +293,7 @@ class ThermalSpecificParamParser:
                 )
 
     def build_thermal_specific_param(self, df: pd.DataFrame) -> None:
-        # df = self._filter_values_based_on_op_stat(input_df)
-        # df = self._filter_values_based_on_study_scenarios(df)
-        #
-        # df = self._filter_non_declared_areas(df)
-        #
-        # df = self._filter_values_based_on_commission_date(df)
-        # df = self._add_antares_cluster_name_colum(df)
-        # df = self._filter_values_based_on_net_max_gen_cap(df)
-
         df = self._update_existing_columns_with_commondata(df)
-
-        # df = self._split_clusters_with_biomass_rule(df)
-        # df = self._filter_values_based_on_net_max_gen_cap(df)
-        #
-        # df = self._add_code_antares_colum(df)
-
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
         self._export_specific_param_dataframe(df)
