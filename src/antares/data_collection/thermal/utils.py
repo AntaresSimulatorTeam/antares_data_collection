@@ -35,6 +35,17 @@ def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.D
     return df[expected_columns]
 
 
+def filter_df_values_based_on_op_stat(filter_op_stat_values: list[str], df: pd.DataFrame) -> pd.DataFrame:
+    """We want to keep only the lines were the OP_STAT value matches the user given ones"""
+    if not filter_op_stat_values:
+        return df
+    df = df[df[InputThermalColumns.OP_STAT].isin(filter_op_stat_values)]
+    if df.empty:
+        # We want to raise as soon as possible to have a clear error msg
+        raise ValueError(f"The given op_stat values {filter_op_stat_values} are not present in the dataframe")
+    return df
+
+
 def get_starting_and_ending_timestamps_for_outputs(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
     """
     Implicit rule: For a given year, we have to consider the year starts in July of the previous year

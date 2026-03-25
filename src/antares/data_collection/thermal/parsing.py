@@ -26,6 +26,7 @@ from antares.data_collection.thermal.constants import (
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
 from antares.data_collection.thermal.param_modulation.parsing import ThermalParamModulationParser
 from antares.data_collection.thermal.utils import (
+    filter_df_values_based_on_op_stat,
     filter_input_based_on_study_scenarios,
     filter_thermal_input_file_based_on_commission_date,
     parse_input_file,
@@ -52,14 +53,7 @@ class ThermalParser:
         return parse_input_file(self.input_folder.joinpath(THERMAL_INPUT_FILE), list(InputThermalColumns))
 
     def _filter_values_based_on_op_stat(self, df: pd.DataFrame) -> pd.DataFrame:
-        """We want to keep only the lines were the OP_STAT value matches the user given ones"""
-        if not self.op_stat_values:
-            return df
-        df = df[df[InputThermalColumns.OP_STAT].isin(self.op_stat_values)]
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            raise ValueError(f"The given op_stat values {self.op_stat_values} are not present in the dataframe")
-        return df
+        return filter_df_values_based_on_op_stat(self.op_stat_values, df)
 
     def _filter_non_declared_areas(self, df: pd.DataFrame) -> pd.DataFrame:
         """
