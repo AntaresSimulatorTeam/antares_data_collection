@@ -100,6 +100,108 @@ def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dic
         parse_main_params(file_path=path_file)
 
 
+@pytest.mark.parametrize(
+    "column, invalid_value",
+    [
+        ("efficiency_default", 1.5),
+        ("FO_rate_default", -0.1),
+        ("PO_winter_default", 2),
+        ("min_stable_generation_default", -1),
+    ],
+)
+def test_common_data_ratio_validation(tmp_path: Path, column: str, invalid_value: int | float) -> None:
+    path_file = tmp_path / "MAIN_PARAMS.xlsx"
+
+    sheets = {
+        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
+        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
+        "CLUSTER": pd.DataFrame(
+            {
+                "TYPE": ["Thermal"],
+                "CLUSTER_PEMMDB": ["ok"],
+                "CLUSTER_BP": ["ok"],
+                "Technology thermal": ["tech"],
+            }
+        ),
+        "Common Data": pd.DataFrame(
+            {
+                "cluster_BP": ["ok"],
+                "Fuel": ["gas"],
+                "efficiency_default": [0.5],
+                "FO_rate_default": [0.5],
+                "FO_duration_default": [10],
+                "PO_duration_default": [10],
+                "PO_winter_default": [0.5],
+                "min_stable_generation_default": [0.5],
+            }
+        ),
+    }
+
+    # inject error
+    sheets["Common Data"].loc[0, column] = invalid_value
+
+    # write excel
+    with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
+        for name, df in sheets.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+
+    msg = f"Column '{column}' must be between 0 and 1"
+    with pytest.raises(ValueError, match=msg):
+        parse_main_params(file_path=path_file)
+
+
+@pytest.mark.parametrize(
+    "column, invalid_value",
+    [
+        ("FO_duration_default", 1.5),
+        ("PO_duration_default", -0.1),
+    ],
+)
+def test_common_data_int_validation(tmp_path: Path, column: str, invalid_value: float) -> None:
+    path_file = tmp_path / "MAIN_PARAMS.xlsx"
+
+    sheets = {
+        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
+        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
+        "CLUSTER": pd.DataFrame(
+            {
+                "TYPE": ["Thermal"],
+                "CLUSTER_PEMMDB": ["ok"],
+                "CLUSTER_BP": ["ok"],
+                "Technology thermal": ["tech"],
+            }
+        ),
+        "Common Data": pd.DataFrame(
+            {
+                "cluster_BP": ["ok"],
+                "Fuel": ["gas"],
+                "efficiency_default": [0.5],
+                "FO_rate_default": [0.5],
+                "FO_duration_default": [10],
+                "PO_duration_default": [10],
+                "PO_winter_default": [0.5],
+                "min_stable_generation_default": [0.5],
+            }
+        ),
+    }
+
+    # force cast to float to put invalid value without raise pandas error
+    INT_TEST_COLS = ["FO_duration_default", "PO_duration_default"]
+    sheets["Common Data"][INT_TEST_COLS] = sheets["Common Data"][INT_TEST_COLS].astype(float)
+
+    # inject error
+    sheets["Common Data"].loc[0, column] = invalid_value
+
+    # write excel
+    with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
+        for name, df in sheets.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+
+    msg = f"Column '{column}' must be integer"
+    with pytest.raises(ValueError, match=msg):
+        parse_main_params(file_path=path_file)
+
+
 def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     # Use real test case
     file_path = RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"

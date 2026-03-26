@@ -91,6 +91,32 @@ class ClusterParams:
     po_winter_default: float
     min_stable_generation_default: float
 
+    def __post_init__(self) -> None:
+        # ratio
+        for field_name, col_name in RATIO_FIELDS.items():
+            value = getattr(self, field_name)
+            if not (0 <= value <= 1):
+                raise ValueError(f"Column '{col_name}' must be between 0 and 1")
+
+        # integer
+        for field_name, col_name in INT_FIELDS.items():
+            value = getattr(self, field_name)
+            if not float(value).is_integer():
+                raise ValueError(f"Column '{col_name}' must be integer")
+
+
+RATIO_FIELDS = {
+    "efficiency_default": CommonDataColumnsNames.EFFICIENCY_DEFAULT.value,
+    "fo_rate_default": CommonDataColumnsNames.FO_RATE_DEFAULT.value,
+    "po_winter_default": CommonDataColumnsNames.PO_WINTER_DEFAULT.value,
+    "min_stable_generation_default": CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT.value,
+}
+
+INT_FIELDS = {
+    "fo_duration_default": CommonDataColumnsNames.FO_DURATION_DEFAULT.value,
+    "po_duration_default": CommonDataColumnsNames.PO_DURATION_DEFAULT.value,
+}
+
 
 @dataclass
 class MainParams:
