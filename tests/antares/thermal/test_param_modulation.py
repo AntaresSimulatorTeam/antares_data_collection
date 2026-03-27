@@ -22,10 +22,6 @@ from tests.conftest import RESOURCE_PATH
 
 
 def test_nominal_case(tmp_path: Path) -> None:
-
-    mr_R_2035 = pd.read_csv(RESOURCE_PATH / "expected_output_files" / "thermal" / "must_run_2035.csv", sep=";")
-
-
     # Use the real MainParams file
     main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
 

@@ -209,47 +209,25 @@ class ThermalParamModulationParser:
             should_write_the_series = True
             curve_id_exists_but_not_present_in_index = False
 
-            # Group Must Run column
-            grp_must_run_value: str = group[0]  # type: ignore
-            if not pd.isna(grp_must_run_value):
-                if grp_must_run_value in index_to_ts.group_must_run.index.get(zone, {}):
-                    curve_ids = index_to_ts.group_must_run.index[zone][grp_must_run_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.group_must_run.data[curve_id]
-                        ts_mean = ts.mean()
-                        if lowest_mean > ts_mean:
-                            final_ts = ts
-                            lowest_mean = ts_mean
-                else:
-                    curve_id_exists_but_not_present_in_index = True
+            group_index_to_internal_mapping = {
+                0: index_to_ts.group_must_run,
+                1: index_to_ts.must_run,
+                2: index_to_ts.inelastic,
+            }
 
-            # Must Run column
-            must_run_value: str = group[1]  # type: ignore
-            if not pd.isna(must_run_value):
-                if must_run_value in index_to_ts.must_run.index.get(zone, {}):
-                    curve_ids = index_to_ts.must_run.index[zone][must_run_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.must_run.data[curve_id]
-                        ts_mean = ts.mean()
-                        if lowest_mean > ts_mean:
-                            final_ts = ts
-                            lowest_mean = ts_mean
-                else:
-                    curve_id_exists_but_not_present_in_index = True
-
-            # Inelastic column
-            inelastic_value: str = group[2]  # type: ignore
-            if not pd.isna(inelastic_value):
-                if inelastic_value in index_to_ts.inelastic.index.get(zone, {}):
-                    curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.inelastic.data[curve_id]
-                        ts_mean = ts.mean()
-                        if lowest_mean > ts_mean:
-                            final_ts = ts
-                            lowest_mean = ts_mean
-                else:
-                    curve_id_exists_but_not_present_in_index = True
+            for group_index, internal_mapping in group_index_to_internal_mapping.items():
+                value: str = group[group_index]  # type: ignore
+                if not pd.isna(value):
+                    if value in internal_mapping.index.get(zone, {}):
+                        curve_ids = internal_mapping.index[zone][value]
+                        for curve_id in curve_ids:
+                            ts = internal_mapping.data[curve_id]
+                            ts_mean = ts.mean()
+                            if lowest_mean > ts_mean:
+                                final_ts = ts
+                                lowest_mean = ts_mean
+                    else:
+                        curve_id_exists_but_not_present_in_index = True
 
             # Use default value for empty rows
             if final_ts.empty:
@@ -296,47 +274,25 @@ class ThermalParamModulationParser:
             should_write_the_series = True
             curve_id_exists_but_not_present_in_index = False
 
-            # Group Derating column
-            grp_derating_value: str = group[0]  # type: ignore
-            if not pd.isna(grp_derating_value):
-                if grp_derating_value in index_to_ts.group_derating.index.get(zone, {}):
-                    curve_ids = index_to_ts.group_derating.index[zone][grp_derating_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.group_derating.data[curve_id]
-                        ts_mean = ts.mean()
-                        if lowest_mean < ts_mean:
-                            final_ts = ts
-                            lowest_mean = ts_mean
-                else:
-                    curve_id_exists_but_not_present_in_index = True
+            group_index_to_internal_mapping = {
+                0: index_to_ts.group_derating,
+                1: index_to_ts.derating,
+                2: index_to_ts.inelastic,
+            }
 
-            # Derating column
-            derating_value: str = group[1]  # type: ignore
-            if not pd.isna(derating_value):
-                if derating_value in index_to_ts.derating.index.get(zone, {}):
-                    curve_ids = index_to_ts.derating.index[zone][derating_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.derating.data[curve_id]
-                        ts_mean = ts.mean()
-                        if lowest_mean < ts_mean:
-                            final_ts = ts
-                            lowest_mean = ts_mean
-                else:
-                    curve_id_exists_but_not_present_in_index = True
-
-            # Inelastic column
-            inelastic_value: str = group[2]  # type: ignore
-            if not pd.isna(inelastic_value):
-                if inelastic_value in index_to_ts.inelastic.index.get(zone, {}):
-                    curve_ids = index_to_ts.inelastic.index[zone][inelastic_value]
-                    for curve_id in curve_ids:
-                        ts = index_to_ts.inelastic.data[curve_id]
-                        ts_mean = ts.mean()
-                        if lowest_mean < ts_mean:
-                            final_ts = ts
-                            lowest_mean = ts_mean
-                else:
-                    curve_id_exists_but_not_present_in_index = True
+            for group_index, internal_mapping in group_index_to_internal_mapping.items():
+                value: str = group[group_index]  # type: ignore
+                if not pd.isna(value):
+                    if value in internal_mapping.index.get(zone, {}):
+                        curve_ids = internal_mapping.index[zone][value]
+                        for curve_id in curve_ids:
+                            ts = internal_mapping.data[curve_id]
+                            ts_mean = ts.mean()
+                            if lowest_mean < ts_mean:
+                                final_ts = ts
+                                lowest_mean = ts_mean
+                    else:
+                        curve_id_exists_but_not_present_in_index = True
 
             # Use default value for empty rows
             if final_ts.empty:
