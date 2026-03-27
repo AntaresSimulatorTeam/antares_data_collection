@@ -22,6 +22,33 @@ from antares.data_collection.referential_data.main_params import ClusterParams, 
 from tests.conftest import RESOURCE_PATH
 
 
+def _build_mock_main_params_dict() -> dict[str, pd.DataFrame]:
+    return {
+        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
+        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
+        "CLUSTER": pd.DataFrame(
+            {
+                "TYPE": ["Thermal"],
+                "CLUSTER_PEMMDB": ["ok"],
+                "CLUSTER_BP": ["ok"],
+                "Technology thermal": ["tech"],
+            }
+        ),
+        "Common Data": pd.DataFrame(
+            {
+                "cluster_BP": ["ok"],
+                "Fuel": ["gas"],
+                "efficiency_default": [0.5],
+                "FO_rate_default": [0.5],
+                "FO_duration_default": [10],
+                "PO_duration_default": [10],
+                "PO_winter_default": [0.5],
+                "min_stable_generation_default": [0.5],
+            }
+        ),
+    }
+
+
 def test_parse_main_params_file_not_exist(tmp_path: Path) -> None:
     # given
     fake_path = tmp_path / "toto"
@@ -70,33 +97,86 @@ def test_parse_main_params_mandatory_sheets(
         {"CLUSTER": "Technology thermal"},
         {"Common Data": "cluster_BP"},
         {"Common Data": "Fuel"},
+        {"Common Data": "efficiency_default"},
+        {"Common Data": "FO_rate_default"},
+        {"Common Data": "FO_duration_default"},
+        {"Common Data": "PO_duration_default"},
+        {"Common Data": "PO_winter_default"},
+        {"Common Data": "min_stable_generation_default"},
     ],
 )
 def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dict[str, str]) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
+    mocked_main_params = _build_mock_main_params_dict()
 
-    sheets = {
-        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
-        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
-        "CLUSTER": pd.DataFrame(
-            {"TYPE": ["Thermal"], "CLUSTER_PEMMDB": ["ok"], "CLUSTER_BP": ["ok"], "Technology thermal": ["ok"]}
-        ),
-        "Common Data": pd.DataFrame({"Fuel": ["ok"], "cluster_BP": ["ok"]}),
-    }
     # Remove the column to create the issue
     data = list(missing_column.items())[0]
     key, value = data[0], data[1]
-    sheets[key].drop(value, axis=1, inplace=True)
+    mocked_main_params[key].drop(value, axis=1, inplace=True)
 
-    sheets["PAYS"].to_excel(path_file, sheet_name="PAYS", index=False)
-    del sheets["PAYS"]
+    mocked_main_params["PAYS"].to_excel(path_file, sheet_name="PAYS", index=False)
+    del mocked_main_params["PAYS"]
     with pd.ExcelWriter(path_file, engine="openpyxl", mode="a") as writer:
-        for sheet in sheets:
-            sheets[sheet].to_excel(writer, sheet_name=sheet, index=False)
+        for sheet in mocked_main_params:
+            mocked_main_params[sheet].to_excel(writer, sheet_name=sheet, index=False)
 
     # then
     msg = f"Column '{value}' not found inside sheet '{key}'"
     with pytest.raises(ValueError, match=re.escape(msg)):
+        parse_main_params(file_path=path_file)
+
+
+@pytest.mark.parametrize(
+    "column, invalid_value",
+    [
+        ("efficiency_default", 1.5),
+        ("FO_rate_default", -0.1),
+        ("PO_winter_default", 2),
+        ("min_stable_generation_default", -1),
+    ],
+)
+def test_common_data_ratio_validation(tmp_path: Path, column: str, invalid_value: int | float) -> None:
+    path_file = tmp_path / "MAIN_PARAMS.xlsx"
+    mocked_main_params = _build_mock_main_params_dict()
+
+    # inject error
+    mocked_main_params["Common Data"].loc[0, column] = invalid_value
+
+    # write excel
+    with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
+        for name, df in mocked_main_params.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+
+    msg = f"Column '{column}' must be between 0 and 1"
+    with pytest.raises(ValueError, match=msg):
+        parse_main_params(file_path=path_file)
+
+
+@pytest.mark.parametrize(
+    "column, invalid_value",
+    [
+        ("FO_duration_default", 1.5),
+        ("PO_duration_default", -0.1),
+    ],
+)
+def test_common_data_int_validation(tmp_path: Path, column: str, invalid_value: float) -> None:
+    path_file = tmp_path / "MAIN_PARAMS.xlsx"
+    mocked_main_params = _build_mock_main_params_dict()
+
+    # force cast to float to put invalid value without raise pandas error
+    INT_TEST_COLS = ["FO_duration_default", "PO_duration_default"]
+    mocked_main_params["Common Data"][INT_TEST_COLS] = mocked_main_params["Common Data"][INT_TEST_COLS].astype(float)
+
+    # inject error
+    mocked_main_params["Common Data"].loc[0, column] = invalid_value
+
+    # write excel
+    with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
+        for name, df in mocked_main_params.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+
+    msg = f"Column '{column}' must be integer"
+    with pytest.raises(ValueError, match=msg):
         parse_main_params(file_path=path_file)
 
 
@@ -337,50 +417,464 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     }
 
     assert main_params._cluster_antares == {
-        "CCGT CCS": ClusterParams(technology="CCGT", fuel="Gas"),
-        "CCGT CCS CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "CCGT H2": ClusterParams(technology="CCGT", fuel="H2"),
-        "CCGT H2 CHP": ClusterParams(technology="CHP", fuel="H2"),
-        "CCGT new": ClusterParams(technology="CCGT", fuel="Gas"),
-        "CCGT new CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "CCGT old 1": ClusterParams(technology="CCGT", fuel="Gas"),
-        "CCGT old 1 CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "CCGT old 2": ClusterParams(technology="CCGT", fuel="Gas"),
-        "CCGT old 2 CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "CCGT present 1": ClusterParams(technology="CCGT", fuel="Gas"),
-        "CCGT present 1 CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "CCGT present 2": ClusterParams(technology="CCGT", fuel="Gas"),
-        "CCGT present 2 CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "Gas conventional old 1": ClusterParams(technology="Gas conventional", fuel="Gas"),
-        "Gas conventional old 1 CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "Gas conventional old 2": ClusterParams(technology="Gas conventional", fuel="Gas"),
-        "Gas conventional old 2 CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "Hard coal new": ClusterParams(technology="Coal and lignite", fuel="Hard coal"),
-        "Hard coal new CHP": ClusterParams(technology="CHP", fuel="Hard coal"),
-        "Hard coal old 1": ClusterParams(technology="Coal and lignite", fuel="Hard coal"),
-        "Hard coal old 1 CHP": ClusterParams(technology="CHP", fuel="Hard coal"),
-        "Hard coal old 2": ClusterParams(technology="Coal and lignite", fuel="Hard coal"),
-        "Hard coal old 2 CHP": ClusterParams(technology="CHP", fuel="Hard coal"),
-        "Heavy oil old 1": ClusterParams(technology="Heavy oil", fuel="Oil"),
-        "Heavy oil old 1 CHP": ClusterParams(technology="CHP", fuel="Oil"),
-        "Heavy oil old 2": ClusterParams(technology="Heavy oil", fuel="Oil"),
-        "Heavy oil old 2 CHP": ClusterParams(technology="CHP", fuel="Oil"),
-        "Light oil": ClusterParams(technology="OCGT", fuel="Oil"),
-        "Light oil CHP": ClusterParams(technology="CHP", fuel="Oil"),
-        "Lignite new": ClusterParams(technology="Coal and lignite", fuel="Lignite"),
-        "Lignite new CHP": ClusterParams(technology="CHP", fuel="Lignite"),
-        "Lignite old 1": ClusterParams(technology="Coal and lignite", fuel="Lignite"),
-        "Lignite old 1 CHP": ClusterParams(technology="CHP", fuel="Lignite"),
-        "Lignite old 2": ClusterParams(technology="Coal and lignite", fuel="Lignite"),
-        "Lignite old 2 CHP": ClusterParams(technology="CHP", fuel="Lignite"),
-        "Nuclear": ClusterParams(technology="Nuclear", fuel="Nuclear"),
-        "Nuclear SMR": ClusterParams(technology="Nuclear", fuel="Nuclear"),
-        "OCGT H2": ClusterParams(technology="OCGT", fuel="H2"),
-        "OCGT H2 CHP": ClusterParams(technology="CHP", fuel="H2"),
-        "OCGT new": ClusterParams(technology="OCGT", fuel="Gas"),
-        "OCGT new CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "OCGT old": ClusterParams(technology="OCGT", fuel="Gas"),
-        "OCGT old CHP": ClusterParams(technology="CHP", fuel="Gas"),
-        "Oil shale new": ClusterParams(technology="?", fuel="Oil"),
-        "Oil shale old": ClusterParams(technology="?", fuel="Oil"),
+        "Nuclear": ClusterParams(
+            technology="Nuclear",
+            fuel="Nuclear",
+            efficiency_default=0.33,
+            fo_rate_default=0.05,
+            fo_duration_default=7,
+            po_duration_default=54,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Nuclear SMR": ClusterParams(
+            technology="Nuclear",
+            fuel="Nuclear",
+            efficiency_default=0.33,
+            fo_rate_default=0.05,
+            fo_duration_default=7,
+            po_duration_default=54,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Hard coal old 1": ClusterParams(
+            technology="Coal and lignite",
+            fuel="Hard coal",
+            efficiency_default=0.35,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Hard coal old 1 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Hard coal",
+            efficiency_default=0.35,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Hard coal old 2": ClusterParams(
+            technology="Coal and lignite",
+            fuel="Hard coal",
+            efficiency_default=0.4,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Hard coal old 2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Hard coal",
+            efficiency_default=0.4,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Hard coal new": ClusterParams(
+            technology="Coal and lignite",
+            fuel="Hard coal",
+            efficiency_default=0.46,
+            fo_rate_default=0.075,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.25,
+        ),
+        "Hard coal new CHP": ClusterParams(
+            technology="CHP",
+            fuel="Hard coal",
+            efficiency_default=0.46,
+            fo_rate_default=0.075,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.25,
+        ),
+        "Lignite old 1": ClusterParams(
+            technology="Coal and lignite",
+            fuel="Lignite",
+            efficiency_default=0.35,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Lignite old 1 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Lignite",
+            efficiency_default=0.35,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Lignite old 2": ClusterParams(
+            technology="Coal and lignite",
+            fuel="Lignite",
+            efficiency_default=0.4,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Lignite old 2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Lignite",
+            efficiency_default=0.4,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Lignite new": ClusterParams(
+            technology="Coal and lignite",
+            fuel="Lignite",
+            efficiency_default=0.46,
+            fo_rate_default=0.075,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Lignite new CHP": ClusterParams(
+            technology="CHP",
+            fuel="Lignite",
+            efficiency_default=0.46,
+            fo_rate_default=0.075,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Gas conventional old 1": ClusterParams(
+            technology="Gas conventional",
+            fuel="Gas",
+            efficiency_default=0.36,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.2,
+        ),
+        "Gas conventional old 1 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.36,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.2,
+        ),
+        "Gas conventional old 2": ClusterParams(
+            technology="Gas conventional",
+            fuel="Gas",
+            efficiency_default=0.41,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.2,
+        ),
+        "Gas conventional old 2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.41,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.2,
+        ),
+        "CCGT old 1": ClusterParams(
+            technology="CCGT",
+            fuel="Gas",
+            efficiency_default=0.4,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "CCGT old 1 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.4,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "CCGT old 2": ClusterParams(
+            technology="CCGT",
+            fuel="Gas",
+            efficiency_default=0.48,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "CCGT old 2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.48,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "CCGT present 1": ClusterParams(
+            technology="CCGT",
+            fuel="Gas",
+            efficiency_default=0.56,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT present 1 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.56,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT present 2": ClusterParams(
+            technology="CCGT",
+            fuel="Gas",
+            efficiency_default=0.58,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT present 2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.58,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT new": ClusterParams(
+            technology="CCGT",
+            fuel="Gas",
+            efficiency_default=0.6,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT new CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.6,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT CCS": ClusterParams(
+            technology="CCGT",
+            fuel="Gas",
+            efficiency_default=0.51,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT CCS CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.51,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "OCGT old": ClusterParams(
+            technology="OCGT",
+            fuel="Gas",
+            efficiency_default=0.35,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "OCGT old CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.35,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "OCGT new": ClusterParams(
+            technology="OCGT",
+            fuel="Gas",
+            efficiency_default=0.42,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "OCGT new CHP": ClusterParams(
+            technology="CHP",
+            fuel="Gas",
+            efficiency_default=0.42,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "Light oil": ClusterParams(
+            technology="OCGT",
+            fuel="Oil",
+            efficiency_default=0.35,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Light oil CHP": ClusterParams(
+            technology="CHP",
+            fuel="Oil",
+            efficiency_default=0.35,
+            fo_rate_default=0.08,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Heavy oil old 1": ClusterParams(
+            technology="Heavy oil",
+            fuel="Oil",
+            efficiency_default=0.35,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Heavy oil old 1 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Oil",
+            efficiency_default=0.35,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Heavy oil old 2": ClusterParams(
+            technology="Heavy oil",
+            fuel="Oil",
+            efficiency_default=0.4,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Heavy oil old 2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="Oil",
+            efficiency_default=0.4,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Oil shale old": ClusterParams(
+            technology="?",
+            fuel="Oil",
+            efficiency_default=0.29,
+            fo_rate_default=0.1,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "Oil shale new": ClusterParams(
+            technology="?",
+            fuel="Oil",
+            efficiency_default=0.39,
+            fo_rate_default=0.075,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.5,
+        ),
+        "CCGT H2": ClusterParams(
+            technology="CCGT",
+            fuel="H2",
+            efficiency_default=0.6,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "CCGT H2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="H2",
+            efficiency_default=0.6,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=27,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "OCGT H2": ClusterParams(
+            technology="OCGT",
+            fuel="H2",
+            efficiency_default=0.42,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
+        "OCGT H2 CHP": ClusterParams(
+            technology="CHP",
+            fuel="H2",
+            efficiency_default=0.42,
+            fo_rate_default=0.05,
+            fo_duration_default=1,
+            po_duration_default=13,
+            po_winter_default=0.15,
+            min_stable_generation_default=0.4,
+        ),
     }
