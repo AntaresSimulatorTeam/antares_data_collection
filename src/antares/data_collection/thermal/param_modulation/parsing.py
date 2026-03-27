@@ -216,18 +216,20 @@ class ThermalParamModulationParser:
 
             for group_index, internal_mapping in group_index_to_internal_mapping.items():
                 value: str = group[group_index]  # type: ignore
-                if not pd.isna(value):
-                    if value not in internal_mapping.index.get(zone, {}):
-                        curve_id_exists_but_not_present_in_index = True
-                        continue
+                if pd.isna(value):
+                    continue
 
-                    curve_ids = internal_mapping.index[zone][value]
-                    for curve_id in curve_ids:
-                        ts = internal_mapping.data[curve_id]
-                        ts_mean = ts.mean()
-                        if search_direction.operator(lowest_mean, ts_mean):
-                            final_ts = ts
-                            lowest_mean = ts_mean
+                if value not in internal_mapping.index.get(zone, {}):
+                    curve_id_exists_but_not_present_in_index = True
+                    continue
+
+                curve_ids = internal_mapping.index[zone][value]
+                for curve_id in curve_ids:
+                    ts = internal_mapping.data[curve_id]
+                    ts_mean = ts.mean()
+                    if search_direction.operator(lowest_mean, ts_mean):
+                        final_ts = ts
+                        lowest_mean = ts_mean
 
             # Use default value for empty rows
             if final_ts.empty:
