@@ -61,6 +61,12 @@ class ClusterColumnsNames(StrEnum):
 class CommonDataColumnsNames(StrEnum):
     CLUSTER_BP = "cluster_BP"
     FUEL = "Fuel"
+    EFFICIENCY_DEFAULT = "efficiency_default"
+    FO_RATE_DEFAULT = "FO_rate_default"
+    FO_DURATION_DEFAULT = "FO_duration_default"
+    PO_DURATION_DEFAULT = "PO_duration_default"
+    PO_WINTER_DEFAULT = "PO_winter_default"
+    MIN_STABLE_GENERATION_DEFAULT = "min_stable_generation_default"
 
 
 THERMAL_TYPE_NAME = "Thermal"
@@ -78,6 +84,20 @@ class PeakParamsColumnsNames(Enum):
 class ClusterParams:
     technology: str
     fuel: str
+    efficiency_default: float
+    fo_rate_default: float
+    fo_duration_default: int
+    po_duration_default: int
+    po_winter_default: float
+    min_stable_generation_default: float
+
+
+RATIO_FIELDS = [
+    CommonDataColumnsNames.EFFICIENCY_DEFAULT.value,
+    CommonDataColumnsNames.FO_RATE_DEFAULT.value,
+    CommonDataColumnsNames.PO_WINTER_DEFAULT.value,
+    CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT.value,
+]
 
 
 @dataclass
@@ -137,10 +157,13 @@ class MainParams:
     def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
         return [self.get_cluster_bp(c) for c in clusters_pemmdb]
 
-    def get_antares_cluster_technology_and_fuel(self, antares_cluster: str) -> ClusterParams:
+    def get_antares_cluster_common_data_params(self, antares_cluster: str) -> ClusterParams:
         if antares_cluster not in self._cluster_antares:
             raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
         return self._cluster_antares[antares_cluster]
+
+    def get_antares_clusters_common_data_params(self, antares_clusters: list[str]) -> list[ClusterParams]:
+        return [self.get_antares_cluster_common_data_params(c) for c in antares_clusters]
 
 
 def parse_main_params(file_path: Path) -> MainParams:
@@ -222,15 +245,41 @@ def parse_main_params(file_path: Path) -> MainParams:
     # Parse the `Common Data` sheet
     df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
     actual_cols = set(df.columns)
-    for common_col in [CommonDataColumnsNames.CLUSTER_BP, CommonDataColumnsNames.FUEL]:
+    for common_col in CommonDataColumnsNames:
         if common_col.value not in actual_cols:
             raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
+
+    # check that columns are numeric values between 0 and 1
+    for column_ratio in RATIO_FIELDS:
+        if not ((df[column_ratio] >= 0).all() and (df[column_ratio] <= 1).all()):
+            raise ValueError(f"Column '{column_ratio}' must be between 0 and 1")
+
+    # check that columns are integer values
+    for column_int in [CommonDataColumnsNames.FO_DURATION_DEFAULT, CommonDataColumnsNames.PO_DURATION_DEFAULT]:
+        if not df[column_int].apply(lambda x: float(x).is_integer()).all():
+            raise ValueError(f"Column '{column_int}' must be integer")
 
     cluster_antares_dict = {}
     for _, row in df.iterrows():
         bp_name = row[CommonDataColumnsNames.CLUSTER_BP]
         fuel = row[CommonDataColumnsNames.FUEL]
-        cluster_antares_dict[bp_name] = ClusterParams(technology=intermediate_dict[bp_name], fuel=fuel)
+        efficiency_default = row[CommonDataColumnsNames.EFFICIENCY_DEFAULT]
+        fo_rate_default = row[CommonDataColumnsNames.FO_RATE_DEFAULT]
+        fo_duration_default = row[CommonDataColumnsNames.FO_DURATION_DEFAULT]
+        po_duration_default = row[CommonDataColumnsNames.PO_DURATION_DEFAULT]
+        po_winter_default = row[CommonDataColumnsNames.PO_WINTER_DEFAULT]
+        min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
+
+        cluster_antares_dict[bp_name] = ClusterParams(
+            technology=intermediate_dict[bp_name],
+            fuel=fuel,
+            efficiency_default=efficiency_default,
+            fo_rate_default=fo_rate_default,
+            fo_duration_default=fo_duration_default,
+            po_duration_default=po_duration_default,
+            po_winter_default=po_winter_default,
+            min_stable_generation_default=min_stable_generation_default,
+        )
 
     # Return validated dataclass
     return MainParams(
