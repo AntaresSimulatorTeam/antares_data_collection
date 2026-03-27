@@ -11,6 +11,7 @@
 # This file is part of the Antares project.
 import pytest
 
+import copy
 import re
 
 from pathlib import Path
@@ -70,29 +71,30 @@ def test_parse_main_params_mandatory_sheets(
         {"CLUSTER": "Technology thermal"},
         {"Common Data": "cluster_BP"},
         {"Common Data": "Fuel"},
+        {"Common Data": "efficiency_default"},
+        {"Common Data": "FO_rate_default"},
+        {"Common Data": "FO_duration_default"},
+        {"Common Data": "PO_duration_default"},
+        {"Common Data": "PO_winter_default"},
+        {"Common Data": "min_stable_generation_default"},
     ],
 )
-def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dict[str, str]) -> None:
+def test_parse_main_params_mandatory_columns(
+    tmp_path: Path, missing_column: dict[str, str], build_default_main_params: dict[str, pd.DataFrame]
+) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
+    mocked_main_params = copy.deepcopy(build_default_main_params)
 
-    sheets = {
-        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
-        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
-        "CLUSTER": pd.DataFrame(
-            {"TYPE": ["Thermal"], "CLUSTER_PEMMDB": ["ok"], "CLUSTER_BP": ["ok"], "Technology thermal": ["ok"]}
-        ),
-        "Common Data": pd.DataFrame({"Fuel": ["ok"], "cluster_BP": ["ok"]}),
-    }
     # Remove the column to create the issue
     data = list(missing_column.items())[0]
     key, value = data[0], data[1]
-    sheets[key].drop(value, axis=1, inplace=True)
+    mocked_main_params[key].drop(value, axis=1, inplace=True)
 
-    sheets["PAYS"].to_excel(path_file, sheet_name="PAYS", index=False)
-    del sheets["PAYS"]
+    mocked_main_params["PAYS"].to_excel(path_file, sheet_name="PAYS", index=False)
+    del mocked_main_params["PAYS"]
     with pd.ExcelWriter(path_file, engine="openpyxl", mode="a") as writer:
-        for sheet in sheets:
-            sheets[sheet].to_excel(writer, sheet_name=sheet, index=False)
+        for sheet in mocked_main_params:
+            mocked_main_params[sheet].to_excel(writer, sheet_name=sheet, index=False)
 
     # then
     msg = f"Column '{value}' not found inside sheet '{key}'"
@@ -109,40 +111,18 @@ def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dic
         ("min_stable_generation_default", -1),
     ],
 )
-def test_common_data_ratio_validation(tmp_path: Path, column: str, invalid_value: int | float) -> None:
+def test_common_data_ratio_validation(
+    tmp_path: Path, column: str, invalid_value: int | float, build_default_main_params: dict[str, pd.DataFrame]
+) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
-
-    sheets = {
-        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
-        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
-        "CLUSTER": pd.DataFrame(
-            {
-                "TYPE": ["Thermal"],
-                "CLUSTER_PEMMDB": ["ok"],
-                "CLUSTER_BP": ["ok"],
-                "Technology thermal": ["tech"],
-            }
-        ),
-        "Common Data": pd.DataFrame(
-            {
-                "cluster_BP": ["ok"],
-                "Fuel": ["gas"],
-                "efficiency_default": [0.5],
-                "FO_rate_default": [0.5],
-                "FO_duration_default": [10],
-                "PO_duration_default": [10],
-                "PO_winter_default": [0.5],
-                "min_stable_generation_default": [0.5],
-            }
-        ),
-    }
+    mocked_main_params = copy.deepcopy(build_default_main_params)
 
     # inject error
-    sheets["Common Data"].loc[0, column] = invalid_value
+    mocked_main_params["Common Data"].loc[0, column] = invalid_value
 
     # write excel
     with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
-        for name, df in sheets.items():
+        for name, df in mocked_main_params.items():
             df.to_excel(writer, sheet_name=name, index=False)
 
     msg = f"Column '{column}' must be between 0 and 1"
@@ -157,44 +137,22 @@ def test_common_data_ratio_validation(tmp_path: Path, column: str, invalid_value
         ("PO_duration_default", -0.1),
     ],
 )
-def test_common_data_int_validation(tmp_path: Path, column: str, invalid_value: float) -> None:
+def test_common_data_int_validation(
+    tmp_path: Path, column: str, invalid_value: float, build_default_main_params: dict[str, pd.DataFrame]
+) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
-
-    sheets = {
-        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
-        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
-        "CLUSTER": pd.DataFrame(
-            {
-                "TYPE": ["Thermal"],
-                "CLUSTER_PEMMDB": ["ok"],
-                "CLUSTER_BP": ["ok"],
-                "Technology thermal": ["tech"],
-            }
-        ),
-        "Common Data": pd.DataFrame(
-            {
-                "cluster_BP": ["ok"],
-                "Fuel": ["gas"],
-                "efficiency_default": [0.5],
-                "FO_rate_default": [0.5],
-                "FO_duration_default": [10],
-                "PO_duration_default": [10],
-                "PO_winter_default": [0.5],
-                "min_stable_generation_default": [0.5],
-            }
-        ),
-    }
+    mocked_main_params = copy.deepcopy(build_default_main_params)
 
     # force cast to float to put invalid value without raise pandas error
     INT_TEST_COLS = ["FO_duration_default", "PO_duration_default"]
-    sheets["Common Data"][INT_TEST_COLS] = sheets["Common Data"][INT_TEST_COLS].astype(float)
+    mocked_main_params["Common Data"][INT_TEST_COLS] = mocked_main_params["Common Data"][INT_TEST_COLS].astype(float)
 
     # inject error
-    sheets["Common Data"].loc[0, column] = invalid_value
+    mocked_main_params["Common Data"].loc[0, column] = invalid_value
 
     # write excel
     with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
-        for name, df in sheets.items():
+        for name, df in mocked_main_params.items():
             df.to_excel(writer, sheet_name=name, index=False)
 
     msg = f"Column '{column}' must be integer"

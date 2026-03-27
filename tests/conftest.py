@@ -180,3 +180,32 @@ def mock_links_main_params_xlsx(tmp_path: Path) -> Path:
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     return output_path
+
+
+# minimum main params referential for parsing tests
+@pytest.fixture
+def build_default_main_params() -> dict[str, pd.DataFrame]:
+    return {
+        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
+        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
+        "CLUSTER": pd.DataFrame(
+            {
+                "TYPE": ["Thermal"],
+                "CLUSTER_PEMMDB": ["ok"],
+                "CLUSTER_BP": ["ok"],
+                "Technology thermal": ["tech"],
+            }
+        ),
+        "Common Data": pd.DataFrame(
+            {
+                "cluster_BP": ["ok"],
+                "Fuel": ["gas"],
+                "efficiency_default": [0.5],
+                "FO_rate_default": [0.5],
+                "FO_duration_default": [10],
+                "PO_duration_default": [10],
+                "PO_winter_default": [0.5],
+                "min_stable_generation_default": [0.5],
+            }
+        ),
+    }

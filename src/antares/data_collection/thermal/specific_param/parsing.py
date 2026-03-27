@@ -49,7 +49,6 @@ class ThermalSpecificParamParser:
         """
 
         # STD_EFF_NCV / efficiency_default
-        # TODO add to MAINPARAM parser to check `efficiency_default`ranged value [0;1]
         mask_std_eff_nvc = df[InputThermalColumns.STD_EFF_NCV].isna()
         if mask_std_eff_nvc.any():
             df = self._fill_from_common_data(

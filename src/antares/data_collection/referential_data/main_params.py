@@ -91,31 +91,18 @@ class ClusterParams:
     po_winter_default: float
     min_stable_generation_default: float
 
-    def __post_init__(self) -> None:
-        # ratio
-        for field_name, col_name in RATIO_FIELDS.items():
-            value = getattr(self, field_name)
-            if not (0 <= value <= 1):
-                raise ValueError(f"Column '{col_name}' must be between 0 and 1")
 
-        # integer
-        for field_name, col_name in INT_FIELDS.items():
-            value = getattr(self, field_name)
-            if not float(value).is_integer():
-                raise ValueError(f"Column '{col_name}' must be integer")
+RATIO_FIELDS = [
+    CommonDataColumnsNames.EFFICIENCY_DEFAULT.value,
+    CommonDataColumnsNames.FO_RATE_DEFAULT.value,
+    CommonDataColumnsNames.PO_WINTER_DEFAULT.value,
+    CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT.value,
+]
 
-
-RATIO_FIELDS = {
-    "efficiency_default": CommonDataColumnsNames.EFFICIENCY_DEFAULT.value,
-    "fo_rate_default": CommonDataColumnsNames.FO_RATE_DEFAULT.value,
-    "po_winter_default": CommonDataColumnsNames.PO_WINTER_DEFAULT.value,
-    "min_stable_generation_default": CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT.value,
-}
-
-INT_FIELDS = {
-    "fo_duration_default": CommonDataColumnsNames.FO_DURATION_DEFAULT.value,
-    "po_duration_default": CommonDataColumnsNames.PO_DURATION_DEFAULT.value,
-}
+INT_FIELDS = [
+    CommonDataColumnsNames.FO_DURATION_DEFAULT.value,
+    CommonDataColumnsNames.PO_DURATION_DEFAULT.value,
+]
 
 
 @dataclass
@@ -266,6 +253,17 @@ def parse_main_params(file_path: Path) -> MainParams:
     for common_col in CommonDataColumnsNames:
         if common_col.value not in actual_cols:
             raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
+
+    # check that columns are numeric values between 0 and 1
+    for column_ratio in RATIO_FIELDS:
+        if not ((df[column_ratio] >= 0).all() and (df[column_ratio] <= 1).all()):
+            raise ValueError(f"Column '{column_ratio}' must be between 0 and 1")
+
+    # check that columns are integer values
+    for column_int in INT_FIELDS:
+        series = df[column_int].dropna()
+        if not series.apply(lambda x: float(x).is_integer()).all():
+            raise ValueError(f"Column '{column_int}' must be integer")
 
     cluster_antares_dict = {}
     for _, row in df.iterrows():
