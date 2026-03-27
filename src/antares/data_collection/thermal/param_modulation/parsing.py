@@ -240,7 +240,7 @@ class ThermalParamModulationParser:
                 final_ts = DEFAULT_MUST_RUN_TS
 
             # Fill the result
-            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].mean()
+            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].sum()
             ts_pair = TimeSeriesAndClusterPair(series=final_ts, weight=weight)
             result.setdefault(zone, {}).setdefault(cluster_id, []).append(ts_pair)
 
@@ -311,7 +311,7 @@ class ThermalParamModulationParser:
                 final_ts = DEFAULT_CAPACITY_MODULATION_TS
 
             # Fill the result
-            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].mean()
+            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].sum()
             ts_pair = TimeSeriesAndClusterPair(series=final_ts, weight=weight)
             result.setdefault(zone, {}).setdefault(cluster_id, []).append(ts_pair)
 
