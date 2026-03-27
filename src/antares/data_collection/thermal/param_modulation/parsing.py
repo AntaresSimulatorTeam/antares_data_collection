@@ -267,7 +267,7 @@ class ThermalParamModulationParser:
             assert isinstance(cluster_id, ClusterId)
 
             # We want to select the Series with the highest mean
-            lowest_mean = math.inf
+            lowest_mean = - math.inf
             final_ts = pd.Series()
 
             # Group Derating column
