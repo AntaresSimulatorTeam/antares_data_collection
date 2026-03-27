@@ -267,7 +267,7 @@ class ThermalParamModulationParser:
             assert isinstance(cluster_id, ClusterId)
 
             # We want to select the Series with the highest mean
-            lowest_mean = math.inf
+            lowest_mean = -math.inf
             final_ts = pd.Series()
 
             # Group Derating column
@@ -354,12 +354,12 @@ class ThermalParamModulationParser:
 
     def _write_must_run_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition, year)
-        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year}.csv"
+        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{MUST_RUN_OUTPUT_NAME}_{year - 1}-{year}.csv"
         write_csv_file(file_path, df)
 
     def _write_capacity_modulation_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition, year)
-        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year}.csv"
+        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year - 1}-{year}.csv"
         write_csv_file(file_path, df)
 
     def build_param_modulation(self, thermal_df: pd.DataFrame) -> None:
