@@ -11,7 +11,6 @@
 # This file is part of the Antares project.
 import pytest
 
-import copy
 import re
 
 from pathlib import Path
@@ -21,6 +20,33 @@ import pandas as pd
 
 from antares.data_collection.referential_data.main_params import ClusterParams, parse_main_params
 from tests.conftest import RESOURCE_PATH
+
+
+def _build_mock_main_params_dict() -> dict[str, pd.DataFrame]:
+    return {
+        "PAYS": pd.DataFrame({"market_node": ["ok"], "code_antares": ["ok"]}),
+        "STUDY_SCENARIO": pd.DataFrame({"YEAR": [2026], "STUDY_SCENARIO": ["ok"]}),
+        "CLUSTER": pd.DataFrame(
+            {
+                "TYPE": ["Thermal"],
+                "CLUSTER_PEMMDB": ["ok"],
+                "CLUSTER_BP": ["ok"],
+                "Technology thermal": ["tech"],
+            }
+        ),
+        "Common Data": pd.DataFrame(
+            {
+                "cluster_BP": ["ok"],
+                "Fuel": ["gas"],
+                "efficiency_default": [0.5],
+                "FO_rate_default": [0.5],
+                "FO_duration_default": [10],
+                "PO_duration_default": [10],
+                "PO_winter_default": [0.5],
+                "min_stable_generation_default": [0.5],
+            }
+        ),
+    }
 
 
 def test_parse_main_params_file_not_exist(tmp_path: Path) -> None:
@@ -79,11 +105,9 @@ def test_parse_main_params_mandatory_sheets(
         {"Common Data": "min_stable_generation_default"},
     ],
 )
-def test_parse_main_params_mandatory_columns(
-    tmp_path: Path, missing_column: dict[str, str], build_default_main_params: dict[str, pd.DataFrame]
-) -> None:
+def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dict[str, str]) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
-    mocked_main_params = copy.deepcopy(build_default_main_params)
+    mocked_main_params = _build_mock_main_params_dict()
 
     # Remove the column to create the issue
     data = list(missing_column.items())[0]
@@ -111,11 +135,9 @@ def test_parse_main_params_mandatory_columns(
         ("min_stable_generation_default", -1),
     ],
 )
-def test_common_data_ratio_validation(
-    tmp_path: Path, column: str, invalid_value: int | float, build_default_main_params: dict[str, pd.DataFrame]
-) -> None:
+def test_common_data_ratio_validation(tmp_path: Path, column: str, invalid_value: int | float) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
-    mocked_main_params = copy.deepcopy(build_default_main_params)
+    mocked_main_params = _build_mock_main_params_dict()
 
     # inject error
     mocked_main_params["Common Data"].loc[0, column] = invalid_value
@@ -137,11 +159,9 @@ def test_common_data_ratio_validation(
         ("PO_duration_default", -0.1),
     ],
 )
-def test_common_data_int_validation(
-    tmp_path: Path, column: str, invalid_value: float, build_default_main_params: dict[str, pd.DataFrame]
-) -> None:
+def test_common_data_int_validation(tmp_path: Path, column: str, invalid_value: float) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
-    mocked_main_params = copy.deepcopy(build_default_main_params)
+    mocked_main_params = _build_mock_main_params_dict()
 
     # force cast to float to put invalid value without raise pandas error
     INT_TEST_COLS = ["FO_duration_default", "PO_duration_default"]

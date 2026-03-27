@@ -99,11 +99,6 @@ RATIO_FIELDS = [
     CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT.value,
 ]
 
-INT_FIELDS = [
-    CommonDataColumnsNames.FO_DURATION_DEFAULT.value,
-    CommonDataColumnsNames.PO_DURATION_DEFAULT.value,
-]
-
 
 @dataclass
 class MainParams:
@@ -260,9 +255,8 @@ def parse_main_params(file_path: Path) -> MainParams:
             raise ValueError(f"Column '{column_ratio}' must be between 0 and 1")
 
     # check that columns are integer values
-    for column_int in INT_FIELDS:
-        series = df[column_int].dropna()
-        if not series.apply(lambda x: float(x).is_integer()).all():
+    for column_int in [CommonDataColumnsNames.FO_DURATION_DEFAULT, CommonDataColumnsNames.PO_DURATION_DEFAULT]:
+        if not df[column_int].apply(lambda x: float(x).is_integer()).all():
             raise ValueError(f"Column '{column_int}' must be integer")
 
     cluster_antares_dict = {}
