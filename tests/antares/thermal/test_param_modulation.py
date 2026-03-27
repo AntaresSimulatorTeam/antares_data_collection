@@ -36,10 +36,10 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # Asserts the files are created
     generated_folder_path = tmp_path / TECHNICAL_PARAMS_FOLDER
-    cm_2030_path = generated_folder_path / "CM_PEMMDB_2030.csv"
-    cm_2035_path = generated_folder_path / "CM_PEMMDB_2035.csv"
-    mr_2030_path = generated_folder_path / "MR_PEMMDB_2030.csv"
-    mr_2035_path = generated_folder_path / "MR_PEMMDB_2035.csv"
+    cm_2030_path = generated_folder_path / "CM_PEMMDB_2029-2030.csv"
+    cm_2035_path = generated_folder_path / "CM_PEMMDB_2034-2035.csv"
+    mr_2030_path = generated_folder_path / "MR_PEMMDB_2029-2030.csv"
+    mr_2035_path = generated_folder_path / "MR_PEMMDB_2034-2035.csv"
     assert cm_2030_path.exists()
     assert cm_2035_path.exists()
     assert mr_2030_path.exists()
@@ -53,14 +53,14 @@ def test_nominal_case(tmp_path: Path) -> None:
     # Compare their contents with the expected ones
     expected_folder_path = RESOURCE_PATH / "expected_output_files" / "thermal"
 
-    expected_cm_2030 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2030.csv")
+    expected_cm_2030 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2029-2030.csv")
     pd.testing.assert_frame_equal(generated_cm_2030, expected_cm_2030, check_dtype=False)
 
-    expected_cm_2035 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2035.csv")
+    expected_cm_2035 = pd.read_csv(expected_folder_path / "CM_PEMMDB_2034-2035.csv")
     pd.testing.assert_frame_equal(generated_cm_2035, expected_cm_2035, check_dtype=False)
 
-    expected_mr_2030 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2030.csv")
+    expected_mr_2030 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2029-2030.csv")
     pd.testing.assert_frame_equal(generated_mr_2030, expected_mr_2030, check_dtype=False)
 
-    expected_mr_2035 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2035.csv")
+    expected_mr_2035 = pd.read_csv(expected_folder_path / "MR_PEMMDB_2034-2035.csv")
     pd.testing.assert_frame_equal(generated_mr_2035, expected_mr_2035, check_dtype=False)
