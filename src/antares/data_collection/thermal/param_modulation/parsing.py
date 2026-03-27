@@ -10,10 +10,11 @@
 #
 # This file is part of the Antares project.
 import math
+import operator
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypeAlias
+from typing import Callable, TypeAlias
 
 import pandas as pd
 
@@ -78,6 +79,12 @@ class TimeSeriesAndClusterPair:
     weight: float
     series: pd.Series
     should_write_the_series: bool
+
+
+@dataclass(frozen=True)
+class SearchDirection:
+    starting_point: float
+    operator: Callable[[float, float], bool]
 
 
 ClusterGroupTsRepartition: TypeAlias = dict[ZoneId, dict[ClusterId, list[TimeSeriesAndClusterPair]]]
@@ -179,9 +186,63 @@ class ThermalParamModulationParser:
             group_derating=InternalMapping(index=group_derating_index_mapping, data=group_derating),
         )
 
-    def _build_must_run(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> ClusterGroupTsRepartition:
+    def _build_cluster_group_repartition(
+        self,
+        df: pd.DataFrame,
+        columns_to_use: list[str],
+        group_index_to_internal_mapping: dict[int, InternalMapping],
+        search_direction: SearchDirection,
+        default_ts: pd.Series,
+    ) -> ClusterGroupTsRepartition:
         result: ClusterGroupTsRepartition = {}
 
+        useful_cols = columns_to_use + [InputThermalColumns.NET_MAX_GEN_CAP.value]
+        df_groups = df[useful_cols].groupby(by=columns_to_use, dropna=False)
+        for group, data in df_groups:
+            zone = group[4]
+            assert isinstance(zone, ZoneId)
+            market_node = group[5]
+            assert isinstance(market_node, str)
+            cluster_id = group[3]
+            assert isinstance(cluster_id, ClusterId)
+
+            lowest_mean = search_direction.starting_point
+            final_ts = pd.Series()
+
+            # If no curve id is provided -> we SHOULD NOT write the final data
+            # If a curve id is provided but does not exist in the index -> we SHOULD write the final data
+            should_write_the_series = True
+            curve_id_exists_but_not_present_in_index = False
+
+            for group_index, internal_mapping in group_index_to_internal_mapping.items():
+                value: str = group[group_index]  # type: ignore
+                if not pd.isna(value):
+                    if value not in internal_mapping.index.get(zone, {}):
+                        curve_id_exists_but_not_present_in_index = True
+                        continue
+
+                    curve_ids = internal_mapping.index[zone][value]
+                    for curve_id in curve_ids:
+                        ts = internal_mapping.data[curve_id]
+                        ts_mean = ts.mean()
+                        if search_direction.operator(lowest_mean, ts_mean):
+                            final_ts = ts
+                            lowest_mean = ts_mean
+
+            # Use default value for empty rows
+            if final_ts.empty:
+                final_ts = default_ts
+                if not curve_id_exists_but_not_present_in_index:
+                    should_write_the_series = False
+
+            # Fill the result
+            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].sum()
+            ts_pair = TimeSeriesAndClusterPair(weight, final_ts, should_write_the_series)
+            result.setdefault(market_node, {}).setdefault(cluster_id, []).append(ts_pair)
+
+        return result
+
+    def _build_must_run(self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries) -> ClusterGroupTsRepartition:
         must_run_cols = [
             InputThermalColumns.GRP_MRUN_CURVE_ID,
             InputThermalColumns.GEN_UNT_MRUN_CURVE_ID,
@@ -190,64 +251,21 @@ class ThermalParamModulationParser:
             InputThermalColumns.ZONE,
             InputThermalColumns.MARKET_NODE,
         ]
-        useful_cols = must_run_cols + [InputThermalColumns.NET_MAX_GEN_CAP]
-        must_run_groups = df[useful_cols].groupby(by=must_run_cols, dropna=False)
-        for group, data in must_run_groups:
-            zone = group[4]
-            assert isinstance(zone, ZoneId)
-            market_node = group[5]
-            assert isinstance(market_node, str)
-            cluster_id = group[3]
-            assert isinstance(cluster_id, ClusterId)
 
-            # We want to select the Series with the lowest mean
-            lowest_mean = math.inf
-            final_ts = pd.Series()
+        mapping = {
+            0: index_to_ts.group_must_run,
+            1: index_to_ts.must_run,
+            2: index_to_ts.inelastic,
+        }
 
-            # If no curve id is provided -> we SHOULD NOT write the final data
-            # If a curve id is provided but does not exist in the index -> we SHOULD write the final data
-            should_write_the_series = True
-            curve_id_exists_but_not_present_in_index = False
+        direction = SearchDirection(starting_point=math.inf, operator=operator.ge)
 
-            group_index_to_internal_mapping = {
-                0: index_to_ts.group_must_run,
-                1: index_to_ts.must_run,
-                2: index_to_ts.inelastic,
-            }
-
-            for group_index, internal_mapping in group_index_to_internal_mapping.items():
-                value: str = group[group_index]  # type: ignore
-                if not pd.isna(value):
-                    if value in internal_mapping.index.get(zone, {}):
-                        curve_ids = internal_mapping.index[zone][value]
-                        for curve_id in curve_ids:
-                            ts = internal_mapping.data[curve_id]
-                            ts_mean = ts.mean()
-                            if lowest_mean > ts_mean:
-                                final_ts = ts
-                                lowest_mean = ts_mean
-                    else:
-                        curve_id_exists_but_not_present_in_index = True
-
-            # Use default value for empty rows
-            if final_ts.empty:
-                final_ts = DEFAULT_MUST_RUN_TS
-                if not curve_id_exists_but_not_present_in_index:
-                    should_write_the_series = False
-
-            # Fill the result
-            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].sum()
-            ts_pair = TimeSeriesAndClusterPair(weight, final_ts, should_write_the_series)
-            result.setdefault(market_node, {}).setdefault(cluster_id, []).append(ts_pair)
-
-        return result
+        return self._build_cluster_group_repartition(df, must_run_cols, mapping, direction, DEFAULT_MUST_RUN_TS)
 
     def _build_capacity_modulation(
         self, df: pd.DataFrame, index_to_ts: IndexesToTimeSeries
     ) -> ClusterGroupTsRepartition:
-        result: ClusterGroupTsRepartition = {}
-
-        must_run_cols = [
+        modulation_cols = [
             InputThermalColumns.GRP_D_CURVE_ID,
             InputThermalColumns.GEN_UNT_D_CURVE_ID,
             InputThermalColumns.GEN_UNT_INELASTIC_ID,
@@ -255,57 +273,16 @@ class ThermalParamModulationParser:
             InputThermalColumns.ZONE,
             InputThermalColumns.MARKET_NODE,
         ]
-        useful_cols = must_run_cols + [InputThermalColumns.NET_MAX_GEN_CAP]
-        must_run_groups = df[useful_cols].groupby(by=must_run_cols, dropna=False)
-        for group, data in must_run_groups:
-            zone = group[4]
-            assert isinstance(zone, ZoneId)
-            market_node = group[5]
-            assert isinstance(market_node, str)
-            cluster_id = group[3]
-            assert isinstance(cluster_id, ClusterId)
 
-            # We want to select the Series with the highest mean
-            lowest_mean = -math.inf
-            final_ts = pd.Series()
+        mapping = {
+            0: index_to_ts.group_derating,
+            1: index_to_ts.derating,
+            2: index_to_ts.inelastic,
+        }
 
-            # If no curve id is provided -> we SHOULD NOT write the final data
-            # If a curve id is provided but does not exist in the index -> we SHOULD write the final data
-            should_write_the_series = True
-            curve_id_exists_but_not_present_in_index = False
-
-            group_index_to_internal_mapping = {
-                0: index_to_ts.group_derating,
-                1: index_to_ts.derating,
-                2: index_to_ts.inelastic,
-            }
-
-            for group_index, internal_mapping in group_index_to_internal_mapping.items():
-                value: str = group[group_index]  # type: ignore
-                if not pd.isna(value):
-                    if value in internal_mapping.index.get(zone, {}):
-                        curve_ids = internal_mapping.index[zone][value]
-                        for curve_id in curve_ids:
-                            ts = internal_mapping.data[curve_id]
-                            ts_mean = ts.mean()
-                            if lowest_mean < ts_mean:
-                                final_ts = ts
-                                lowest_mean = ts_mean
-                    else:
-                        curve_id_exists_but_not_present_in_index = True
-
-            # Use default value for empty rows
-            if final_ts.empty:
-                final_ts = DEFAULT_CAPACITY_MODULATION_TS
-                if not curve_id_exists_but_not_present_in_index:
-                    should_write_the_series = False
-
-            # Fill the result
-            weight = data[InputThermalColumns.NET_MAX_GEN_CAP].sum()
-            ts_pair = TimeSeriesAndClusterPair(weight, final_ts, should_write_the_series)
-            result.setdefault(market_node, {}).setdefault(cluster_id, []).append(ts_pair)
-
-        return result
+        direction = SearchDirection(starting_point=-math.inf, operator=operator.le)
+        default_ts = DEFAULT_CAPACITY_MODULATION_TS
+        return self._build_cluster_group_repartition(df, modulation_cols, mapping, direction, default_ts)
 
     def _build_pegase_dataframe(self, data_repartition: ClusterGroupTsRepartition, year: int) -> pd.DataFrame:
         pegase_df_as_dict = {}
