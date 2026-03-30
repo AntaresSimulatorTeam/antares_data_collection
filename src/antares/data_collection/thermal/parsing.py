@@ -29,6 +29,7 @@ from antares.data_collection.thermal.specific_param.parsing import ThermalSpecif
 from antares.data_collection.thermal.utils import (
     filter_df_values_based_on_op_stat,
     filter_input_based_on_study_scenarios,
+    filter_non_declared_areas,
     filter_thermal_input_file_based_on_commission_date,
     parse_input_file,
 )
@@ -52,26 +53,6 @@ class ThermalParser:
 
     def _read_input_file(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(THERMAL_INPUT_FILE), list(InputThermalColumns))
-
-    def _filter_values_based_on_op_stat(self, df: pd.DataFrame) -> pd.DataFrame:
-        return filter_df_values_based_on_op_stat(self.op_stat_values, df)
-
-    def _filter_non_declared_areas(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
-        We don't want to consider them.
-        We simply log a message for each area we find in this case
-        """
-        all_market_nodes = set(df[InputThermalColumns.MARKET_NODE])
-        missing_nodes = []
-        for node in all_market_nodes:
-            antares_code = self.main_params.get_antares_code(node)
-            if not antares_code:
-                missing_nodes.append(node)
-
-        if missing_nodes:
-            return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
-        return df
 
     def _filter_non_declared_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -130,8 +111,8 @@ class ThermalParser:
 
     def _build_filtered_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file()
-        df = self._filter_values_based_on_op_stat(df)
-        df = self._filter_non_declared_areas(df)
+        df = filter_df_values_based_on_op_stat(self.op_stat_values, df)
+        df = filter_non_declared_areas(self.main_params, df)
         df = self._filter_non_declared_clusters(df)
         df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
         df = filter_thermal_input_file_based_on_commission_date(df, self.years)

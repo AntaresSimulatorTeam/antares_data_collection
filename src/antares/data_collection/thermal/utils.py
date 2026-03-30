@@ -133,3 +133,21 @@ def filter_input_based_on_study_scenarios(df: pd.DataFrame, main_params: MainPar
         # We want to raise as soon as possible to have a clear error msg
         raise ValueError(f"No input data matched the given study scenario for the given years {years}")
     return df
+
+
+def filter_non_declared_areas(main_params: MainParams, df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
+    We don't want to consider them.
+    We simply log a message for each area we find in this case
+    """
+    all_market_nodes = set(df[InputThermalColumns.MARKET_NODE])
+    missing_nodes = []
+    for node in all_market_nodes:
+        antares_code = main_params.get_antares_code(node)
+        if not antares_code:
+            missing_nodes.append(node)
+
+    if missing_nodes:
+        return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
+    return df
