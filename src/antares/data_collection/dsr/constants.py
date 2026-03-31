@@ -27,3 +27,18 @@ class InputDsrColumns(StrEnum):
     DSR_TYPE = "DSR_TYPE"
     MAX_HOURS = "MAX_HOURS"
     ACT_PRICE_DA = "ACT_PRICE_DA"
+
+
+class OutputDsrColumns(StrEnum):
+    TO_USE = "ToUse"
+    AREA = "Area"
+    NAME = "Name"
+    GROUP = "Group"
+    CAPACITY = "Capacity"
+    NB_HOUR_PER_DAY = "nb_hour_per_day"
+    MAX_HOUR_PER_DAY = "max_hour_per_day"
+    PRICE = "price"
+    NB_UNITS = "nb_units"
+    FO_RATE = "FO_rate"
+    FO_DURATION = "FO_duration"
+    MODULATION = "Modulation"

@@ -17,7 +17,8 @@ from typing import Iterator
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns
+from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns, \
+    ANTARES_CLUSTER_NAME_COLUMN, ANTARES_NODE_NAME_COLUMN
 
 
 def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.DataFrame:
@@ -150,6 +151,23 @@ def filter_non_declared_areas(main_params: MainParams, df: pd.DataFrame) -> pd.D
 
     if missing_nodes:
         return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
+    return df
+
+
+def add_antares_cluster_name_colum(main_params: MainParams, df: pd.DataFrame) -> pd.DataFrame:
+    cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
+    df[ANTARES_CLUSTER_NAME_COLUMN] = main_params.get_clusters_bp(cluster_list)
+    return df
+
+
+def filter_values_based_on_net_max_gen_cap(df: pd.DataFrame) -> pd.DataFrame:
+    """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
+    return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
+
+
+def add_code_antares_colum(main_params: MainParams, df: pd.DataFrame) -> pd.DataFrame:
+    node_list = df[InputThermalColumns.MARKET_NODE].tolist()
+    df[ANTARES_NODE_NAME_COLUMN] = main_params.get_antares_codes(node_list)
     return df
 
 
