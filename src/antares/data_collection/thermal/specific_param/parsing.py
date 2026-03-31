@@ -153,9 +153,6 @@ class ThermalSpecificParamParser:
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
             OutputThermalSpecificColumns.CLUSTER: [],
-            OutputThermalSpecificColumns.NODE_ENTSOE: [],
-            OutputThermalSpecificColumns.COMMENTS: [],
-            OutputThermalSpecificColumns.CLUSTER_PEMMDB: [],
             "YEAR": [],
             OutputThermalSpecificColumns.MIN_STABLE_GEN: [],
             OutputThermalSpecificColumns.SPINNING: [],
@@ -241,9 +238,6 @@ class ThermalSpecificParamParser:
                 # ---- store result ----
                 output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
                 output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
-                output_data[OutputThermalSpecificColumns.NODE_ENTSOE].append(pd.NA)
-                output_data[OutputThermalSpecificColumns.COMMENTS].append(pd.NA)
-                output_data[OutputThermalSpecificColumns.CLUSTER_PEMMDB].append(pd.NA)
                 output_data["YEAR"].append(year_str)
 
                 output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN].append(min_stable)
