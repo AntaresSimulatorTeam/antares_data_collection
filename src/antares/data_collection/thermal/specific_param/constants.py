@@ -39,9 +39,6 @@ def weighted_avg(df: pd.DataFrame, value_col: str, weight_col: str) -> float:
 class OutputThermalSpecificColumns(StrEnum):
     NODE = "node"
     CLUSTER = "Cluster"
-    NODE_ENTSOE = "node_ENTSOE"
-    COMMENTS = "comments"
-    CLUSTER_PEMMDB = "cluster_PEMMDB"
     MIN_STABLE_GEN = "min_stable_gen"
     SPINNING = "spinning"
     EFFICIENCY = "efficiency"

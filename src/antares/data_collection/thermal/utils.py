@@ -122,3 +122,13 @@ def filter_input_based_on_study_scenarios(df: pd.DataFrame, main_params: MainPar
         # We want to raise as soon as possible to have a clear error msg
         raise ValueError(f"No input data matched the given study scenario for the given years {years}")
     return df
+
+
+def apply_round_to_numeric_columns(
+    df: pd.DataFrame, numeric_columns: list[str], decimals_precision: int = 0
+) -> pd.DataFrame:
+    for col in numeric_columns:
+        if not pd.api.types.is_numeric_dtype(df[col]):
+            raise ValueError(f"Column {col} must be numeric")
+    df[numeric_columns] = df[numeric_columns].round(decimals_precision)
+    return df
