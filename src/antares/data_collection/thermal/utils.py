@@ -151,3 +151,13 @@ def filter_non_declared_areas(main_params: MainParams, df: pd.DataFrame) -> pd.D
     if missing_nodes:
         return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
     return df
+
+
+def apply_round_to_numeric_columns(
+    df: pd.DataFrame, numeric_columns: list[str], decimals_precision: int = 0
+) -> pd.DataFrame:
+    for col in numeric_columns:
+        if not pd.api.types.is_numeric_dtype(df[col]):
+            raise ValueError(f"Column {col} must be numeric")
+    df[numeric_columns] = df[numeric_columns].round(decimals_precision)
+    return df

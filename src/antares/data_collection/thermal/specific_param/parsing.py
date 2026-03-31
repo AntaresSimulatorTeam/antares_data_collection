@@ -31,6 +31,7 @@ from antares.data_collection.thermal.specific_param.constants import (
     OutputThermalSpecificColumns,
     weighted_avg,
 )
+from antares.data_collection.thermal.utils import apply_round_to_numeric_columns
 
 
 class ThermalSpecificParamParser:
@@ -152,9 +153,6 @@ class ThermalSpecificParamParser:
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
             OutputThermalSpecificColumns.CLUSTER: [],
-            OutputThermalSpecificColumns.NODE_ENTSOE: [],
-            OutputThermalSpecificColumns.COMMENTS: [],
-            OutputThermalSpecificColumns.CLUSTER_PEMMDB: [],
             "YEAR": [],
             OutputThermalSpecificColumns.MIN_STABLE_GEN: [],
             OutputThermalSpecificColumns.SPINNING: [],
@@ -186,9 +184,8 @@ class ThermalSpecificParamParser:
                 nb_unit = active_units.shape[0]
 
                 cap = active_units[InputThermalColumns.NET_MAX_GEN_CAP]
-                max_cap = cap.max()
 
-                min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / max_cap
+                min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
@@ -241,9 +238,6 @@ class ThermalSpecificParamParser:
                 # ---- store result ----
                 output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
                 output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
-                output_data[OutputThermalSpecificColumns.NODE_ENTSOE].append(pd.NA)
-                output_data[OutputThermalSpecificColumns.COMMENTS].append(pd.NA)
-                output_data[OutputThermalSpecificColumns.CLUSTER_PEMMDB].append(pd.NA)
                 output_data["YEAR"].append(year_str)
 
                 output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN].append(min_stable)
@@ -294,4 +288,7 @@ class ThermalSpecificParamParser:
         df = self._update_existing_columns_with_commondata(df)
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
+        df = apply_round_to_numeric_columns(
+            df, [OutputThermalSpecificColumns.FO_DURATION, OutputThermalSpecificColumns.PO_DURATION]
+        )
         self._export_specific_param_dataframe(df)
