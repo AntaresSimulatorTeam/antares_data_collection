@@ -31,6 +31,7 @@ from antares.data_collection.thermal.specific_param.constants import (
     OutputThermalSpecificColumns,
     weighted_avg,
 )
+from antares.data_collection.thermal.utils import apply_round_to_numeric_columns
 
 
 class ThermalSpecificParamParser:
@@ -186,9 +187,8 @@ class ThermalSpecificParamParser:
                 nb_unit = active_units.shape[0]
 
                 cap = active_units[InputThermalColumns.NET_MAX_GEN_CAP]
-                max_cap = cap.max()
 
-                min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / max_cap
+                min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
@@ -294,4 +294,7 @@ class ThermalSpecificParamParser:
         df = self._update_existing_columns_with_commondata(df)
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
+        df = apply_round_to_numeric_columns(
+            df, [OutputThermalSpecificColumns.FO_DURATION, OutputThermalSpecificColumns.PO_DURATION]
+        )
         self._export_specific_param_dataframe(df)
