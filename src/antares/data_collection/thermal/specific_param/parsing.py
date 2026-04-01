@@ -20,7 +20,7 @@ from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
-    InputThermalColumns,
+    InputThermalColumns, BIOMASS_SNCD_FUEL_VALUE,
 )
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
@@ -96,6 +96,46 @@ class ThermalSpecificParamParser:
             ]
 
         return df
+
+    def _update_column_NET_MIN_STAB_GEN(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Update NET_MIN_STAB_GEN for biomass rows when SCND_FUEL_RT is in ]0;1[.
+            - If cluster name contains "bio" → multiply by SCND_FUEL_RT
+            - Otherwise → multiply by (1 - SCND_FUEL_RT)
+        """
+        df_to_update = df.copy()
+
+        # Mask: SCND_FUEL_RT in ]0;1[
+        scnd_fuel_rt_mask = (
+            (df_to_update[InputThermalColumns.SCND_FUEL_RT] > 0) &
+            (df_to_update[InputThermalColumns.SCND_FUEL_RT] < 1)
+        )
+
+        # Mask: biomass rows
+        biomass_mask = (
+            df_to_update[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE
+        ) & scnd_fuel_rt_mask
+
+        # Mask: cluster name contains "bio"
+        bio_name_mask = df_to_update[ANTARES_CLUSTER_NAME_COLUMN].str.contains(
+            "bio", case=False, na=False
+        )
+
+        # Final masks
+        biomass_bio_mask = biomass_mask & bio_name_mask
+        biomass_non_bio_mask = biomass_mask & ~bio_name_mask
+
+        # Update "bio" rows
+        df_to_update.loc[biomass_bio_mask, InputThermalColumns.NET_MIN_STAB_GEN] *= df_to_update.loc[
+            biomass_bio_mask, InputThermalColumns.SCND_FUEL_RT
+        ]
+
+        # Update "non-bio" rows
+        df_to_update.loc[biomass_non_bio_mask, InputThermalColumns.NET_MIN_STAB_GEN] *= (
+            1 - df_to_update.loc[biomass_non_bio_mask, InputThermalColumns.SCND_FUEL_RT]
+        )
+
+        return df_to_update
 
     def _fill_from_common_data(
         self, dftofill: pd.DataFrame, mask: pd.Series, column: InputThermalColumns, attr: str
@@ -186,6 +226,8 @@ class ThermalSpecificParamParser:
                 cap = active_units[InputThermalColumns.NET_MAX_GEN_CAP]
 
                 min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
+                if min_stable > 1:
+                    raise ValueError(f"'min_stable_gen: ' {min_stable} must be >0 & <1 for {antares_node} {cluster_name}")
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
@@ -286,6 +328,7 @@ class ThermalSpecificParamParser:
 
     def build_thermal_specific_param(self, df: pd.DataFrame) -> None:
         df = self._update_existing_columns_with_commondata(df)
+        df = self._update_column_NET_MIN_STAB_GEN(df)
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
         df = apply_round_to_numeric_columns(
