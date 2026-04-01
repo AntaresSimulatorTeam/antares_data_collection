@@ -20,7 +20,8 @@ from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
-    InputThermalColumns, BIOMASS_SNCD_FUEL_VALUE,
+    BIOMASS_SNCD_FUEL_VALUE,
+    InputThermalColumns,
 )
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
@@ -106,20 +107,15 @@ class ThermalSpecificParamParser:
         df_to_update = df.copy()
 
         # Mask: SCND_FUEL_RT in ]0;1[
-        scnd_fuel_rt_mask = (
-            (df_to_update[InputThermalColumns.SCND_FUEL_RT] > 0) &
-            (df_to_update[InputThermalColumns.SCND_FUEL_RT] < 1)
+        scnd_fuel_rt_mask = (df_to_update[InputThermalColumns.SCND_FUEL_RT] > 0) & (
+            df_to_update[InputThermalColumns.SCND_FUEL_RT] < 1
         )
 
         # Mask: biomass rows
-        biomass_mask = (
-            df_to_update[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE
-        ) & scnd_fuel_rt_mask
+        biomass_mask = (df_to_update[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE) & scnd_fuel_rt_mask
 
         # Mask: cluster name contains "bio"
-        bio_name_mask = df_to_update[ANTARES_CLUSTER_NAME_COLUMN].str.contains(
-            "bio", case=False, na=False
-        )
+        bio_name_mask = df_to_update[ANTARES_CLUSTER_NAME_COLUMN].str.contains("bio", case=False, na=False)
 
         # Final masks
         biomass_bio_mask = biomass_mask & bio_name_mask
@@ -227,7 +223,9 @@ class ThermalSpecificParamParser:
 
                 min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
                 if min_stable > 1:
-                    raise ValueError(f"'min_stable_gen: ' {min_stable} must be >0 & <1 for {antares_node} {cluster_name}")
+                    raise ValueError(
+                        f"'min_stable_gen: ' {min_stable} must be >0 & <1 for {antares_node} {cluster_name}"
+                    )
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
