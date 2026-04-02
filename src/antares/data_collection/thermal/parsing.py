@@ -72,15 +72,6 @@ class ThermalParser:
             return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
         return df
 
-    # def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
-    #     """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
-    #     return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
-
-    # def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
-    #     cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
-    #     df[ANTARES_CLUSTER_NAME_COLUMN] = self.main_params.get_clusters_bp(cluster_list)
-    #     return df
-
     def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         If the column `SNCD_FUEL` is set to `Bio`, we have to split the PEMMDB Cluster into 2 Antares ones.
@@ -105,11 +96,6 @@ class ThermalParser:
         df = pd.concat([df, biomass_rows], ignore_index=True)
 
         return df
-
-    # def _add_code_antares_colum(self, df: pd.DataFrame) -> pd.DataFrame:
-    #     node_list = df[InputThermalColumns.MARKET_NODE].tolist()
-    #     df[ANTARES_NODE_NAME_COLUMN] = self.main_params.get_antares_codes(node_list)
-    #     return df
 
     def _build_filtered_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file()

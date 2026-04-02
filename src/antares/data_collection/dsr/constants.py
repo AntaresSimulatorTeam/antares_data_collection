@@ -11,8 +11,11 @@
 # This file is part of the Antares project.
 
 from enum import StrEnum
+from pathlib import Path
 
 DSR_INPUT_FILE = "DSR.csv"
+DSR_FOLDER = Path("DSR") / "cluster"
+DSR_NAME_FILE = "cluster_DSR.xlsx"
 
 
 class InputDsrColumns(StrEnum):
@@ -42,3 +45,12 @@ class OutputDsrColumns(StrEnum):
     FO_RATE = "FO_rate"
     FO_DURATION = "FO_duration"
     MODULATION = "Modulation"
+
+
+DSR_TAG_KEY_YEAR_NAME_COLUMN = "year"
+
+# default values for static outpur colums
+DSR_GROUP = "DSR"
+DSR_NB_HOUR_PER_DAY = 24
+DSR_FO_RATE = 0
+DSR_FO_DURATION = 1
