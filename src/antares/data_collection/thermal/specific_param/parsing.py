@@ -20,6 +20,7 @@ from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
+    BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
 )
 from antares.data_collection.thermal.specific_param.constants import (
@@ -94,6 +95,38 @@ class ThermalSpecificParamParser:
             df.loc[mask_net_min_stab_gen, InputThermalColumns.NET_MIN_STAB_GEN] *= df[
                 InputThermalColumns.NET_MAX_GEN_CAP
             ]
+
+        return df
+
+    def _update_column_net_min_stab_gen(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Update NET_MIN_STAB_GEN for biomass rows when SCND_FUEL_RT is in ]0;1[.
+            - If cluster name contains "bio" → multiply by SCND_FUEL_RT
+            - Otherwise → multiply by (1 - SCND_FUEL_RT)
+        """
+
+        # Mask: SCND_FUEL_RT in ]0;1[
+        scnd_fuel_rt_mask = (df[InputThermalColumns.SCND_FUEL_RT] > 0) & (df[InputThermalColumns.SCND_FUEL_RT] < 1)
+
+        # Mask: biomass rows
+        biomass_mask = (df[InputThermalColumns.SCND_FUEL] == BIOMASS_SNCD_FUEL_VALUE) & scnd_fuel_rt_mask
+
+        # Mask: cluster name contains BIOMASS_CLUSTER_SUFFIX
+        bio_name_mask = df[ANTARES_CLUSTER_NAME_COLUMN].str.contains(BIOMASS_CLUSTER_SUFFIX, case=False, na=False)
+
+        # Final masks
+        biomass_bio_mask = biomass_mask & bio_name_mask
+        biomass_non_bio_mask = biomass_mask & ~bio_name_mask
+
+        # Update "bio" rows
+        df.loc[biomass_bio_mask, InputThermalColumns.NET_MIN_STAB_GEN] *= df.loc[
+            biomass_bio_mask, InputThermalColumns.SCND_FUEL_RT
+        ]
+
+        # Update "non-bio" rows
+        df.loc[biomass_non_bio_mask, InputThermalColumns.NET_MIN_STAB_GEN] *= (
+            1 - df.loc[biomass_non_bio_mask, InputThermalColumns.SCND_FUEL_RT]
+        )
 
         return df
 
@@ -286,6 +319,7 @@ class ThermalSpecificParamParser:
 
     def build_thermal_specific_param(self, df: pd.DataFrame) -> None:
         df = self._update_existing_columns_with_commondata(df)
+        df = self._update_column_net_min_stab_gen(df)
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df)
         df = apply_round_to_numeric_columns(
