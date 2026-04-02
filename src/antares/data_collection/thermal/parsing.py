@@ -17,7 +17,6 @@ import pandas as pd
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     THERMAL_INPUT_FILE,
@@ -27,11 +26,14 @@ from antares.data_collection.thermal.installed_power.parsing import ThermalInsta
 from antares.data_collection.thermal.param_modulation.parsing import ThermalParamModulationParser
 from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from antares.data_collection.thermal.utils import (
+    add_antares_cluster_name_colum,
+    add_code_antares_colum,
     filter_df_values_based_on_op_stat,
     filter_input_based_on_study_scenarios,
     filter_non_declared_areas,
     filter_thermal_input_file_based_on_commission_date,
-    parse_input_file, add_antares_cluster_name_colum, filter_values_based_on_net_max_gen_cap, add_code_antares_colum,
+    filter_values_based_on_net_max_gen_cap,
+    parse_input_file,
 )
 
 

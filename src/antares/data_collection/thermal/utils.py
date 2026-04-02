@@ -17,8 +17,12 @@ from typing import Iterator
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns, \
-    ANTARES_CLUSTER_NAME_COLUMN, ANTARES_NODE_NAME_COLUMN
+from antares.data_collection.thermal.constants import (
+    ANTARES_CLUSTER_NAME_COLUMN,
+    ANTARES_NODE_NAME_COLUMN,
+    DEFAULT_DECOMMISSIONING_DATE,
+    InputThermalColumns,
+)
 
 
 def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.DataFrame:
