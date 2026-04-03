@@ -49,7 +49,7 @@ class OutputDsrColumns(StrEnum):
 
 DSR_TAG_KEY_YEAR_NAME_COLUMN = "year"
 
-# default values for static outpur colums
+# default values for static output columns
 DSR_GROUP = "DSR"
 DSR_NB_HOUR_PER_DAY = 24
 DSR_FO_RATE = 0
