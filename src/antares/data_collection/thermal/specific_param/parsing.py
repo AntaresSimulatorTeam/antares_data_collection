@@ -46,7 +46,6 @@ class ThermalSpecificParamParser:
         Use Common Data if empty or missing values in the input file for columns define in class `InputThermalColumns`.
 
         Additional rules:
-            - STD_EFF_NCV: if value > 1 then apply div by 100
             - NET_MIN_STAB_GEN: min_stable_generation_default*NET_MAX_GEN_CAP
         """
 
@@ -86,7 +85,9 @@ class ThermalSpecificParamParser:
             )
 
         # NET_MIN_STAB_GEN / min_stable_generation_default
-        mask_net_min_stab_gen = df[InputThermalColumns.NET_MIN_STAB_GEN].isna()
+        mask_net_min_stab_gen = (
+            df[InputThermalColumns.NET_MIN_STAB_GEN].isna() | df[InputThermalColumns.NET_MIN_STAB_GEN] == 0
+        )
         if mask_net_min_stab_gen.any():
             df = self._fill_from_common_data(
                 df, mask_net_min_stab_gen, InputThermalColumns.NET_MIN_STAB_GEN, "min_stable_generation_default"
