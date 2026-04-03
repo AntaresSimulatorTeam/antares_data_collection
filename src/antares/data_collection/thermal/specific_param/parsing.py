@@ -86,7 +86,7 @@ class ThermalSpecificParamParser:
 
         # NET_MIN_STAB_GEN / min_stable_generation_default
         mask_net_min_stab_gen = (
-            df[InputThermalColumns.NET_MIN_STAB_GEN].isna() | df[InputThermalColumns.NET_MIN_STAB_GEN] == 0
+            (df[InputThermalColumns.NET_MIN_STAB_GEN].isna()) | (df[InputThermalColumns.NET_MIN_STAB_GEN] == 0)
         )
         if mask_net_min_stab_gen.any():
             df = self._fill_from_common_data(
