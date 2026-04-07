@@ -179,7 +179,7 @@ class DsrParser:
                     index=False,
                 )
 
-    def _build_filtered_dsr_cluster_dataframe(self) -> None:
+    def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
         df = filter_df_values_based_on_op_stat(self.op_stat_values, df)
         df = self._filter_df_values_based_on_dsr_type(df)
@@ -188,9 +188,11 @@ class DsrParser:
         df = filter_thermal_input_file_based_on_commission_date(df, self.years)
         df = filter_values_based_on_net_max_gen_cap(df)
         df = add_code_antares_colum(self.main_params, df)
+
+        return df
+
+    def build_dsr_cluster(self) -> None:
+        df = self._build_filtered_dsr_cluster_dataframe()
         df = self._compute_dsr_cluster_years(df)
         df = self._filter_ordering_columns_output_dsr_cluster(df)
         self._export_dsr_cluster_dataframe(df)
-
-    def build_dsr_cluster(self) -> None:
-        self._build_filtered_dsr_cluster_dataframe()
