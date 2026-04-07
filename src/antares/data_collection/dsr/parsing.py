@@ -47,17 +47,30 @@ class DsrParser:
         input_folder: Path,
         output_folder: Path,
         op_stat_values: list[str],
+        dsr_type_values: list[str],
         main_params: MainParams,
         years: list[int],
     ):
         self.input_folder = input_folder
         self.output_folder = output_folder
         self.op_stat_values = op_stat_values
+        self.dsr_type_values = dsr_type_values
         self.main_params = main_params
         self.years = years
 
     def _read_input_file_dsr_cluster(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(DSR_INPUT_FILE), list(InputDsrColumns))
+
+    def _filter_df_values_based_on_dsr_type(self, df: pd.DataFrame) -> pd.DataFrame:
+        """We want to keep only the lines where the DSR_TYPE value matches the user given ones"""
+        dsr_type_values = self.dsr_type_values
+        if not dsr_type_values:
+            return df
+        df = df[df[InputDsrColumns.DSR_TYPE].isin(dsr_type_values)]
+        if df.empty:
+            # We want to raise as soon as possible to have a clear error msg
+            raise ValueError(f"The given op_stat values {dsr_type_values} are not present in the dataframe")
+        return df
 
     def _compute_dsr_cluster_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
         """
@@ -169,6 +182,7 @@ class DsrParser:
     def _build_filtered_dsr_cluster_dataframe(self) -> None:
         df = self._read_input_file_dsr_cluster()
         df = filter_df_values_based_on_op_stat(self.op_stat_values, df)
+        df = self._filter_df_values_based_on_dsr_type(df)
         df = filter_non_declared_areas(self.main_params, df)
         df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
         df = filter_thermal_input_file_based_on_commission_date(df, self.years)

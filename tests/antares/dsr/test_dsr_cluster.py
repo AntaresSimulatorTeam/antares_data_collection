@@ -27,7 +27,12 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # Build a DSR cluster capacity file
     parser = DsrParser(
-        RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
+        RESOURCE_PATH,
+        tmp_path,
+        ["Available on market", "Inelastic supply / fixed profile"],
+        ["Demand shedding", "Demand shifting"],
+        main_params,
+        [2030, 2035],
     )
 
     start = time.time()
