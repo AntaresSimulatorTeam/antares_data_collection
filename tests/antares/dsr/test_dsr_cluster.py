@@ -10,6 +10,7 @@
 #
 # This file is part of the Antares project.
 import time
+
 from pathlib import Path
 
 import pandas as pd
@@ -29,7 +30,6 @@ def test_nominal_case(tmp_path: Path) -> None:
         RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
 
-
     start = time.time()
     parser.build_dsr_cluster()
     end = time.time()
@@ -44,7 +44,7 @@ def test_nominal_case(tmp_path: Path) -> None:
     sheet_names = file_wb.sheet_names
 
     generated_df = pd.read_excel(generated_file_path, sheet_name=sheet_names)
-    assert list(generated_df.keys()) == ['2030', '2035']
+    assert list(generated_df.keys()) == ["2030", "2035"]
 
     # Compare its content with the expected one for any sheet
     # 2030
