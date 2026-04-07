@@ -1,0 +1,16 @@
+"CURVE_UID","TARGET_YEAR","WEATHER_SCENARIO","ZONE","ID","LABEL","COUNT"
+"AT:DSR_Derating_DSR_CURVE_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","AT","DSR_CURVE_1","Derating ratio",1461
+"BE:DSR_Derating_Virtual_curve_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Virtual_curve_1","Derating ratio",1
+"BE:DSR_Derating_Virtual_curve_2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Virtual_curve_2","Derating ratio",1
+"BE:DSR_Derating_Virtual_curve_3_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Virtual_curve_3","Derating ratio",1
+"BE:DSR_Derating_Virtual_curve_4_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Virtual_curve_4","Derating ratio",1
+"BE:DSR_Derating_Virtual_curve_5_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Virtual_curve_5","Derating ratio",1
+"EE:DSR_Derating_DSR_DERATING_CURVE_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","EE","DSR_DERATING_CURVE_1","Derating ratio",1354
+"FR:DSR_Derating_Virtual_Curve_Id_1_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Virtual_Curve_Id_1","Derating ratio",1
+"FR:DSR_Derating_Virtual_Curve_Id_2_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Virtual_Curve_Id_2","Derating ratio",1461
+"FR:DSR_Derating_Virtual_Curve_Id_3_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Virtual_Curve_Id_3","Derating ratio",731
+"IE:DSR_Derating_IE00_DSR_All_years_ERAA_All__other__weather_scenarios","All_years_ERAA","All (other) weather scenarios","IE","IE00_DSR","Derating ratio",1
+"IE:DSR_Derating_IE00_DSR_TYNDP2hr_All_years_TYNDP_All__other__weather_scenarios","All_years_TYNDP","All (other) weather scenarios","IE","IE00_DSR_TYNDP2hr","Derating ratio",1
+"IE:DSR_Derating_IE00_DSR_TYNDP6hr_All_years_TYNDP_All__other__weather_scenarios","All_years_TYNDP","All (other) weather scenarios","IE","IE00_DSR_TYNDP6hr","Derating ratio",1
+"NI:DSR_Derating_UKNI_DSR_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","NI","UKNI_DSR","Derating ratio",1
+"NL:DSR_Derating_Virtual_curve_id_Price_Band_1_capacity__MW__All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","NL","Virtual_curve_id_Price_Band_1_capacity_(MW)","Derating ratio",1

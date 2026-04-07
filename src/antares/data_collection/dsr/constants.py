@@ -13,6 +13,7 @@
 from enum import StrEnum
 from pathlib import Path
 
+# DSR CLUSTER
 DSR_INPUT_FILE = "DSR.csv"
 DSR_FOLDER = Path("DSR") / "cluster"
 DSR_NAME_FILE = "cluster_DSR.xlsx"
@@ -54,3 +55,15 @@ DSR_GROUP = "DSR"
 DSR_NB_HOUR_PER_DAY = 24
 DSR_FO_RATE = 0
 DSR_FO_DURATION = 1
+
+
+# DSR CAPACITY MODULATION
+
+DSR_DERATING_INDEX_NAME = "DSR Derating Index.csv"
+DSR_DERATING_NAME = "DSR Derating.csv"
+
+class InputDeratingIndexColumns(StrEnum):
+    ZONE = "ZONE"
+    ID = "ID"
+    TARGET_YEAR = "TARGET_YEAR"
+    CURVE_UID = "CURVE_UID"

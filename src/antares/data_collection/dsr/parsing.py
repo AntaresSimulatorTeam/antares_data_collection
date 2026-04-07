@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection.dsr.constants import (
+    DSR_DERATING_INDEX_NAME,
+    DSR_DERATING_NAME,
     DSR_FO_DURATION,
     DSR_FO_RATE,
     DSR_FOLDER,
@@ -24,11 +26,13 @@ from antares.data_collection.dsr.constants import (
     DSR_NAME_FILE,
     DSR_NB_HOUR_PER_DAY,
     DSR_TAG_KEY_YEAR_NAME_COLUMN,
+    InputDeratingIndexColumns,
     InputDsrColumns,
     OutputDsrColumns,
 )
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import ANTARES_NODE_NAME_COLUMN
+from antares.data_collection.thermal.param_modulation.constants import SCENARIO_TO_ALWAYS_CONSIDER
 from antares.data_collection.thermal.utils import (
     add_code_antares_colum,
     filter_df_values_based_on_op_stat,
@@ -60,6 +64,9 @@ class DsrParser:
 
     def _read_input_file_dsr_cluster(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(DSR_INPUT_FILE), list(InputDsrColumns))
+
+    def _parse_derating_index(self) -> pd.DataFrame:
+        return parse_input_file(self.input_folder / DSR_DERATING_INDEX_NAME, list(InputDeratingIndexColumns))
 
     def _filter_df_values_based_on_dsr_type(self, df: pd.DataFrame) -> pd.DataFrame:
         """We want to keep only the lines where the DSR_TYPE value matches the user given ones"""
@@ -179,6 +186,11 @@ class DsrParser:
                     index=False,
                 )
 
+    def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
+        scenario = self.main_params.get_scenario_type(year=year)
+        acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
+        return df[df[InputDeratingIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
+
     def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
         df = filter_df_values_based_on_op_stat(self.op_stat_values, df)
@@ -192,7 +204,28 @@ class DsrParser:
         return df
 
     def build_dsr_cluster(self) -> None:
+        # dsr cluster part
         df = self._build_filtered_dsr_cluster_dataframe()
         df = self._compute_dsr_cluster_years(df)
         df = self._filter_ordering_columns_output_dsr_cluster(df)
         self._export_dsr_cluster_dataframe(df)
+
+        # dsr capacity modulation
+
+        # parsing index file
+        dsr_derating_index_df = self._parse_derating_index()
+
+        # parsing ts file
+        dsr_derating_df = pd.read_csv(self.input_folder / DSR_DERATING_NAME)
+
+        # treatments for every year
+
+            # filter df dsr_cluster
+                # grouping by area/SECTOR
+                # sum of capacity (NET_MAX_GEN_CAP)
+
+            # filter df dsr_derating_index on year
+                # mapping with df aggregate and df dsr_derating_index (DERATING_INDEX_ID)
+                # mapping with df dsr_derating DERATING_ID/DERATING_VALUE/DERATING_INDEX_ID
+                # compute mean of DERATING_VALUE TS if multi row CURVE_UID/ZONE/ID
+
