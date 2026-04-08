@@ -31,6 +31,7 @@ def test_nominal_case(tmp_path: Path) -> None:
         tmp_path,
         ["Available on market", "Inelastic supply / fixed profile"],
         ["Demand shedding", "Demand shifting"],
+        [-1],
         main_params,
         [2030, 2035],
     )
