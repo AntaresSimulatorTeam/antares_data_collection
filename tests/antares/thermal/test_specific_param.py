@@ -11,11 +11,14 @@
 # This file is part of the Antares project.
 import time
 
+import shutil
+
 from pathlib import Path
 
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import parse_main_params
+from antares.data_collection.thermal.param_modulation.constants import TECHNICAL_PARAMS_FOLDER
 from antares.data_collection.thermal.parsing import ThermalParser
 from antares.data_collection.thermal.specific_param.constants import SPECIFIC_PARAM_FOLDER
 from tests.conftest import RESOURCE_PATH
@@ -24,6 +27,20 @@ from tests.conftest import RESOURCE_PATH
 def test_nominal_case(tmp_path: Path) -> None:
     # Use the real MainParams file
     main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+
+    # copy files capacity modulation to be used to compute min values of time series
+    # the min values will be used then to compute `min_stable_gen`
+    cm_folder_path = RESOURCE_PATH / "expected_output_files" / "thermal"
+
+    cm_2030_file = cm_folder_path / "CM_PEMMDB_2029-2030.csv"
+    cm_2035_file = cm_folder_path / "CM_PEMMDB_2034-2035.csv"
+
+    # create param modulation folder to copy files in
+    cm_test_files_folder = tmp_path / TECHNICAL_PARAMS_FOLDER
+    cm_test_files_folder.mkdir(parents=True, exist_ok=True)
+
+    shutil.copy(cm_2030_file, cm_test_files_folder / "CM_PEMMDB_2029-2030.csv")
+    shutil.copy(cm_2035_file, cm_test_files_folder / "CM_PEMMDB_2034-2035.csv")
 
     # Build a thermal specific param file
     op_stat_filter = ["Available on market", "Inelastic supply / fixed profile"]
