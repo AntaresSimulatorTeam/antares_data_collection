@@ -241,7 +241,8 @@ class ThermalSpecificParamParser:
                     ].dropna()
 
                     if not cm_min_value.empty:
-                        min_stable = min(min_stable, cm_min_value.iloc[0])
+                        if not cm_min_value.item() == 0:
+                            min_stable = min(min_stable, cm_min_value.iloc[0])
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
