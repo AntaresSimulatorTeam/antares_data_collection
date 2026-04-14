@@ -44,7 +44,7 @@ YearId: TypeAlias = str
 
 @dataclass
 class Metric:
-    value: float
+    min_value: float
 
 
 Capacity_modulation_ts_min_values: TypeAlias = dict[ZoneId, dict[ClusterId, Metric]]
@@ -247,12 +247,11 @@ class ThermalSpecificParamParser:
                 min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
 
                 # get min of TS capacity modulation
-                cm_min_value = df_cm_min_values.get(year_str, {}).get(antares_node, {}).get(cluster_name)
+                cm_min_value = df_cm_min_values.get(year_str, {}).get(str(antares_node), {}).get(str(cluster_name))
 
                 if cm_min_value is not None:
-                    cm_min_value = cm_min_value.value
-                    if not cm_min_value == 0:
-                        min_stable = min(min_stable, cm_min_value)
+                    if not cm_min_value.min_value == 0:
+                        min_stable = min(min_stable, cm_min_value.min_value)
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
@@ -384,7 +383,7 @@ class ThermalSpecificParamParser:
             for col in cols:
                 min_val = df_year[col].min()
                 zone_id, cluster_id = col.split("_")
-                year_dict.setdefault(zone_id, {})[cluster_id] = Metric(value=min_val)
+                year_dict.setdefault(zone_id, {})[cluster_id] = Metric(min_value=min_val)
 
             result[year] = year_dict
 
