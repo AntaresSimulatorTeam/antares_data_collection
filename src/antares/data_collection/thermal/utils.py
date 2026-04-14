@@ -23,7 +23,12 @@ from antares.data_collection.thermal.param_modulation.constants import CAPACITY_
 
 def get_path_capacity_modulation_file(year: int, root_export_folder: Path) -> Path:
     name_file = f"{CAPACITY_MODULATION_NAME}_{year - 1}-{year}.csv"
-    return root_export_folder / TECHNICAL_PARAMS_FOLDER / name_file
+    full_path_file = root_export_folder / TECHNICAL_PARAMS_FOLDER / name_file
+    if not full_path_file.exists():
+        raise FileNotFoundError(
+            f"Capacity modulation file not found to compute minimal values of time series: {full_path_file}"
+        )
+    return full_path_file
 
 
 def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.DataFrame:

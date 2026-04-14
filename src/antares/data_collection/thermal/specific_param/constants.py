@@ -56,5 +56,3 @@ class OutputThermalSpecificColumns(StrEnum):
 F_COLUMNS = [f"F{i}" for i in range(1, 13)]
 P_COLUMNS = [f"P{i}" for i in range(1, 13)]
 P_COLUMNS_WINTER = [f"P{i}" for i in [1, 2, 3, 10, 11, 12]]
-
-TAG_YEAR_COL = "tag_year"

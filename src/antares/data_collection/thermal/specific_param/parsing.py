@@ -9,7 +9,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeAlias
 
@@ -23,9 +22,7 @@ from antares.data_collection.thermal.constants import (
     BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
 )
-from antares.data_collection.thermal.param_modulation.constants import (
-    OutputHoursColumns,
-)
+from antares.data_collection.thermal.param_modulation.constants import OutputHoursColumns
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
     P_COLUMNS,
@@ -39,15 +36,10 @@ from antares.data_collection.thermal.utils import apply_round_to_numeric_columns
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
-YearId: TypeAlias = str
+YearId: TypeAlias = int
+MinValue: TypeAlias = float
 
-
-@dataclass
-class Metric:
-    min_value: float
-
-
-Capacity_modulation_ts_min_values: TypeAlias = dict[ZoneId, dict[ClusterId, Metric]]
+Capacity_modulation_ts_min_values: TypeAlias = dict[ZoneId, dict[ClusterId, MinValue]]
 
 
 class ThermalSpecificParamParser:
@@ -187,19 +179,14 @@ class ThermalSpecificParamParser:
         self, df: pd.DataFrame, df_cm_min_values: dict[YearId, Capacity_modulation_ts_min_values]
     ) -> pd.DataFrame:
         years = self.years
-
-        years_date_format: dict[str, pd.Timestamp] = {
-            str(year): pd.Timestamp(year=year, month=1, day=1) for year in years
-        }
-
+        years_date_format: dict[int, pd.Timestamp] = {year: pd.Timestamp(year=year, month=1, day=1) for year in years}
         df_computed = self._computations_thermal_specific(df, years_date_format, df_cm_min_values)
-
         return df_computed
 
     def _computations_thermal_specific(
         self,
         df_to_compute: pd.DataFrame,
-        years_input: dict[str, pd.Timestamp],
+        years_input: dict[int, pd.Timestamp],
         df_cm_min_values: dict[YearId, Capacity_modulation_ts_min_values],
     ) -> pd.DataFrame:
         grouped_dfs = df_to_compute.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
@@ -225,7 +212,10 @@ class ThermalSpecificParamParser:
         }
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
-            for year_str, year_date in years_input.items():
+            for year, year_date in years_input.items():
+                assert isinstance(antares_node, str)
+                assert isinstance(cluster_name, str)
+
                 mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= year_date) & (
                     grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= year_date
                 )
@@ -247,11 +237,10 @@ class ThermalSpecificParamParser:
                 min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
 
                 # get min of TS capacity modulation
-                cm_min_value = df_cm_min_values.get(year_str, {}).get(str(antares_node), {}).get(str(cluster_name))
+                cm_min_value = df_cm_min_values.get(year, {}).get(antares_node, {}).get(cluster_name)
 
-                if cm_min_value is not None:
-                    if not cm_min_value.min_value == 0:
-                        min_stable = min(min_stable, cm_min_value.min_value)
+                if cm_min_value:
+                    min_stable = min(min_stable, cm_min_value)
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
@@ -304,7 +293,7 @@ class ThermalSpecificParamParser:
                 # ---- store result ----
                 output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
                 output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
-                output_data["YEAR"].append(year_str)
+                output_data["YEAR"].append(year)
 
                 output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN].append(min_stable)
                 output_data[OutputThermalSpecificColumns.SPINNING].append(0)
@@ -350,27 +339,27 @@ class ThermalSpecificParamParser:
                     index=False,
                 )
 
-    def _parse_capacity_ts_modulation_file(self) -> dict[str, pd.DataFrame]:
+    def _parse_capacity_ts_modulation_file(self) -> dict[int, pd.DataFrame]:
         """Parse the time series capacity modulation file."""
         years = self.years
 
-        result: dict[str, pd.DataFrame] = {}
+        result: dict[int, pd.DataFrame] = {}
         for year in years:
             capacity_modulation_file = get_path_capacity_modulation_file(year, self.output_folder)
-            if not capacity_modulation_file.exists():
-                raise FileNotFoundError(
-                    f"Capacity modulation file not found to compute minimal values of time series: {capacity_modulation_file}"
-                )
+            # if not capacity_modulation_file.exists():
+            #     raise FileNotFoundError(
+            #         f"Capacity modulation file not found to compute minimal values of time series: {capacity_modulation_file}"
+            #     )
 
             # read file
             df_year = pd.read_csv(capacity_modulation_file)
 
-            result[str(year)] = df_year
+            result[year] = df_year
 
         return result
 
     def _compute_min_of_ts_modulation(
-        self, cm_ts_dict: dict[str, pd.DataFrame]
+        self, cm_ts_dict: dict[int, pd.DataFrame]
     ) -> dict[YearId, Capacity_modulation_ts_min_values]:
         """Return a dictionary of miniaml value from every time series structured by year/area/cluster."""
         excluded_cols = [OutputHoursColumns.HOUR, OutputHoursColumns.DATE]
@@ -383,7 +372,7 @@ class ThermalSpecificParamParser:
             for col in cols:
                 min_val = df_year[col].min()
                 zone_id, cluster_id = col.split("_")
-                year_dict.setdefault(zone_id, {})[cluster_id] = Metric(min_value=min_val)
+                year_dict.setdefault(zone_id, {})[cluster_id] = min_val
 
             result[year] = year_dict
 
