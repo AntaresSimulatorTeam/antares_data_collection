@@ -21,7 +21,6 @@ import pandas as pd
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
     InputThermalColumns,
 )
 from antares.data_collection.thermal.param_modulation.constants import (
@@ -51,7 +50,7 @@ from antares.data_collection.thermal.utils import (
     filter_thermal_input_file_based_on_commission_date,
     parse_input_file,
 )
-from antares.data_collection.utils import write_csv_file
+from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN, write_csv_file
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str

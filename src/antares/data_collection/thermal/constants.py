@@ -21,7 +21,8 @@ FUEL_MAPPING = {BIOMASS_CLUSTER_SUFFIX: "Mixed fuel", "virtuel": "Other"}
 
 
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
-ANTARES_NODE_NAME_COLUMN = "antares_node"
+
+THERMAL_COL_NAME_OP_STAT = "OP_STAT"
 
 
 class InputThermalColumns(StrEnum):
