@@ -25,7 +25,6 @@ from antares.data_collection.thermal.constants import (
     InputThermalColumns,
 )
 from antares.data_collection.thermal.param_modulation.constants import (
-    CAPACITY_MODULATION_NAME,
     DEFAULT_CAPACITY_MODULATION_TS,
     DEFAULT_MUST_RUN_TS,
     DERATING_INDEX_NAME,
@@ -49,6 +48,7 @@ from antares.data_collection.thermal.param_modulation.constants import (
 from antares.data_collection.thermal.utils import (
     filter_input_based_on_study_scenarios,
     filter_thermal_input_file_based_on_commission_date,
+    get_path_capacity_modulation_file,
     parse_input_file,
 )
 from antares.data_collection.utils import write_csv_file
@@ -333,7 +333,7 @@ class ThermalParamModulationParser:
 
     def _write_capacity_modulation_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition, year)
-        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year - 1}-{year}.csv"
+        file_path = get_path_capacity_modulation_file(year, self.output_folder)
         write_csv_file(file_path, df)
 
     def build_param_modulation(self, thermal_df: pd.DataFrame) -> None:
