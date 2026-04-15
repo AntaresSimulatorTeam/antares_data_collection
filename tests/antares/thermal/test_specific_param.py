@@ -34,7 +34,7 @@ def test_nominal_case(tmp_path: Path) -> None:
     cm_2030_file = cm_folder_path / "CM_PEMMDB_2029-2030.csv"
     cm_2035_file = cm_folder_path / "CM_PEMMDB_2034-2035.csv"
 
-    # create param modulation folder to copy files in
+    # create a param modulation folder to copy files in
     cm_test_files_folder = tmp_path / TECHNICAL_PARAMS_FOLDER
     cm_test_files_folder.mkdir(parents=True, exist_ok=True)
 
@@ -63,13 +63,13 @@ def test_nominal_case(tmp_path: Path) -> None:
     assert list(generated_df.keys()) == ["2029-2030", "2034-2035"]
 
     # Compare its content with the expected one for any sheet
+    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_param_PEMMDB.xlsx"
+    expected_excel_wb = pd.ExcelFile(expected_file_path)
     # 2030
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_2030.xlsx"
-    expected_df_2030 = pd.read_excel(expected_file_path)
     sheet_name = list(generated_df.keys())[0]
+    expected_df_2030 = pd.read_excel(expected_excel_wb, sheet_name)
     pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2030, check_dtype=False)
     # 2035
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_2035.xlsx"
-    expected_df_2035 = pd.read_excel(expected_file_path)
     sheet_name = list(generated_df.keys())[1]
+    expected_df_2035 = pd.read_excel(expected_file_path, sheet_name)
     pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2035, check_dtype=False)

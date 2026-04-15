@@ -34,7 +34,6 @@ from antares.data_collection.thermal.specific_param.constants import (
 )
 from antares.data_collection.thermal.utils import (
     apply_round_to_numeric_columns,
-    compute_min_of_ts_modulation_year,
     get_path_capacity_modulation_file,
 )
 
@@ -241,7 +240,7 @@ class ThermalSpecificParamParser:
                 min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
 
                 # get min of TS capacity modulation
-                cm_min_value = df_cm_min_values.get(year, {}).get(antares_node, {}).get(cluster_name)
+                cm_min_value = df_cm_min_values[year].get(antares_node, {}).get(cluster_name)
 
                 if cm_min_value:
                     min_stable = min(min_stable, cm_min_value)
@@ -344,20 +343,46 @@ class ThermalSpecificParamParser:
                 )
 
     def _parse_capacity_ts_modulation_file(self) -> dict[YearId, Capacity_modulation_ts_min_values]:
-        """Parse the time series capacity modulation file."""
+        """Parse the time series capacity modulation file.
+
+        - Compute min value for every time series"""
         years = self.years
 
         result: dict[YearId, Capacity_modulation_ts_min_values] = {}
         for year in years:
             cm_path_file = get_path_capacity_modulation_file(year, self.output_folder)
+            if not cm_path_file.exists():
+                raise FileNotFoundError(
+                    f"Capacity modulation file not found to compute minimal values of time series: {cm_path_file}"
+                )
+
             # read file
             df_year = pd.read_csv(cm_path_file)
 
             # compute min of TS
             excluded_cols = [OutputHoursColumns.HOUR.value, OutputHoursColumns.DATE.value]
-            dict_zone_cluster_min = compute_min_of_ts_modulation_year(df_year, excluded_cols)
+            dict_zone_cluster_min = self._compute_min_of_ts_modulation_year(df_year, excluded_cols)
 
             result[year] = dict_zone_cluster_min
+
+        return result
+
+    def _compute_min_of_ts_modulation_year(
+        self, df: pd.DataFrame, excluded_cols: list[str]
+    ) -> dict[ZoneId, dict[ClusterId, MinValue]]:
+        """Return a dictionary of miniaml value from time series files structured by area/cluster."""
+        result: dict[ZoneId, dict[ClusterId, MinValue]] = {}
+
+        for col in excluded_cols:
+            if col not in df.columns:
+                raise ValueError(f"Column {col} not found in {df.columns}")
+
+        cols = df.columns.difference(excluded_cols)
+
+        for col in cols:
+            min_val = df[col].min()
+            zone_id, cluster_id = col.split("_")
+            result.setdefault(zone_id, {})[cluster_id] = min_val
 
         return result
 
