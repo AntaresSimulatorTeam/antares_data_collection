@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection.dsr.constants import (
+    DSR_COL_NAME_OP_STAT,
     DSR_DERATING_INDEX_NAME,
     DSR_DERATING_NAME,
     DSR_FO_DURATION,
@@ -35,14 +36,17 @@ from antares.data_collection.thermal.constants import ANTARES_NODE_NAME_COLUMN
 from antares.data_collection.thermal.param_modulation.constants import SCENARIO_TO_ALWAYS_CONSIDER
 from antares.data_collection.thermal.utils import (
     add_code_antares_colum,
-    filter_df_values_based_on_op_stat,
     filter_input_based_on_study_scenarios,
     filter_non_declared_areas,
     filter_thermal_input_file_based_on_commission_date,
     filter_values_based_on_net_max_gen_cap,
     parse_input_file,
 )
-from antares.data_collection.utils import MAX_DECIMAL_DIGITS
+from antares.data_collection.utils import (
+    ANTARES_NODE_NAME_COLUMN,
+    MAX_DECIMAL_DIGITS,
+    filter_df_values_based_on_op_stat,
+)
 
 
 class DsrParser:
@@ -122,7 +126,9 @@ class DsrParser:
         )
 
         # build column "NAME" by AREA put "DSR{1:N}"
-        result[OutputDsrColumns.NAME] = "DSR" + (result.groupby(ANTARES_NODE_NAME_COLUMN).cumcount() + 1).astype(str)
+        result[OutputDsrColumns.NAME] = DSR_GROUP + (result.groupby(ANTARES_NODE_NAME_COLUMN).cumcount() + 1).astype(
+            str
+        )
 
         # Round capacities
         result["capacities"] = result["capacities"].round(MAX_DECIMAL_DIGITS)
@@ -171,14 +177,8 @@ class DsrParser:
         Only keep the output columns needed for the DSR cluster.
             - Ordering columns from `OutputDsrColumns`
         """
-
         columns_to_keep = [col.value for col in OutputDsrColumns]
         columns_to_keep.append(DSR_TAG_KEY_YEAR_NAME_COLUMN)
-
-        missing_cols = set(columns_to_keep) - set(df.columns)
-        if len(missing_cols) > 0:
-            raise ValueError(f"Missing columns in DSR DataFrame to build Output file: {missing_cols}")
-
         return df[columns_to_keep]
 
     def _export_dsr_cluster_dataframe(self, df: pd.DataFrame) -> None:
@@ -206,7 +206,7 @@ class DsrParser:
 
     def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
-        df = filter_df_values_based_on_op_stat(self.op_stat_values, df)
+        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, DSR_COL_NAME_OP_STAT)
         df = self._filter_df_values_based_on_dsr_type(df)
         df = self._filter_exclude_df_values_based_on_act_price_da(df)
         df = filter_non_declared_areas(self.main_params, df)

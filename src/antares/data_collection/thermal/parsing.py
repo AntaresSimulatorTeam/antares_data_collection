@@ -19,6 +19,7 @@ from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
+    THERMAL_COL_NAME_OP_STAT,
     THERMAL_INPUT_FILE,
     InputThermalColumns,
 )
@@ -28,13 +29,13 @@ from antares.data_collection.thermal.specific_param.parsing import ThermalSpecif
 from antares.data_collection.thermal.utils import (
     add_antares_cluster_name_colum,
     add_code_antares_colum,
-    filter_df_values_based_on_op_stat,
     filter_input_based_on_study_scenarios,
     filter_non_declared_areas,
     filter_thermal_input_file_based_on_commission_date,
     filter_values_based_on_net_max_gen_cap,
     parse_input_file,
 )
+from antares.data_collection.utils import filter_df_values_based_on_op_stat
 
 
 class ThermalParser:
@@ -99,7 +100,7 @@ class ThermalParser:
 
     def _build_filtered_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file()
-        df = filter_df_values_based_on_op_stat(self.op_stat_values, df)
+        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, THERMAL_COL_NAME_OP_STAT)
         df = filter_non_declared_areas(self.main_params, df)
         df = self._filter_non_declared_clusters(df)
         df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)

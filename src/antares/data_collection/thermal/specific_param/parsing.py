@@ -18,7 +18,6 @@ import pandas as pd
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
@@ -33,6 +32,7 @@ from antares.data_collection.thermal.specific_param.constants import (
     weighted_avg,
 )
 from antares.data_collection.thermal.utils import apply_round_to_numeric_columns
+from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN
 
 
 class ThermalSpecificParamParser:

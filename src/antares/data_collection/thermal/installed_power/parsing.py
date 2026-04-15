@@ -18,7 +18,6 @@ import pandas as pd
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     FUEL_MAPPING,
     InputThermalColumns,
@@ -28,7 +27,7 @@ from antares.data_collection.thermal.installed_power.constants import (
     OutputThermalInstallPowerColumns,
 )
 from antares.data_collection.thermal.utils import get_starting_and_ending_timestamps_for_outputs
-from antares.data_collection.utils import MAX_DECIMAL_DIGITS
+from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS
 
 
 class ThermalInstallerPowerParser:

@@ -17,6 +17,7 @@ from pathlib import Path
 DSR_INPUT_FILE = "DSR.csv"
 DSR_FOLDER = Path("DSR") / "cluster"
 DSR_NAME_FILE = "cluster_DSR.xlsx"
+DSR_COL_NAME_OP_STAT = "OP_STAT"
 
 
 class InputDsrColumns(StrEnum):
