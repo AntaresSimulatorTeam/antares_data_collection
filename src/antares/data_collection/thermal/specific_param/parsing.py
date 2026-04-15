@@ -32,7 +32,11 @@ from antares.data_collection.thermal.specific_param.constants import (
     OutputThermalSpecificColumns,
     weighted_avg,
 )
-from antares.data_collection.thermal.utils import apply_round_to_numeric_columns, get_path_capacity_modulation_file
+from antares.data_collection.thermal.utils import (
+    apply_round_to_numeric_columns,
+    compute_min_of_ts_modulation_year,
+    get_path_capacity_modulation_file,
+)
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
@@ -339,42 +343,21 @@ class ThermalSpecificParamParser:
                     index=False,
                 )
 
-    def _parse_capacity_ts_modulation_file(self) -> dict[int, pd.DataFrame]:
+    def _parse_capacity_ts_modulation_file(self) -> dict[YearId, Capacity_modulation_ts_min_values]:
         """Parse the time series capacity modulation file."""
         years = self.years
 
-        result: dict[int, pd.DataFrame] = {}
-        for year in years:
-            capacity_modulation_file = get_path_capacity_modulation_file(year, self.output_folder)
-            # if not capacity_modulation_file.exists():
-            #     raise FileNotFoundError(
-            #         f"Capacity modulation file not found to compute minimal values of time series: {capacity_modulation_file}"
-            #     )
-
-            # read file
-            df_year = pd.read_csv(capacity_modulation_file)
-
-            result[year] = df_year
-
-        return result
-
-    def _compute_min_of_ts_modulation(
-        self, cm_ts_dict: dict[int, pd.DataFrame]
-    ) -> dict[YearId, Capacity_modulation_ts_min_values]:
-        """Return a dictionary of miniaml value from every time series structured by year/area/cluster."""
-        excluded_cols = [OutputHoursColumns.HOUR, OutputHoursColumns.DATE]
-
         result: dict[YearId, Capacity_modulation_ts_min_values] = {}
-        for year, df_year in cm_ts_dict.items():
-            cols = df_year.columns.difference(excluded_cols)
-            year_dict: Capacity_modulation_ts_min_values = {}
+        for year in years:
+            cm_path_file = get_path_capacity_modulation_file(year, self.output_folder)
+            # read file
+            df_year = pd.read_csv(cm_path_file)
 
-            for col in cols:
-                min_val = df_year[col].min()
-                zone_id, cluster_id = col.split("_")
-                year_dict.setdefault(zone_id, {})[cluster_id] = min_val
+            # compute min of TS
+            excluded_cols = [OutputHoursColumns.HOUR.value, OutputHoursColumns.DATE.value]
+            dict_zone_cluster_min = compute_min_of_ts_modulation_year(df_year, excluded_cols)
 
-            result[year] = year_dict
+            result[year] = dict_zone_cluster_min
 
         return result
 
@@ -383,8 +366,8 @@ class ThermalSpecificParamParser:
         df = self._update_column_net_min_stab_gen(df)
 
         # use TS modulation file to compute min of TS
-        dict_of_df_cm = self._parse_capacity_ts_modulation_file()
-        dict_of_cm_min_value = self._compute_min_of_ts_modulation(dict_of_df_cm)
+        dict_of_cm_min_value = self._parse_capacity_ts_modulation_file()
+        # dict_of_cm_min_value = self._compute_min_of_ts_modulation(dict_of_df_cm)
 
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df, dict_of_cm_min_value)

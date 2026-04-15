@@ -21,6 +21,24 @@ from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DA
 from antares.data_collection.thermal.param_modulation.constants import CAPACITY_MODULATION_NAME, TECHNICAL_PARAMS_FOLDER
 
 
+def compute_min_of_ts_modulation_year(df: pd.DataFrame, excluded_cols: list[str]) -> dict[str, dict[str, float]]:
+    """Return a dictionary of miniaml value from time series files structured by area/cluster."""
+    result: dict[str, dict[str, float]] = {}
+
+    for col in excluded_cols:
+        if col not in df.columns:
+            raise ValueError(f"Column {col} not found in {df.columns}")
+
+    cols = df.columns.difference(excluded_cols)
+
+    for col in cols:
+        min_val = df[col].min()
+        zone_id, cluster_id = col.split("_")
+        result.setdefault(zone_id, {})[cluster_id] = min_val
+
+    return result
+
+
 def get_path_capacity_modulation_file(year: int, root_export_folder: Path) -> Path:
     name_file = f"{CAPACITY_MODULATION_NAME}_{year - 1}-{year}.csv"
     full_path_file = root_export_folder / TECHNICAL_PARAMS_FOLDER / name_file
