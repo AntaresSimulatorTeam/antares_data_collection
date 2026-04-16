@@ -53,13 +53,13 @@ def test_nominal_case(tmp_path: Path) -> None:
     assert list(generated_df.keys()) == ["2030", "2035"]
 
     # Compare its content with the expected one for any sheet
+    expected_wb_file_path = RESOURCE_PATH / "expected_output_files" / "dsr" / "cluster_DSR.xlsx"
+    expected_wb = pd.ExcelFile(expected_wb_file_path)
     # 2030
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "dsr" / "dsr_cluster_2030.xlsx"
-    expected_df_2030 = pd.read_excel(expected_file_path)
     sheet_name = list(generated_df.keys())[0]
+    expected_df_2030 = pd.read_excel(expected_wb, sheet_name=sheet_name)
     pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2030, check_dtype=False)
     # 2035
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "dsr" / "dsr_cluster_2035.xlsx"
-    expected_df_2035 = pd.read_excel(expected_file_path)
     sheet_name = list(generated_df.keys())[1]
+    expected_df_2035 = pd.read_excel(expected_wb, sheet_name=sheet_name)
     pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2035, check_dtype=False)
