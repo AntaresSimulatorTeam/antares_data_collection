@@ -21,8 +21,8 @@ from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
+    OutputHoursColumns,
 )
-from antares.data_collection.thermal.param_modulation.constants import OutputHoursColumns
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
     P_COLUMNS,
@@ -40,9 +40,9 @@ from antares.data_collection.thermal.utils import (
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
 YearId: TypeAlias = int
-MinValue: TypeAlias = float
+MininalCapacityModulation: TypeAlias = float
 
-Capacity_modulation_ts_min_values: TypeAlias = dict[ZoneId, dict[ClusterId, MinValue]]
+Capacity_modulation_ts_min_values: TypeAlias = dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]
 
 
 class ThermalSpecificParamParser:
@@ -183,16 +183,8 @@ class ThermalSpecificParamParser:
     ) -> pd.DataFrame:
         years = self.years
         years_date_format: dict[int, pd.Timestamp] = {year: pd.Timestamp(year=year, month=1, day=1) for year in years}
-        df_computed = self._computations_thermal_specific(df, years_date_format, df_cm_min_values)
-        return df_computed
 
-    def _computations_thermal_specific(
-        self,
-        df_to_compute: pd.DataFrame,
-        years_input: dict[int, pd.Timestamp],
-        df_cm_min_values: dict[YearId, Capacity_modulation_ts_min_values],
-    ) -> pd.DataFrame:
-        grouped_dfs = df_to_compute.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
+        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
 
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
@@ -215,7 +207,7 @@ class ThermalSpecificParamParser:
         }
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
-            for year, year_date in years_input.items():
+            for year, year_date in years_date_format.items():
                 assert isinstance(antares_node, str)
                 assert isinstance(cluster_name, str)
 
@@ -369,13 +361,9 @@ class ThermalSpecificParamParser:
 
     def _compute_min_of_ts_modulation_year(
         self, df: pd.DataFrame, excluded_cols: list[str]
-    ) -> dict[ZoneId, dict[ClusterId, MinValue]]:
+    ) -> dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]:
         """Return a dictionary of miniaml value from time series files structured by area/cluster."""
-        result: dict[ZoneId, dict[ClusterId, MinValue]] = {}
-
-        for col in excluded_cols:
-            if col not in df.columns:
-                raise ValueError(f"Column {col} not found in {df.columns}")
+        result: dict[ZoneId, dict[ClusterId, MininalCapacityModulation]] = {}
 
         cols = df.columns.difference(excluded_cols)
 
@@ -392,7 +380,6 @@ class ThermalSpecificParamParser:
 
         # use TS modulation file to compute min of TS
         dict_of_cm_min_value = self._parse_capacity_ts_modulation_file()
-        # dict_of_cm_min_value = self._compute_min_of_ts_modulation(dict_of_df_cm)
 
         df = self._filter_columns_for_output_specific(df)
         df = self._build_thermal_specific_pegase(df, dict_of_cm_min_value)

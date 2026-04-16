@@ -23,6 +23,7 @@ from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
     InputThermalColumns,
+    OutputHoursColumns,
 )
 from antares.data_collection.thermal.param_modulation.constants import (
     DEFAULT_CAPACITY_MODULATION_TS,
@@ -43,7 +44,6 @@ from antares.data_collection.thermal.param_modulation.constants import (
     TECHNICAL_PARAMS_FOLDER,
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
-    OutputHoursColumns,
 )
 from antares.data_collection.thermal.utils import (
     filter_input_based_on_study_scenarios,
