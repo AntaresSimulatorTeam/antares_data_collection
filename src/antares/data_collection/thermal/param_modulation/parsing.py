@@ -45,12 +45,15 @@ from antares.data_collection.thermal.param_modulation.constants import (
     InputIndexColumns,
 )
 from antares.data_collection.thermal.utils import (
-    filter_input_based_on_study_scenarios,
-    filter_thermal_input_file_based_on_commission_date,
     get_path_capacity_modulation_file,
     parse_input_file,
 )
-from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN, write_csv_file
+from antares.data_collection.utils import (
+    ANTARES_NODE_NAME_COLUMN,
+    filter_df_input_file_based_on_commission_date,
+    filter_input_based_on_study_scenarios,
+    write_csv_file,
+)
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
@@ -140,8 +143,15 @@ class ThermalParamModulationParser:
         return mapping
 
     def _filter_thermal_input_file(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        df = filter_input_based_on_study_scenarios(df, self.main_params, [year])
-        df = filter_thermal_input_file_based_on_commission_date(df, [year])
+        df = filter_input_based_on_study_scenarios(
+            df, self.main_params, [year], InputThermalColumns.STUDY_SCENARIO.value
+        )
+        df = filter_df_input_file_based_on_commission_date(
+            df,
+            [year],
+            InputThermalColumns.COMMISSIONING_DATE.value,
+            InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        )
         useful_columns = [
             InputThermalColumns.ZONE,
             InputThermalColumns.MARKET_NODE,

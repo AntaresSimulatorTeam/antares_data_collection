@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection.dsr.constants import (
-    DSR_COL_NAME_OP_STAT,
     DSR_FO_DURATION,
     DSR_FO_RATE,
     DSR_FOLDER,
@@ -30,17 +29,17 @@ from antares.data_collection.dsr.constants import (
 )
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.utils import (
-    add_code_antares_colum,
-    filter_input_based_on_study_scenarios,
-    filter_non_declared_areas,
-    filter_thermal_input_file_based_on_commission_date,
-    filter_values_based_on_net_max_gen_cap,
     parse_input_file,
 )
 from antares.data_collection.utils import (
     ANTARES_NODE_NAME_COLUMN,
     MAX_DECIMAL_DIGITS,
+    add_code_antares_colum,
+    filter_df_input_file_based_on_commission_date,
     filter_df_values_based_on_op_stat,
+    filter_input_based_on_study_scenarios,
+    filter_non_declared_areas,
+    filter_values_based_on_net_max_gen_cap,
 )
 
 
@@ -193,13 +192,20 @@ class DsrParser:
 
     def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
-        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, DSR_COL_NAME_OP_STAT)
+        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, InputDsrColumns.OP_STAT.value)
         df = self._filter_df_values_based_on_dsr_type(df)
         df = self._filter_exclude_df_values_based_on_act_price_da(df)
-        df = filter_non_declared_areas(self.main_params, df)
-        df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
-        df = filter_thermal_input_file_based_on_commission_date(df, self.years)
-        df = filter_values_based_on_net_max_gen_cap(df)
+        df = filter_non_declared_areas(self.main_params, df, InputDsrColumns.MARKET_NODE.value)
+        df = filter_input_based_on_study_scenarios(
+            df, self.main_params, self.years, InputDsrColumns.STUDY_SCENARIO.value
+        )
+        df = filter_df_input_file_based_on_commission_date(
+            df,
+            self.years,
+            InputDsrColumns.COMMISSIONING_DATE.value,
+            InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        )
+        df = filter_values_based_on_net_max_gen_cap(df, InputDsrColumns.NET_MAX_GEN_CAP.value)
         df = add_code_antares_colum(self.main_params, df)
 
         return df
