@@ -216,6 +216,38 @@ class DsrParser:
 
         return df
 
+    def _build_dsr_capacity_modulation(self):
+        # parsing index file
+        dsr_derating_index_df = self._parse_derating_index()
+
+        # parsing ts file
+        dsr_derating_ts_df = pd.read_csv(self.input_folder / DSR_DERATING_NAME)
+
+        # treatments for every year
+
+        # filter df dsr_cluster
+        # grouping by area/SECTOR
+        # sum of capacity (NET_MAX_GEN_CAP)
+
+        # filter df dsr_derating_index on year
+        # mapping with df aggregate and df dsr_derating_index (DERATING_INDEX_ID)
+        # mapping with df dsr_derating DERATING_ID/DERATING_VALUE/DERATING_INDEX_ID
+        # compute mean of DERATING_VALUE TS if multi row CURVE_UID/ZONE/ID
+
+        for year in self.years:
+            # Builds an object with the whole data regrouped
+            index_to_timeseries = self._build_index_to_timeseries_object(
+                year,
+                dsr_derating_index=dsr_derating_index_df,
+                dsr_derating=dsr_derating_ts_df
+            )
+
+            # thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
+            #
+            # # Write the `Must Run` file
+            # must_run_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
+            # self._write_must_run_file(year, must_run_cluster_group_ts_repartition)
+
     def build_dsr_cluster(self) -> None:
         # dsr cluster part
         df = self._build_filtered_dsr_cluster_dataframe()
@@ -224,21 +256,4 @@ class DsrParser:
         self._export_dsr_cluster_dataframe(df)
 
         # dsr capacity modulation
-
-        # parsing index file
-        dsr_derating_index_df = self._parse_derating_index()
-
-        # parsing ts file
-        dsr_derating_df = pd.read_csv(self.input_folder / DSR_DERATING_NAME)
-
-        # treatments for every year
-
-            # filter df dsr_cluster
-                # grouping by area/SECTOR
-                # sum of capacity (NET_MAX_GEN_CAP)
-
-            # filter df dsr_derating_index on year
-                # mapping with df aggregate and df dsr_derating_index (DERATING_INDEX_ID)
-                # mapping with df dsr_derating DERATING_ID/DERATING_VALUE/DERATING_INDEX_ID
-                # compute mean of DERATING_VALUE TS if multi row CURVE_UID/ZONE/ID
 
