@@ -23,7 +23,7 @@ from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
     InputThermalColumns,
-    OutputHoursColumns,
+    OutputModulationColumns,
 )
 from antares.data_collection.thermal.param_modulation.constants import (
     DEFAULT_CAPACITY_MODULATION_TS,
@@ -312,12 +312,12 @@ class ThermalParamModulationParser:
 
         # Add the Hours columns
         cols_before_hours = list(df.columns)
-        df[OutputHoursColumns.HOUR] = range(1, len(df) + 1)
+        df[OutputModulationColumns.HOUR] = range(1, len(df) + 1)
         start_time = pd.to_datetime(f"01/01/{year} 00:00:00")
-        df[OutputHoursColumns.DATE] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df))]
+        df[OutputModulationColumns.DATE] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df))]
 
         # We should put them as the first 2 columns for the user readability
-        df = df[[OutputHoursColumns.DATE.value, OutputHoursColumns.HOUR.value] + cols_before_hours]
+        df = df[[OutputModulationColumns.DATE.value, OutputModulationColumns.HOUR.value] + cols_before_hours]
 
         # We want our dataframe to start on the 1st of July at midnight for PEGASE.
         # So we have to reindex it at the right index

@@ -21,7 +21,7 @@ from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
-    OutputHoursColumns,
+    OutputModulationColumns,
 )
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
@@ -41,8 +41,6 @@ ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
 YearId: TypeAlias = int
 MininalCapacityModulation: TypeAlias = float
-
-Capacity_modulation_ts_min_values: TypeAlias = dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]
 
 
 class ThermalSpecificParamParser:
@@ -179,7 +177,7 @@ class ThermalSpecificParamParser:
         return df[expected_cols]
 
     def _build_thermal_specific_pegase(
-        self, df: pd.DataFrame, df_cm_min_values: dict[YearId, Capacity_modulation_ts_min_values]
+        self, df: pd.DataFrame, df_cm_min_values: dict[YearId, dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]]
     ) -> pd.DataFrame:
         years = self.years
         years_date_format: dict[int, pd.Timestamp] = {year: pd.Timestamp(year=year, month=1, day=1) for year in years}
@@ -334,13 +332,15 @@ class ThermalSpecificParamParser:
                     index=False,
                 )
 
-    def _parse_capacity_ts_modulation_file(self) -> dict[YearId, Capacity_modulation_ts_min_values]:
+    def _parse_capacity_ts_modulation_file(
+        self,
+    ) -> dict[YearId, dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]]:
         """Parse the time series capacity modulation file.
 
         - Compute min value for every time series"""
         years = self.years
 
-        result: dict[YearId, Capacity_modulation_ts_min_values] = {}
+        result: dict[YearId, dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]] = {}
         for year in years:
             cm_path_file = get_path_capacity_modulation_file(year, self.output_folder)
             if not cm_path_file.exists():
@@ -352,7 +352,7 @@ class ThermalSpecificParamParser:
             df_year = pd.read_csv(cm_path_file)
 
             # compute min of TS
-            excluded_cols = [OutputHoursColumns.HOUR.value, OutputHoursColumns.DATE.value]
+            excluded_cols = [OutputModulationColumns.HOUR.value, OutputModulationColumns.DATE.value]
             dict_zone_cluster_min = self._compute_min_of_ts_modulation_year(df_year, excluded_cols)
 
             result[year] = dict_zone_cluster_min

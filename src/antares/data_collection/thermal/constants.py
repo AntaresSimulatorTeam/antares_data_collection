@@ -49,6 +49,6 @@ class InputThermalColumns(StrEnum):
     NET_MIN_STAB_GEN = "NET_MIN_STAB_GEN"
 
 
-class OutputHoursColumns(StrEnum):
+class OutputModulationColumns(StrEnum):
     HOUR = "heure"
     DATE = "DATE_HEURE"
