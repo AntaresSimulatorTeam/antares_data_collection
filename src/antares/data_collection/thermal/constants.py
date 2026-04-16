@@ -47,3 +47,8 @@ class InputThermalColumns(StrEnum):
     PLAN_OUTAGE_ANNUAL_DAYS = "PLAN_OUTAGE_ANNUAL_DAYS"
     PLAN_OUTAGE_WINTER = "PLAN_OUTAGE_WINTER"
     NET_MIN_STAB_GEN = "NET_MIN_STAB_GEN"
+
+
+class OutputModulationColumns(StrEnum):
+    HOUR = "heure"
+    DATE = "DATE_HEURE"

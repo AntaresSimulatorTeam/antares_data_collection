@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import shutil
 import time
 
 from pathlib import Path
@@ -16,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from antares.data_collection.referential_data.main_params import parse_main_params
+from antares.data_collection.thermal.param_modulation.constants import TECHNICAL_PARAMS_FOLDER
 from antares.data_collection.thermal.parsing import ThermalParser
 from antares.data_collection.thermal.specific_param.constants import SPECIFIC_PARAM_FOLDER
 from tests.conftest import RESOURCE_PATH
@@ -24,6 +26,20 @@ from tests.conftest import RESOURCE_PATH
 def test_nominal_case(tmp_path: Path) -> None:
     # Use the real MainParams file
     main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+
+    # copy files capacity modulation to be used to compute min values of time series
+    # the min values will be used then to compute `min_stable_gen`
+    cm_folder_path = RESOURCE_PATH / "expected_output_files" / "thermal"
+
+    cm_2030_file = cm_folder_path / "CM_PEMMDB_2029-2030.csv"
+    cm_2035_file = cm_folder_path / "CM_PEMMDB_2034-2035.csv"
+
+    # create a param modulation folder to copy files in
+    cm_test_files_folder = tmp_path / TECHNICAL_PARAMS_FOLDER
+    cm_test_files_folder.mkdir(parents=True, exist_ok=True)
+
+    shutil.copy(cm_2030_file, cm_test_files_folder / "CM_PEMMDB_2029-2030.csv")
+    shutil.copy(cm_2035_file, cm_test_files_folder / "CM_PEMMDB_2034-2035.csv")
 
     # Build a thermal specific param file
     op_stat_filter = ["Available on market", "Inelastic supply / fixed profile"]
@@ -47,13 +63,13 @@ def test_nominal_case(tmp_path: Path) -> None:
     assert list(generated_df.keys()) == ["2029-2030", "2034-2035"]
 
     # Compare its content with the expected one for any sheet
+    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_param_PEMMDB.xlsx"
+    expected_excel_wb = pd.ExcelFile(expected_file_path)
     # 2030
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_2030.xlsx"
-    expected_df_2030 = pd.read_excel(expected_file_path)
     sheet_name = list(generated_df.keys())[0]
+    expected_df_2030 = pd.read_excel(expected_excel_wb, sheet_name)
     pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2030, check_dtype=False)
     # 2035
-    expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_2035.xlsx"
-    expected_df_2035 = pd.read_excel(expected_file_path)
     sheet_name = list(generated_df.keys())[1]
+    expected_df_2035 = pd.read_excel(expected_file_path, sheet_name)
     pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2035, check_dtype=False)

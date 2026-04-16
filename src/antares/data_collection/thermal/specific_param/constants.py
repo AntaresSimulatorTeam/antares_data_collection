@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-SPECIFIC_PARAM_FOLDER = Path("thermal") / "technicalParameters"
+SPECIFIC_PARAM_FOLDER = Path("thermal") / "technical parameters"
 SPECIFIC_PARAM_NAME_FILE = "specific_param_PEMMDB.xlsx"
 
 
