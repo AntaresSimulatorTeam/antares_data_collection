@@ -22,9 +22,8 @@ from antares.data_collection.thermal.constants import (
     DEFAULT_DECOMMISSIONING_DATE,
     InputThermalColumns,
 )
-from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN
-from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns
 from antares.data_collection.thermal.param_modulation.constants import CAPACITY_MODULATION_NAME, TECHNICAL_PARAMS_FOLDER
+from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN
 
 
 def get_path_capacity_modulation_file(year: int, root_export_folder: Path) -> Path:

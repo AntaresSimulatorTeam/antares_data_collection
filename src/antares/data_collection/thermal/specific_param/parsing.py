@@ -31,12 +31,11 @@ from antares.data_collection.thermal.specific_param.constants import (
     OutputThermalSpecificColumns,
     weighted_avg,
 )
-from antares.data_collection.thermal.utils import apply_round_to_numeric_columns
-from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN
 from antares.data_collection.thermal.utils import (
     apply_round_to_numeric_columns,
     get_path_capacity_modulation_file,
 )
+from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
