@@ -47,8 +47,6 @@ class OutputDsrColumns(StrEnum):
     MODULATION = "Modulation"
 
 
-DSR_TAG_KEY_YEAR_NAME_COLUMN = "year"
-
 # default values for static output columns
 DSR_GROUP = "DSR"
 DSR_NB_HOUR_PER_DAY = 24
