@@ -9,8 +9,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
+from dataclasses import dataclass
 from pathlib import Path
+from typing import TypeAlias
 
 import numpy as np
 import pandas as pd
@@ -45,6 +46,15 @@ from antares.data_collection.utils import (
     filter_values_based_on_net_max_gen_cap,
 )
 
+ZoneId: TypeAlias = str
+ClusterId: TypeAlias = str
+CurveIds: TypeAlias = list[str]
+IndexMapping: TypeAlias = dict[ZoneId, dict[ClusterId, CurveIds]]
+
+@dataclass(frozen=True)
+class InternalMapping:
+    index: IndexMapping
+    data: pd.DataFrame
 
 class DsrParser:
     def __init__(
@@ -185,10 +195,6 @@ class DsrParser:
                     index=False,
                 )
 
-    def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        scenario = self.main_params.get_scenario_type(year=year)
-        acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
-        return df[df[InputDeratingIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
 
     def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
@@ -210,7 +216,31 @@ class DsrParser:
 
         return df
 
-    def _build_dsr_capacity_modulation(self):
+    def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
+        scenario = self.main_params.get_scenario_type(year=year)
+        acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
+        return df[df[InputDeratingIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
+
+    def _build_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
+        columns_to_group = [InputDeratingIndexColumns.ZONE.value, InputDeratingIndexColumns.ID.value]
+        return self._build_index_internal_mapping(df, year, columns_to_group, InputDeratingIndexColumns.CURVE_UID)
+
+    def _build_index_internal_mapping(
+            self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
+    ) -> IndexMapping:
+        df = self._filter_index_files_with_year(df=df, year=year)
+        groups = df.groupby(by=cols_to_group, as_index=False)
+        mapping: IndexMapping = {}
+        for (area, cluster), grouped_df in groups:
+            assert isinstance(area, ZoneId)
+            assert isinstance(cluster, ClusterId)
+            mapping.setdefault(area, {})[cluster] = list(grouped_df[curve_id_col])
+        return mapping
+
+    # def _build_index_to_timeseries_object(self, dsr_derating_index, dsr_derating):
+
+
+    def _build_dsr_capacity_modulation(self, df_dsr_cluster_filtered: pd.DataFrame):
         # parsing index file
         dsr_derating_index_df = self._parse_derating_index()
 
@@ -229,21 +259,40 @@ class DsrParser:
         # compute mean of DERATING_VALUE TS if multi row CURVE_UID/ZONE/ID
 
         for year in self.years:
-            # Builds an object with the whole data regrouped
-            index_to_timeseries = self._build_index_to_timeseries_object(
-                year,
-                dsr_derating_index=dsr_derating_index_df,
-                dsr_derating=dsr_derating_ts_df
+
+            # group index filtered by year + time series (raw data)
+            index_mapping_year = self._build_index_mapping(dsr_derating_index_df, year)
+            derating_index_data = InternalMapping(index=index_mapping_year, data=dsr_derating_index_df)
+
+            # filter data dsr cluster for a year
+            date = pd.Timestamp(year=year, month=1, day=1)
+
+            # Filter active assets
+            mask = (df_dsr_cluster_filtered[InputDsrColumns.COMMISSIONING_DATE] <= date) & (
+                    df_dsr_cluster_filtered[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
             )
 
-            # thermal_df_year = self._filter_thermal_input_file(thermal_df, year)
-            #
-            # # Write the `Must Run` file
-            # must_run_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
+            df_dsr_cluster_year = df_dsr_cluster_filtered.loc[mask]
+
+            # dsr_cluster_cols = [
+            #     InputThermalColumns.GRP_MRUN_CURVE_ID,
+            #     InputThermalColumns.GEN_UNT_MRUN_CURVE_ID,
+            #     InputThermalColumns.GEN_UNT_INELASTIC_ID,
+            #     ANTARES_CLUSTER_NAME_COLUMN,
+            #     InputThermalColumns.ZONE,
+            #     InputThermalColumns.MARKET_NODE,
+            # ]
+
+
+            # # Write the capacity modulation file
+            # dsr_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
             # self._write_must_run_file(year, must_run_cluster_group_ts_repartition)
 
     def build_dsr_cluster(self) -> None:
-        df = self._build_filtered_dsr_cluster_dataframe()
-        dict_of_df = self._compute_dsr_cluster_years(df)
+        df_filtered = self._build_filtered_dsr_cluster_dataframe()
+        dict_of_df = self._compute_dsr_cluster_years(df_filtered)
         dict_of_df = self._filter_ordering_columns_output_dsr_cluster(dict_of_df)
         self._export_dsr_cluster_dataframe(dict_of_df)
+
+        # capacity modulation
+        self._build_dsr_capacity_modulation(df_filtered)
