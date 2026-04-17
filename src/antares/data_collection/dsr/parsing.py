@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection.dsr.constants import (
-    DSR_COL_NAME_OP_STAT,
     DSR_DERATING_INDEX_NAME,
     DSR_DERATING_NAME,
     DSR_FO_DURATION,
@@ -26,7 +25,6 @@ from antares.data_collection.dsr.constants import (
     DSR_INPUT_FILE,
     DSR_NAME_FILE,
     DSR_NB_HOUR_PER_DAY,
-    DSR_TAG_KEY_YEAR_NAME_COLUMN,
     InputDeratingIndexColumns,
     InputDsrColumns,
     OutputDsrColumns,
@@ -34,17 +32,17 @@ from antares.data_collection.dsr.constants import (
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.param_modulation.constants import SCENARIO_TO_ALWAYS_CONSIDER
 from antares.data_collection.thermal.utils import (
-    add_code_antares_colum,
-    filter_input_based_on_study_scenarios,
-    filter_non_declared_areas,
-    filter_thermal_input_file_based_on_commission_date,
-    filter_values_based_on_net_max_gen_cap,
     parse_input_file,
 )
 from antares.data_collection.utils import (
     ANTARES_NODE_NAME_COLUMN,
     MAX_DECIMAL_DIGITS,
+    add_code_antares_colum,
+    filter_df_input_file_based_on_commission_date,
     filter_df_values_based_on_op_stat,
+    filter_input_based_on_study_scenarios,
+    filter_non_declared_areas,
+    filter_values_based_on_net_max_gen_cap,
 )
 
 
@@ -84,7 +82,7 @@ class DsrParser:
             raise ValueError(f"The given dsr_type values {dsr_type_values} are not present in the dataframe")
         return df
 
-    def _filter_exclude_df_values_based_on_act_price_da(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _filter_out_df_values_based_on_act_price_da(self, df: pd.DataFrame) -> pd.DataFrame:
         """We want to exclude only the lines where the ACT_PRICE_DA value matches the user given ones"""
         act_price_da = self.act_price_da
         if not act_price_da:
@@ -116,21 +114,28 @@ class DsrParser:
         df_year = df.loc[mask]
 
         # Group with aggregations
-        result = df_year.groupby(
-            [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.ACT_PRICE_DA, InputDsrColumns.MAX_HOURS], as_index=False
-        ).agg(
-            capacities=(InputDsrColumns.NET_MAX_GEN_CAP, "sum"),
-            nb_units=(InputDsrColumns.NET_MAX_GEN_CAP, "size"),
-            modulation=(InputDsrColumns.DSR_DERATING_CURVE_ID, lambda x: x.notna().any()),
+        result = (
+            df_year.groupby(
+                [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.ACT_PRICE_DA, InputDsrColumns.MAX_HOURS], as_index=False
+            )
+            .agg(
+                **{
+                    OutputDsrColumns.CAPACITY.value: (InputDsrColumns.NET_MAX_GEN_CAP, "sum"),
+                    OutputDsrColumns.NB_UNITS.value: (InputDsrColumns.NET_MAX_GEN_CAP, "size"),
+                    OutputDsrColumns.MODULATION.value: (
+                        InputDsrColumns.DSR_DERATING_CURVE_ID,
+                        lambda x: x.notna().any(),
+                    ),
+                }
+            )
+            .rename(columns={ANTARES_NODE_NAME_COLUMN: OutputDsrColumns.AREA})
         )
 
         # build column "NAME" by AREA put "DSR{1:N}"
-        result[OutputDsrColumns.NAME] = DSR_GROUP + (result.groupby(ANTARES_NODE_NAME_COLUMN).cumcount() + 1).astype(
-            str
-        )
+        result[OutputDsrColumns.NAME] = DSR_GROUP + (result.groupby(OutputDsrColumns.AREA).cumcount() + 1).astype(str)
 
         # Round capacities
-        result["capacities"] = result["capacities"].round(MAX_DECIMAL_DIGITS)
+        result[OutputDsrColumns.CAPACITY] = result[OutputDsrColumns.CAPACITY].round(MAX_DECIMAL_DIGITS)
 
         # Add static columns
         result[OutputDsrColumns.TO_USE] = 1
@@ -143,56 +148,38 @@ class DsrParser:
         result[OutputDsrColumns.FO_RATE] = DSR_FO_RATE
         result[OutputDsrColumns.FO_DURATION] = DSR_FO_DURATION
 
-        # rename columns
-        result = result.rename(
-            columns={
-                "antares_node": OutputDsrColumns.AREA,
-                "capacities": OutputDsrColumns.CAPACITY,
-                "nb_units": OutputDsrColumns.NB_UNITS,
-                "modulation": OutputDsrColumns.MODULATION,
-            }
-        )
-
         return result
 
-    def _compute_dsr_cluster_years(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _compute_dsr_cluster_years(self, df: pd.DataFrame) -> dict[int, pd.DataFrame]:
         years = sorted(self.years)
 
         res: dict[int, pd.DataFrame] = {}
         for year in years:
             res[year] = self._compute_dsr_cluster_year(df, year)
 
-        # concat and create a col with dict.key() then drop index
-        df_concat = (
-            pd.concat(res.values(), keys=res.keys(), names=[DSR_TAG_KEY_YEAR_NAME_COLUMN])
-            .reset_index(level=0)
-            .reset_index(drop=True)
-        )
+        return res
 
-        return df_concat
-
-    def _filter_ordering_columns_output_dsr_cluster(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _filter_ordering_columns_output_dsr_cluster(
+        self, dict_of_df: dict[int, pd.DataFrame]
+    ) -> dict[int, pd.DataFrame]:
         """
         Only keep the output columns needed for the DSR cluster.
             - Ordering columns from `OutputDsrColumns`
         """
         columns_to_keep = [col.value for col in OutputDsrColumns]
-        columns_to_keep.append(DSR_TAG_KEY_YEAR_NAME_COLUMN)
-        return df[columns_to_keep]
+        return {year: df[columns_to_keep] for year, df in dict_of_df.items()}
 
-    def _export_dsr_cluster_dataframe(self, df: pd.DataFrame) -> None:
+    def _export_dsr_cluster_dataframe(self, dict_of_df: dict[int, pd.DataFrame]) -> None:
         parent_dir = self.output_folder / DSR_FOLDER
         parent_dir.mkdir(parents=True, exist_ok=True)
 
         output_path = parent_dir / DSR_NAME_FILE
 
         with pd.ExcelWriter(output_path) as writer:
-            for year, year_df in df.sort_values(DSR_TAG_KEY_YEAR_NAME_COLUMN).groupby(DSR_TAG_KEY_YEAR_NAME_COLUMN):
+            for year, df in dict_of_df.items():
                 sheet_name = str(year)
 
-                year_df = year_df.drop(columns=[DSR_TAG_KEY_YEAR_NAME_COLUMN])
-
-                year_df.to_excel(
+                df.to_excel(
                     writer,
                     sheet_name=sheet_name,
                     index=False,
@@ -205,13 +192,20 @@ class DsrParser:
 
     def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
-        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, DSR_COL_NAME_OP_STAT)
+        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, InputDsrColumns.OP_STAT.value)
         df = self._filter_df_values_based_on_dsr_type(df)
-        df = self._filter_exclude_df_values_based_on_act_price_da(df)
-        df = filter_non_declared_areas(self.main_params, df)
-        df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
-        df = filter_thermal_input_file_based_on_commission_date(df, self.years)
-        df = filter_values_based_on_net_max_gen_cap(df)
+        df = self._filter_out_df_values_based_on_act_price_da(df)
+        df = filter_non_declared_areas(self.main_params, df, InputDsrColumns.MARKET_NODE.value)
+        df = filter_input_based_on_study_scenarios(
+            df, self.main_params, self.years, InputDsrColumns.STUDY_SCENARIO.value
+        )
+        df = filter_df_input_file_based_on_commission_date(
+            df,
+            self.years,
+            InputDsrColumns.COMMISSIONING_DATE.value,
+            InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        )
+        df = filter_values_based_on_net_max_gen_cap(df, InputDsrColumns.NET_MAX_GEN_CAP.value)
         df = add_code_antares_colum(self.main_params, df)
 
         return df
@@ -249,11 +243,7 @@ class DsrParser:
             # self._write_must_run_file(year, must_run_cluster_group_ts_repartition)
 
     def build_dsr_cluster(self) -> None:
-        # dsr cluster part
         df = self._build_filtered_dsr_cluster_dataframe()
-        df = self._compute_dsr_cluster_years(df)
-        df = self._filter_ordering_columns_output_dsr_cluster(df)
-        self._export_dsr_cluster_dataframe(df)
-
-        # dsr capacity modulation
-
+        dict_of_df = self._compute_dsr_cluster_years(df)
+        dict_of_df = self._filter_ordering_columns_output_dsr_cluster(dict_of_df)
+        self._export_dsr_cluster_dataframe(dict_of_df)

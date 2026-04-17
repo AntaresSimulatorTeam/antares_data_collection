@@ -26,12 +26,6 @@ MUST_RUN_OUTPUT_NAME = f"MR_{FOLDER_NAME}"
 DEFAULT_MUST_RUN_TS = pd.Series(8760 * [0])
 DEFAULT_CAPACITY_MODULATION_TS = pd.Series(8760 * [1])
 
-
-class OutputHoursColumns(StrEnum):
-    HOUR = "heure"
-    DATE = "DATE_HEURE"
-
-
 ##########
 # Input Constants
 ##########

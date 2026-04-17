@@ -19,10 +19,7 @@ BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
 FUEL_MAPPING = {BIOMASS_CLUSTER_SUFFIX: "Mixed fuel", "virtuel": "Other"}
 
-
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
-
-THERMAL_COL_NAME_OP_STAT = "OP_STAT"
 
 
 class InputThermalColumns(StrEnum):
@@ -48,3 +45,8 @@ class InputThermalColumns(StrEnum):
     PLAN_OUTAGE_ANNUAL_DAYS = "PLAN_OUTAGE_ANNUAL_DAYS"
     PLAN_OUTAGE_WINTER = "PLAN_OUTAGE_WINTER"
     NET_MIN_STAB_GEN = "NET_MIN_STAB_GEN"
+
+
+class OutputModulationColumns(StrEnum):
+    HOUR = "heure"
+    DATE = "DATE_HEURE"

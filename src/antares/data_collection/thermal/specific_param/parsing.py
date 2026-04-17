@@ -9,9 +9,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
-
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 import pandas as pd
 
@@ -21,6 +20,7 @@ from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
+    OutputModulationColumns,
 )
 from antares.data_collection.thermal.specific_param.constants import (
     F_COLUMNS,
@@ -31,8 +31,16 @@ from antares.data_collection.thermal.specific_param.constants import (
     OutputThermalSpecificColumns,
     weighted_avg,
 )
-from antares.data_collection.thermal.utils import apply_round_to_numeric_columns
+from antares.data_collection.thermal.utils import (
+    apply_round_to_numeric_columns,
+    get_path_capacity_modulation_file,
+)
 from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN
+
+ZoneId: TypeAlias = str
+ClusterId: TypeAlias = str
+YearId: TypeAlias = int
+MininalCapacityModulation: TypeAlias = float
 
 
 class ThermalSpecificParamParser:
@@ -168,21 +176,13 @@ class ThermalSpecificParamParser:
         ]
         return df[expected_cols]
 
-    def _build_thermal_specific_pegase(self, df: pd.DataFrame) -> pd.DataFrame:
-        years = self.years
-
-        years_date_format: dict[str, pd.Timestamp] = {
-            str(year): pd.Timestamp(year=year, month=1, day=1) for year in years
-        }
-
-        df_computed = self._computations_thermal_specific(df, years_date_format)
-
-        return df_computed
-
-    def _computations_thermal_specific(
-        self, df_to_compute: pd.DataFrame, years_input: dict[str, pd.Timestamp]
+    def _build_thermal_specific_pegase(
+        self, df: pd.DataFrame, df_cm_min_values: dict[YearId, dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]]
     ) -> pd.DataFrame:
-        grouped_dfs = df_to_compute.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
+        years = self.years
+        years_date_format: dict[int, pd.Timestamp] = {year: pd.Timestamp(year=year, month=1, day=1) for year in years}
+
+        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
 
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
@@ -205,7 +205,10 @@ class ThermalSpecificParamParser:
         }
 
         for (antares_node, cluster_name), grouped_df in grouped_dfs:
-            for year_str, year_date in years_input.items():
+            for year, year_date in years_date_format.items():
+                assert isinstance(antares_node, str)
+                assert isinstance(cluster_name, str)
+
                 mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= year_date) & (
                     grouped_df[InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED] >= year_date
                 )
@@ -219,7 +222,18 @@ class ThermalSpecificParamParser:
 
                 cap = active_units[InputThermalColumns.NET_MAX_GEN_CAP]
 
+                ##
+                # special treatments for `min_stable_gen`
+                ##
+
+                # need to compare and keep min value with min of TS from capacity modulation file
                 min_stable = active_units[InputThermalColumns.NET_MIN_STAB_GEN].sum() / cap.sum()
+
+                # get min of TS capacity modulation
+                cm_min_value = df_cm_min_values[year].get(antares_node, {}).get(cluster_name)
+
+                if cm_min_value:
+                    min_stable = min(min_stable, cm_min_value)
 
                 efficiency = weighted_avg(
                     active_units, InputThermalColumns.STD_EFF_NCV, InputThermalColumns.NET_MAX_GEN_CAP
@@ -272,7 +286,7 @@ class ThermalSpecificParamParser:
                 # ---- store result ----
                 output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
                 output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
-                output_data["YEAR"].append(year_str)
+                output_data["YEAR"].append(year)
 
                 output_data[OutputThermalSpecificColumns.MIN_STABLE_GEN].append(min_stable)
                 output_data[OutputThermalSpecificColumns.SPINNING].append(0)
@@ -318,11 +332,57 @@ class ThermalSpecificParamParser:
                     index=False,
                 )
 
+    def _parse_capacity_ts_modulation_file(
+        self,
+    ) -> dict[YearId, dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]]:
+        """Parse the time series capacity modulation file.
+
+        - Compute min value for every time series"""
+        years = self.years
+
+        result: dict[YearId, dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]] = {}
+        for year in years:
+            cm_path_file = get_path_capacity_modulation_file(year, self.output_folder)
+            if not cm_path_file.exists():
+                raise FileNotFoundError(
+                    f"Capacity modulation file not found to compute minimal values of time series: {cm_path_file}"
+                )
+
+            # read file
+            df_year = pd.read_csv(cm_path_file)
+
+            # compute min of TS
+            excluded_cols = [OutputModulationColumns.HOUR.value, OutputModulationColumns.DATE.value]
+            dict_zone_cluster_min = self._compute_min_of_ts_modulation_year(df_year, excluded_cols)
+
+            result[year] = dict_zone_cluster_min
+
+        return result
+
+    def _compute_min_of_ts_modulation_year(
+        self, df: pd.DataFrame, excluded_cols: list[str]
+    ) -> dict[ZoneId, dict[ClusterId, MininalCapacityModulation]]:
+        """Return a dictionary of miniaml value from time series files structured by area/cluster."""
+        result: dict[ZoneId, dict[ClusterId, MininalCapacityModulation]] = {}
+
+        cols = df.columns.difference(excluded_cols)
+
+        for col in cols:
+            min_val = df[col].min()
+            zone_id, cluster_id = col.split("_")
+            result.setdefault(zone_id, {})[cluster_id] = min_val
+
+        return result
+
     def build_thermal_specific_param(self, df: pd.DataFrame) -> None:
         df = self._update_existing_columns_with_commondata(df)
         df = self._update_column_net_min_stab_gen(df)
+
+        # use TS modulation file to compute min of TS
+        dict_of_cm_min_value = self._parse_capacity_ts_modulation_file()
+
         df = self._filter_columns_for_output_specific(df)
-        df = self._build_thermal_specific_pegase(df)
+        df = self._build_thermal_specific_pegase(df, dict_of_cm_min_value)
         df = apply_round_to_numeric_columns(
             df, [OutputThermalSpecificColumns.FO_DURATION, OutputThermalSpecificColumns.PO_DURATION]
         )

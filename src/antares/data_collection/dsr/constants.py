@@ -17,7 +17,6 @@ from pathlib import Path
 DSR_INPUT_FILE = "DSR.csv"
 DSR_FOLDER = Path("DSR") / "cluster"
 DSR_NAME_FILE = "cluster_DSR.xlsx"
-DSR_COL_NAME_OP_STAT = "OP_STAT"
 
 
 class InputDsrColumns(StrEnum):
@@ -48,8 +47,6 @@ class OutputDsrColumns(StrEnum):
     FO_DURATION = "FO_duration"
     MODULATION = "Modulation"
 
-
-DSR_TAG_KEY_YEAR_NAME_COLUMN = "year"
 
 # default values for static output columns
 DSR_GROUP = "DSR"

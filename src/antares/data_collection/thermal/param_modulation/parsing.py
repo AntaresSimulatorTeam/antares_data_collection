@@ -22,9 +22,9 @@ from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
     InputThermalColumns,
+    OutputModulationColumns,
 )
 from antares.data_collection.thermal.param_modulation.constants import (
-    CAPACITY_MODULATION_NAME,
     DEFAULT_CAPACITY_MODULATION_TS,
     DEFAULT_MUST_RUN_TS,
     DERATING_INDEX_NAME,
@@ -43,14 +43,17 @@ from antares.data_collection.thermal.param_modulation.constants import (
     TECHNICAL_PARAMS_FOLDER,
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
-    OutputHoursColumns,
 )
 from antares.data_collection.thermal.utils import (
-    filter_input_based_on_study_scenarios,
-    filter_thermal_input_file_based_on_commission_date,
+    get_path_capacity_modulation_file,
     parse_input_file,
 )
-from antares.data_collection.utils import ANTARES_NODE_NAME_COLUMN, write_csv_file
+from antares.data_collection.utils import (
+    ANTARES_NODE_NAME_COLUMN,
+    filter_df_input_file_based_on_commission_date,
+    filter_input_based_on_study_scenarios,
+    write_csv_file,
+)
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
@@ -140,8 +143,15 @@ class ThermalParamModulationParser:
         return mapping
 
     def _filter_thermal_input_file(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        df = filter_input_based_on_study_scenarios(df, self.main_params, [year])
-        df = filter_thermal_input_file_based_on_commission_date(df, [year])
+        df = filter_input_based_on_study_scenarios(
+            df, self.main_params, [year], InputThermalColumns.STUDY_SCENARIO.value
+        )
+        df = filter_df_input_file_based_on_commission_date(
+            df,
+            [year],
+            InputThermalColumns.COMMISSIONING_DATE.value,
+            InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        )
         useful_columns = [
             InputThermalColumns.ZONE,
             InputThermalColumns.MARKET_NODE,
@@ -311,12 +321,12 @@ class ThermalParamModulationParser:
 
         # Add the Hours columns
         cols_before_hours = list(df.columns)
-        df[OutputHoursColumns.HOUR] = range(1, len(df) + 1)
+        df[OutputModulationColumns.HOUR] = range(1, len(df) + 1)
         start_time = pd.to_datetime(f"01/01/{year} 00:00:00")
-        df[OutputHoursColumns.DATE] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df))]
+        df[OutputModulationColumns.DATE] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df))]
 
         # We should put them as the first 2 columns for the user readability
-        df = df[[OutputHoursColumns.DATE.value, OutputHoursColumns.HOUR.value] + cols_before_hours]
+        df = df[[OutputModulationColumns.DATE.value, OutputModulationColumns.HOUR.value] + cols_before_hours]
 
         # We want our dataframe to start on the 1st of July at midnight for PEGASE.
         # So we have to reindex it at the right index
@@ -332,7 +342,7 @@ class ThermalParamModulationParser:
 
     def _write_capacity_modulation_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition, year)
-        file_path = self.output_folder / TECHNICAL_PARAMS_FOLDER / f"{CAPACITY_MODULATION_NAME}_{year - 1}-{year}.csv"
+        file_path = get_path_capacity_modulation_file(year, self.output_folder)
         write_csv_file(file_path, df)
 
     def build_param_modulation(self, thermal_df: pd.DataFrame) -> None:
