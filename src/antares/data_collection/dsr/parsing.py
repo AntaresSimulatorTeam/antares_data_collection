@@ -33,7 +33,6 @@ from antares.data_collection.dsr.constants import (
 )
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.param_modulation.constants import SCENARIO_TO_ALWAYS_CONSIDER
-
 from antares.data_collection.utils import (
     add_code_antares_colum,
     filter_based_on_commission_date,
