@@ -16,11 +16,8 @@ from typing import Iterator
 import pandas as pd
 import polars as pl
 
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, DEFAULT_DECOMMISSIONING_DATE, MAX_DECIMAL_DIGITS
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constants import DEFAULT_DECOMMISSIONING_DATE, InputThermalColumns
-
-MAX_DECIMAL_DIGITS = 3
-ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
 def write_csv_file(file_path: Path, df: pd.DataFrame) -> None:
@@ -29,9 +26,7 @@ def write_csv_file(file_path: Path, df: pd.DataFrame) -> None:
     polars_df.write_csv(file_path, separator=",", float_precision=MAX_DECIMAL_DIGITS)
 
 
-def filter_df_values_based_on_op_stat(
-    filter_op_stat_values: list[str], df: pd.DataFrame, column_name: str
-) -> pd.DataFrame:
+def filter_based_on_op_stat(filter_op_stat_values: list[str], df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """We want to keep only the lines were the OP_STAT value matches the user given ones"""
     if not filter_op_stat_values:
         return df
@@ -63,8 +58,12 @@ def get_starting_and_ending_timestamps(years: list[int]) -> Iterator[Commissioni
         )
 
 
-def filter_df_input_file_based_on_commission_date(
-    df: pd.DataFrame, years: list[int], commissioning_name_column: str, decommissioning_name_column: str
+def filter_based_on_commission_date(
+    df: pd.DataFrame,
+    years: list[int],
+    commissioning_name_column: str,
+    decommissioning_name_column: str,
+    default_decommissioning_date: pd.Timestamp = DEFAULT_DECOMMISSIONING_DATE,
 ) -> pd.DataFrame:
     if not years:
         return df
@@ -79,7 +78,7 @@ def filter_df_input_file_based_on_commission_date(
     # Some values might be missing inside `decommissioning_name_column`.
     # If so, we should consider the decommissioning year to be 2100.
     df[decommissioning_name_column] = pd.to_datetime(df[decommissioning_name_column]).fillna(
-        value=DEFAULT_DECOMMISSIONING_DATE
+        value=default_decommissioning_date
     )
 
     # Reindex the dataframe to use Series freely
@@ -113,7 +112,7 @@ def filter_df_input_file_based_on_commission_date(
     return df
 
 
-def filter_input_based_on_study_scenarios(
+def filter_based_on_study_scenarios(
     df: pd.DataFrame, main_params: MainParams, years: list[int], study_scenario_name_column: str
 ) -> pd.DataFrame:
     """
@@ -156,14 +155,29 @@ def filter_non_declared_areas(main_params: MainParams, df: pd.DataFrame, market_
     return df
 
 
-def filter_values_based_on_net_max_gen_cap(df: pd.DataFrame, net_max_gen_cap_name_column: str) -> pd.DataFrame:
+def filter_based_on_net_max_gen_cap(df: pd.DataFrame, net_max_gen_cap_name_column: str) -> pd.DataFrame:
     """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
     if net_max_gen_cap_name_column not in df.columns:
         raise ValueError(f"Column {net_max_gen_cap_name_column} not found in the dataframe")
     return df.loc[df[net_max_gen_cap_name_column] > 0]
 
 
-def add_code_antares_colum(main_params: MainParams, df: pd.DataFrame) -> pd.DataFrame:
-    node_list = df[InputThermalColumns.MARKET_NODE].tolist()
+def add_code_antares_colum(main_params: MainParams, df: pd.DataFrame, market_node_name_column: str) -> pd.DataFrame:
+    node_list = df[market_node_name_column].tolist()
     df[ANTARES_NODE_NAME_COLUMN] = main_params.get_antares_codes(node_list)
     return df
+
+
+def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.DataFrame:
+    if not input_file_path.exists():
+        raise ValueError(f"File {input_file_path} not found")
+
+    # Checks that all expected columns exist
+    df = pd.read_csv(input_file_path)
+    existing_cols = set(df.columns)
+    for expected_column in expected_columns:
+        if expected_column not in existing_cols:
+            raise ValueError(f"Column {expected_column} not found in {input_file_path}")
+
+    # Keep useful columns only
+    return df[expected_columns]

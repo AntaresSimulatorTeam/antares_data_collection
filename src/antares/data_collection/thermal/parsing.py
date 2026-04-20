@@ -27,15 +27,15 @@ from antares.data_collection.thermal.param_modulation.parsing import ThermalPara
 from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from antares.data_collection.thermal.utils import (
     add_antares_cluster_name_colum,
-    parse_input_file,
 )
 from antares.data_collection.utils import (
     add_code_antares_colum,
-    filter_df_input_file_based_on_commission_date,
-    filter_df_values_based_on_op_stat,
-    filter_input_based_on_study_scenarios,
+    filter_based_on_commission_date,
+    filter_based_on_net_max_gen_cap,
+    filter_based_on_op_stat,
+    filter_based_on_study_scenarios,
     filter_non_declared_areas,
-    filter_values_based_on_net_max_gen_cap,
+    parse_input_file,
 )
 
 
@@ -101,13 +101,11 @@ class ThermalParser:
 
     def _build_filtered_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file()
-        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, InputThermalColumns.OP_STAT.value)
+        df = filter_based_on_op_stat(self.op_stat_values, df, InputThermalColumns.OP_STAT.value)
         df = filter_non_declared_areas(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
         df = self._filter_non_declared_clusters(df)
-        df = filter_input_based_on_study_scenarios(
-            df, self.main_params, self.years, InputThermalColumns.STUDY_SCENARIO.value
-        )
-        df = filter_df_input_file_based_on_commission_date(
+        df = filter_based_on_study_scenarios(df, self.main_params, self.years, InputThermalColumns.STUDY_SCENARIO.value)
+        df = filter_based_on_commission_date(
             df,
             self.years,
             InputThermalColumns.COMMISSIONING_DATE.value,
@@ -115,8 +113,8 @@ class ThermalParser:
         )
         df = add_antares_cluster_name_colum(self.main_params, df)
         df = self._split_clusters_with_biomass_rule(df)
-        df = filter_values_based_on_net_max_gen_cap(df, InputThermalColumns.NET_MAX_GEN_CAP.value)
-        return add_code_antares_colum(self.main_params, df)
+        df = filter_based_on_net_max_gen_cap(df, InputThermalColumns.NET_MAX_GEN_CAP.value)
+        return add_code_antares_colum(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
 
     def build_installed_power(self) -> None:
         parser = ThermalInstallerPowerParser(self.output_folder, self.main_params, self.years)

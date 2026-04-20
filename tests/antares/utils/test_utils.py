@@ -16,7 +16,7 @@ import re
 
 import pandas as pd
 
-from antares.data_collection.utils import filter_df_values_based_on_op_stat
+from antares.data_collection.utils import filter_based_on_op_stat
 
 
 @pytest.fixture
@@ -38,7 +38,7 @@ def test_filter_df_values_based_on_op_stat_column_not_found(df_test_utils_filter
     # then
     colname_filter = "LEBAL"
     with pytest.raises(ValueError, match=f"Column {colname_filter} not found in the dataframe"):
-        filter_df_values_based_on_op_stat(["a"], df, colname_filter)
+        filter_based_on_op_stat(["a"], df, colname_filter)
 
 
 def test_filter_df_values_based_on_op_stat_empty_df(df_test_utils_filter: pd.DataFrame) -> None:
@@ -51,4 +51,4 @@ def test_filter_df_values_based_on_op_stat_empty_df(df_test_utils_filter: pd.Dat
     with pytest.raises(
         ValueError, match=re.escape(f"The given op_stat values {list_value_filter} are not present in the dataframe")
     ):
-        filter_df_values_based_on_op_stat(list_value_filter, df, colname_filter)
+        filter_based_on_op_stat(list_value_filter, df, colname_filter)
