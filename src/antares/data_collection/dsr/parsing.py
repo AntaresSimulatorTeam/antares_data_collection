@@ -16,6 +16,7 @@ from typing import TypeAlias
 import numpy as np
 import pandas as pd
 
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS, YearId
 from antares.data_collection.dsr.constants import (
     DSR_DERATING_INDEX_NAME,
     DSR_DERATING_NAME,
@@ -32,18 +33,15 @@ from antares.data_collection.dsr.constants import (
 )
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.param_modulation.constants import SCENARIO_TO_ALWAYS_CONSIDER
-from antares.data_collection.thermal.utils import (
-    parse_input_file,
-)
+
 from antares.data_collection.utils import (
-    ANTARES_NODE_NAME_COLUMN,
-    MAX_DECIMAL_DIGITS,
     add_code_antares_colum,
-    filter_df_input_file_based_on_commission_date,
-    filter_df_values_based_on_op_stat,
-    filter_input_based_on_study_scenarios,
+    filter_based_on_commission_date,
+    filter_based_on_net_max_gen_cap,
+    filter_based_on_op_stat,
+    filter_based_on_study_scenarios,
     filter_non_declared_areas,
-    filter_values_based_on_net_max_gen_cap,
+    parse_input_file,
 )
 
 ZoneId: TypeAlias = str
@@ -81,7 +79,7 @@ class DsrParser:
     def _parse_derating_index(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder / DSR_DERATING_INDEX_NAME, list(InputDeratingIndexColumns))
 
-    def _filter_df_values_based_on_dsr_type(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _filter_based_on_dsr_type(self, df: pd.DataFrame) -> pd.DataFrame:
         """We want to keep only the lines where the DSR_TYPE value matches the user given ones"""
         dsr_type_values = self.dsr_type_values
         if not dsr_type_values:
@@ -92,7 +90,7 @@ class DsrParser:
             raise ValueError(f"The given dsr_type values {dsr_type_values} are not present in the dataframe")
         return df
 
-    def _filter_out_df_values_based_on_act_price_da(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _filter_out_based_on_act_price_da(self, df: pd.DataFrame) -> pd.DataFrame:
         """We want to exclude only the lines where the ACT_PRICE_DA value matches the user given ones"""
         act_price_da = self.act_price_da
         if not act_price_da:
@@ -160,18 +158,16 @@ class DsrParser:
 
         return result
 
-    def _compute_dsr_cluster_years(self, df: pd.DataFrame) -> dict[int, pd.DataFrame]:
+    def _compute_dsr_cluster_years(self, df: pd.DataFrame) -> dict[YearId, pd.DataFrame]:
         years = sorted(self.years)
 
-        res: dict[int, pd.DataFrame] = {}
+        res: dict[YearId, pd.DataFrame] = {}
         for year in years:
             res[year] = self._compute_dsr_cluster_year(df, year)
 
         return res
 
-    def _filter_ordering_columns_output_dsr_cluster(
-        self, dict_of_df: dict[int, pd.DataFrame]
-    ) -> dict[int, pd.DataFrame]:
+    def _filter_columns_for_output(self, dict_of_df: dict[int, pd.DataFrame]) -> dict[int, pd.DataFrame]:
         """
         Only keep the output columns needed for the DSR cluster.
             - Ordering columns from `OutputDsrColumns`
@@ -195,24 +191,21 @@ class DsrParser:
                     index=False,
                 )
 
-
     def _build_filtered_dsr_cluster_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file_dsr_cluster()
-        df = filter_df_values_based_on_op_stat(self.op_stat_values, df, InputDsrColumns.OP_STAT.value)
-        df = self._filter_df_values_based_on_dsr_type(df)
-        df = self._filter_out_df_values_based_on_act_price_da(df)
+        df = filter_based_on_op_stat(self.op_stat_values, df, InputDsrColumns.OP_STAT.value)
+        df = self._filter_based_on_dsr_type(df)
+        df = self._filter_out_based_on_act_price_da(df)
         df = filter_non_declared_areas(self.main_params, df, InputDsrColumns.MARKET_NODE.value)
-        df = filter_input_based_on_study_scenarios(
-            df, self.main_params, self.years, InputDsrColumns.STUDY_SCENARIO.value
-        )
-        df = filter_df_input_file_based_on_commission_date(
+        df = filter_based_on_study_scenarios(df, self.main_params, self.years, InputDsrColumns.STUDY_SCENARIO.value)
+        df = filter_based_on_commission_date(
             df,
             self.years,
             InputDsrColumns.COMMISSIONING_DATE.value,
             InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         )
-        df = filter_values_based_on_net_max_gen_cap(df, InputDsrColumns.NET_MAX_GEN_CAP.value)
-        df = add_code_antares_colum(self.main_params, df)
+        df = filter_based_on_net_max_gen_cap(df, InputDsrColumns.NET_MAX_GEN_CAP.value)
+        df = add_code_antares_colum(self.main_params, df, InputDsrColumns.MARKET_NODE.value)
 
         return df
 
@@ -291,7 +284,7 @@ class DsrParser:
     def build_dsr_cluster(self) -> None:
         df_filtered = self._build_filtered_dsr_cluster_dataframe()
         dict_of_df = self._compute_dsr_cluster_years(df_filtered)
-        dict_of_df = self._filter_ordering_columns_output_dsr_cluster(dict_of_df)
+        dict_of_df = self._filter_columns_for_output(dict_of_df)
         self._export_dsr_cluster_dataframe(dict_of_df)
 
         # capacity modulation

@@ -18,6 +18,7 @@ from typing import Callable, TypeAlias
 
 import pandas as pd
 
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -46,12 +47,11 @@ from antares.data_collection.thermal.param_modulation.constants import (
 )
 from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
-    parse_input_file,
 )
 from antares.data_collection.utils import (
-    ANTARES_NODE_NAME_COLUMN,
-    filter_df_input_file_based_on_commission_date,
-    filter_input_based_on_study_scenarios,
+    filter_based_on_commission_date,
+    filter_based_on_study_scenarios,
+    parse_input_file,
     write_csv_file,
 )
 
@@ -143,10 +143,8 @@ class ThermalParamModulationParser:
         return mapping
 
     def _filter_thermal_input_file(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        df = filter_input_based_on_study_scenarios(
-            df, self.main_params, [year], InputThermalColumns.STUDY_SCENARIO.value
-        )
-        df = filter_df_input_file_based_on_commission_date(
+        df = filter_based_on_study_scenarios(df, self.main_params, [year], InputThermalColumns.STUDY_SCENARIO.value)
+        df = filter_based_on_commission_date(
             df,
             [year],
             InputThermalColumns.COMMISSIONING_DATE.value,
