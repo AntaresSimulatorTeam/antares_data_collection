@@ -61,6 +61,7 @@ DSR_FO_DURATION = 1
 DSR_DERATING_INDEX_NAME = "DSR Derating Index.csv"
 DSR_DERATING_NAME = "DSR Derating.csv"
 
+
 class InputDeratingIndexColumns(StrEnum):
     ZONE = "ZONE"
     ID = "ID"

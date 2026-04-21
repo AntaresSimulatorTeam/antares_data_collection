@@ -43,22 +43,32 @@ from antares.data_collection.utils import (
     parse_input_file,
 )
 
+# mapping used for index file
 ZoneId: TypeAlias = str
 DeratingId: TypeAlias = str
 CurveIds: TypeAlias = list[str]
 IndexMapping: TypeAlias = dict[ZoneId, dict[DeratingId, CurveIds]]
 SectorId: TypeAlias = str
 
+# mapping used to add/manage weights calculation
+WeightValue: TypeAlias = float
+IndexMappingWeight: TypeAlias = dict[ZoneId, dict[SectorId, dict[DeratingId, WeightValue]]]
+
+
 @dataclass(frozen=True)
 class InternalMapping:
     index: IndexMapping
     data: pd.DataFrame
 
+
 @dataclass
 class TimeSeriesAndClusterPair:
     weight: float
     series: pd.Series
-    should_write_the_series: bool
+
+
+DsrWeightTsRepartition: TypeAlias = dict[ZoneId, dict[SectorId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]]
+
 
 class DsrParser:
     def __init__(
@@ -225,7 +235,7 @@ class DsrParser:
         return self._build_index_internal_mapping(df, year, columns_to_group, InputDeratingIndexColumns.CURVE_UID)
 
     def _build_index_internal_mapping(
-            self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
+        self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
     ) -> IndexMapping:
         df = self._filter_index_files_with_year(df=df, year=year)
         groups = df.groupby(by=cols_to_group, as_index=False)
@@ -236,13 +246,13 @@ class DsrParser:
             mapping.setdefault(area, {})[cluster] = list(grouped_df[curve_id_col])
         return mapping
 
-    def _build_weight_by_sector_derating_id_year(self, df: pd.DataFrame, year: YearId) -> pd.DataFrame:
+    def _build_df_weight_by_year(self, df: pd.DataFrame, year: YearId) -> IndexMappingWeight:
         # filter data dsr cluster
         date = pd.Timestamp(year=year, month=1, day=1)
 
         # Filter active assets
         mask = (df[InputDsrColumns.COMMISSIONING_DATE] <= date) & (
-                df[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
+            df[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
         )
 
         df_dsr_cluster_year = df.loc[mask]
@@ -256,8 +266,7 @@ class DsrParser:
         # compute dsr capacity by sector
         df_aggregate_sector = (
             df_dsr_cluster_year[dsr_cluster_sector_cols]
-            .groupby([ANTARES_NODE_NAME_COLUMN,
-                      InputDsrColumns.SECTOR], as_index=False)
+            .groupby([ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR], as_index=False)
             .sum()
             .rename(columns={InputDsrColumns.NET_MAX_GEN_CAP: "sector_capacity"})
         )
@@ -272,33 +281,47 @@ class DsrParser:
 
         df_aggregate_sector_derating_id = (
             df_dsr_cluster_year[dsr_cluster_derating_id_cols]
-            .groupby([ANTARES_NODE_NAME_COLUMN,
-                      InputDsrColumns.SECTOR,
-                      InputDsrColumns.DSR_DERATING_CURVE_ID],
-                     as_index=False)
+            .groupby(
+                [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR, InputDsrColumns.DSR_DERATING_CURVE_ID],
+                as_index=False,
+            )
             .sum()
             .rename(columns={InputDsrColumns.NET_MAX_GEN_CAP: "derating_id_capacity"})
         )
 
         # compute the final weight for every area/derating_id
-        df_weight_of_area_sector_derating = (
-            df_aggregate_sector_derating_id
-            .merge(
-                df_aggregate_sector,
-                on=[ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR]
-            )
-            .assign(
-                weight=lambda df: (
-                        df["derating_id_capacity"] / df["sector_capacity"]
-                )
-            )
+        df_weight_of_area_sector_derating = df_aggregate_sector_derating_id.merge(
+            df_aggregate_sector, on=[ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR]
+        ).assign(
+            **{InputDsrColumns.NET_MAX_GEN_CAP.value: lambda df: df["derating_id_capacity"] / df["sector_capacity"]}
         )
 
-        col_to_to_keep = [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR, InputDsrColumns.DSR_DERATING_CURVE_ID, "weight"]
-        return df_weight_of_area_sector_derating[col_to_to_keep]
+        col_to_to_keep = [
+            ANTARES_NODE_NAME_COLUMN,
+            InputDsrColumns.SECTOR,
+            InputDsrColumns.DSR_DERATING_CURVE_ID,
+            InputDsrColumns.NET_MAX_GEN_CAP,
+        ]
 
+        # structure to Index
+        dict_of_weight: IndexMappingWeight = {}
+        for (area, sector, derating_id), group_df in df_weight_of_area_sector_derating[col_to_to_keep].groupby(
+            [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR, InputDsrColumns.DSR_DERATING_CURVE_ID],
+            as_index=False,
+        ):
+            assert isinstance(area, ZoneId)
+            assert isinstance(sector, SectorId)
+            assert isinstance(derating_id, DeratingId)
+            dict_of_weight.setdefault(area, {}).setdefault(sector, {})[derating_id] = group_df[
+                InputDsrColumns.NET_MAX_GEN_CAP
+            ].iloc[0]
 
-    def _build_dsr_capacity_modulation(self, df_dsr_cluster_filtered: pd.DataFrame):
+        return dict_of_weight
+
+    def _buil_index_weight_repartition(self) -> None:
+        pass
+
+    def _build_dsr_capacity_modulation(self, df_dsr_cluster_filtered: pd.DataFrame) -> None:
         # parsing index file
         dsr_derating_index_df = self._parse_derating_index()
 
@@ -317,36 +340,42 @@ class DsrParser:
         # compute mean of DERATING_VALUE TS if multi row CURVE_UID/ZONE/ID
 
         for year in self.years:
-
             # group index filtered by year + time series (raw data)
             index_mapping_year = self._build_index_mapping(dsr_derating_index_df, year)
             derating_index_data = InternalMapping(index=index_mapping_year, data=dsr_derating_ts_df)
 
+            # buil data frame with weight by sector/derating_id
+            index_cluster_id_weight = self._build_df_weight_by_year(df_dsr_cluster_filtered, year)
 
-            # filter data dsr cluster for a year
-            date = pd.Timestamp(year=year, month=1, day=1)
+            # TODO
+            # group all data DSR + index/ts in a dictionary
+            result: DsrWeightTsRepartition = {}
 
-            # filter active assets
-            mask = (df_dsr_cluster_filtered[InputDsrColumns.COMMISSIONING_DATE] <= date) & (
-                    df_dsr_cluster_filtered[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
-            )
+            for zone_id, sectors in index_cluster_id_weight.items():
+                for sector_id, deratings in sectors.items():
+                    for derating_id, weight in deratings.items():
+                        uid_name = derating_index_data.index.get(zone_id, {}).get(derating_id)
 
-            df_dsr_cluster_year = df_dsr_cluster_filtered.loc[mask]
+                        if uid_name is None:
+                            continue
 
-            df_cluster_id_weight = self._build_weight_by_sector_derating_id_year(df_dsr_cluster_year, year)
+                        series_df = derating_index_data.data[uid_name]
 
-            # try mapping
-            dict_of_weight: dict[ZoneId, dict[SectorId, dict[DeratingId, float]]] = {}
-            for (area, sector, derating_id), weight in df_cluster_id_weight.groupby(
-                    [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR, InputDsrColumns.DSR_DERATING_CURVE_ID],
-                    as_index=False,
-            ):
-                dict_of_weight.setdefault(area, {}).setdefault(sector, {})[derating_id] = weight["weight"].iloc[0]
+                        # compute mean of several time series if necessary
+                        if len(uid_name) > 1:
+                            print(f"Warning: {uid_name} is not unique, computing the mean of the time series")
+                            series = series_df.mean(axis=1)
+                        else:
+                            series = series_df.iloc[:, 0]
 
-            # apply to time series the weight from aggregation
-            derating_index_filtered = {k: v for k, v in dict_of_weight.items() if k in derating_index_data.index}
+                        (
+                            result.setdefault(zone_id, {})
+                            .setdefault(sector_id, {})
+                            .setdefault(derating_id, [])
+                            .append(TimeSeriesAndClusterPair(weight=weight, series=series))
+                        )
 
-
+            result
 
             # # Write the capacity modulation file
             # dsr_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
