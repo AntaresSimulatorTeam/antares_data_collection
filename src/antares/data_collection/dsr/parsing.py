@@ -19,11 +19,15 @@ import pandas as pd
 
 from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS, YearId
 from antares.data_collection.dsr.constants import (
+    DSR_CAPACITY_MODULATION_FOLDER,
+    DSR_CAPACITY_MODULATION_NAME_FILE,
+    DSR_CLUSTER_FOLDER,
+    DSR_DATE_STR_REFERENCE,
     DSR_DERATING_INDEX_NAME,
     DSR_DERATING_NAME,
+    DSR_EXPORT_DATE_COLUMN,
     DSR_FO_DURATION,
     DSR_FO_RATE,
-    DSR_FOLDER,
     DSR_GROUP,
     DSR_INPUT_FILE,
     DSR_NAME_FILE,
@@ -53,7 +57,8 @@ SectorId: TypeAlias = str
 
 # mapping used to add/manage weights calculation
 WeightValue: TypeAlias = float
-IndexMappingWeight: TypeAlias = dict[ZoneId, dict[SectorId, dict[DeratingId, WeightValue]]]
+AntaresCodeId: TypeAlias = str
+IndexMappingWeight: TypeAlias = dict[AntaresCodeId, dict[SectorId, dict[DeratingId, WeightValue]]]
 
 
 @dataclass(frozen=True)
@@ -68,7 +73,9 @@ class TimeSeriesAndClusterPair:
     series: pd.Series
 
 
-DsrWeightTsRepartition: TypeAlias = dict[ZoneId, dict[SectorId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]]
+DsrWeightTsRepartition: TypeAlias = dict[
+    AntaresCodeId, dict[SectorId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]
+]
 
 
 class DsrParser:
@@ -193,7 +200,7 @@ class DsrParser:
         return {year: df[columns_to_keep] for year, df in dict_of_df.items()}
 
     def _export_dsr_cluster_dataframe(self, dict_of_df: dict[int, pd.DataFrame]) -> None:
-        parent_dir = self.output_folder / DSR_FOLDER
+        parent_dir = self.output_folder / DSR_CLUSTER_FOLDER
         parent_dir.mkdir(parents=True, exist_ok=True)
 
         output_path = parent_dir / DSR_NAME_FILE
@@ -319,8 +326,91 @@ class DsrParser:
 
         return dict_of_weight
 
-    def _buil_index_weight_repartition(self) -> None:
-        pass
+    def _build_index_weight_repartition(
+        self, index_of_weight: IndexMappingWeight, index_derating_data: InternalMapping
+    ) -> DsrWeightTsRepartition:
+        """
+        Structure data in a dictionary with all data :
+            - `weight`: Capacity by area/sector/derating_id / Capacity by zone/sector
+            - time series associated to the weight
+        Several time series can be found for on index id corresponding to several curves.
+        In this case, we compute the mean of the time series.
+        """
+        result: DsrWeightTsRepartition = {}
+
+        for zone_id, sectors in index_of_weight.items():
+            for sector_id, deratings in sectors.items():
+                for derating_id, weight in deratings.items():
+                    uid_name = index_derating_data.index.get(zone_id, {}).get(derating_id)
+
+                    if uid_name is None:
+                        continue
+
+                    series_df = index_derating_data.data[uid_name]
+
+                    # compute mean of several time series if necessary
+                    if len(uid_name) > 1:
+                        print(f"Warning: {uid_name} is not unique, computing the mean of the time series")
+                        series = series_df.mean(axis=1)
+                    else:
+                        series = series_df.iloc[:, 0]
+
+                    (
+                        result.setdefault(zone_id, {})
+                        .setdefault(sector_id, {})
+                        .setdefault(derating_id, [])
+                        .append(TimeSeriesAndClusterPair(weight=weight, series=series))
+                    )
+
+        return result
+
+    def _build_pegase_dataframe(self, data_repartition: DsrWeightTsRepartition) -> pd.DataFrame:
+        result: dict[str, pd.Series] = {}
+
+        for area, sectors in data_repartition.items():
+            for sector_id, deratings in sectors.items():
+                for derating_id, pair_of_weights in deratings.items():
+                    ts_value = pair_of_weights[0].series * pair_of_weights[0].weight
+                    ts_name = f"{area}_DSR_{sector_id}"
+
+                    result[ts_name] = ts_value
+
+        df_result = pd.DataFrame(result)
+
+        # Add the "date" columns
+        all_name_columns = list(df_result.columns)
+        start_time = pd.to_datetime(f"01/01/{DSR_DATE_STR_REFERENCE} 00:00:00")
+        df_result[DSR_EXPORT_DATE_COLUMN] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df_result))]
+
+        # re order columns
+        df_result = df_result[[DSR_EXPORT_DATE_COLUMN] + all_name_columns]
+
+        # We want our dataframe to start on the 1st of July at midnight for PEGASE.
+        # So we have to reindex it at the right index
+        year_int = int(DSR_DATE_STR_REFERENCE)
+        time_delta = pd.Timestamp(year=year_int, month=7, day=1, hour=0) - pd.Timestamp(
+            year=year_int, month=1, day=1, hour=0
+        )
+        first_index = time_delta.days * 24
+        new_index = list(range(first_index, len(df_result))) + list(range(0, first_index))
+
+        return df_result.reindex(new_index)
+
+    def _export_dsr_capacity_modulation_dataframe(self, index_of_df_year: dict[int, pd.DataFrame]) -> None:
+        parent_dir = self.output_folder / DSR_CAPACITY_MODULATION_FOLDER
+        parent_dir.mkdir(parents=True, exist_ok=True)
+
+        output_path = parent_dir / DSR_CAPACITY_MODULATION_NAME_FILE
+
+        with pd.ExcelWriter(output_path) as writer:
+            for year, df_pegase_year in index_of_df_year.items():
+                sheet_name = f"{year - 1}-{year}"
+
+                df_pegase_year.to_excel(
+                    writer,
+                    sheet_name=sheet_name,
+                    index=False,
+                )
 
     def _build_dsr_capacity_modulation(self, df_dsr_cluster_filtered: pd.DataFrame) -> None:
         # parsing index file
@@ -330,57 +420,27 @@ class DsrParser:
         dsr_derating_ts_df = pd.read_csv(self.input_folder / DSR_DERATING_NAME)
 
         # treatments for every year
-
-        # filter df dsr_cluster
-        # grouping by area/SECTOR
-        # sum of capacity (NET_MAX_GEN_CAP)
-
-        # filter df dsr_derating_index on year
-        # mapping with df aggregate and df dsr_derating_index (DERATING_INDEX_ID)
-        # mapping with df dsr_derating DERATING_ID/DERATING_VALUE/DERATING_INDEX_ID
-        # compute mean of DERATING_VALUE TS if multi row CURVE_UID/ZONE/ID
-
+        index_of_df_pegase: dict[int, pd.DataFrame] = {}
         for year in self.years:
             # group index filtered by year + time series (raw data)
             index_mapping_year = self._build_index_mapping(dsr_derating_index_df, year)
             derating_index_data = InternalMapping(index=index_mapping_year, data=dsr_derating_ts_df)
 
-            # buil data frame with weight by sector/derating_id
+            # buil dictionary with weight by sector/derating_id
             index_cluster_id_weight = self._build_df_weight_by_year(df_dsr_cluster_filtered, year)
 
-            # TODO
             # group all data DSR + index/ts in a dictionary
-            result: DsrWeightTsRepartition = {}
+            index_repartition_weight_ts = self._build_index_weight_repartition(
+                index_cluster_id_weight, derating_index_data
+            )
 
-            for zone_id, sectors in index_cluster_id_weight.items():
-                for sector_id, deratings in sectors.items():
-                    for derating_id, weight in deratings.items():
-                        uid_name = derating_index_data.index.get(zone_id, {}).get(derating_id)
+            # final treatments to have data frame
+            df_ts_area_sector = self._build_pegase_dataframe(index_repartition_weight_ts)
 
-                        if uid_name is None:
-                            continue
+            index_of_df_pegase[year] = df_ts_area_sector
 
-                        series_df = derating_index_data.data[uid_name]
-
-                        # compute mean of several time series if necessary
-                        if len(uid_name) > 1:
-                            print(f"Warning: {uid_name} is not unique, computing the mean of the time series")
-                            series = series_df.mean(axis=1)
-                        else:
-                            series = series_df.iloc[:, 0]
-
-                        (
-                            result.setdefault(zone_id, {})
-                            .setdefault(sector_id, {})
-                            .setdefault(derating_id, [])
-                            .append(TimeSeriesAndClusterPair(weight=weight, series=series))
-                        )
-
-            result
-
-            # # Write the capacity modulation file
-            # dsr_cluster_group_ts_repartition = self._build_must_run(thermal_df_year, index_to_timeseries)
-            # self._write_must_run_file(year, must_run_cluster_group_ts_repartition)
+        # write the capacity modulation file
+        self._export_dsr_capacity_modulation_dataframe(index_of_df_pegase)
 
     def build_dsr_cluster(self) -> None:
         df_filtered = self._build_filtered_dsr_cluster_dataframe()

@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.dsr.constants import DSR_FOLDER
+from antares.data_collection.dsr.constants import DSR_CLUSTER_FOLDER
 from antares.data_collection.dsr.parsing import DsrParser
 from antares.data_collection.referential_data.main_params import parse_main_params
 from tests.conftest import RESOURCE_PATH
@@ -42,7 +42,7 @@ def test_nominal_case(tmp_path: Path) -> None:
     print("Duration DSR Cluster", end - start)
 
     # Asserts the file is created
-    generated_file_path = tmp_path / DSR_FOLDER / "cluster_DSR.xlsx"
+    generated_file_path = tmp_path / DSR_CLUSTER_FOLDER / "cluster_DSR.xlsx"
     assert generated_file_path.exists()
 
     # read Excel workbook, one sheet by year

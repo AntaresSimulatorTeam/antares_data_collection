@@ -15,7 +15,8 @@ from pathlib import Path
 
 # DSR CLUSTER
 DSR_INPUT_FILE = "DSR.csv"
-DSR_FOLDER = Path("DSR") / "cluster"
+DSR_EXPORT_ROOT_DIR = Path("DSR")
+DSR_CLUSTER_FOLDER = DSR_EXPORT_ROOT_DIR / "cluster"
 DSR_NAME_FILE = "cluster_DSR.xlsx"
 
 
@@ -60,6 +61,10 @@ DSR_FO_DURATION = 1
 
 DSR_DERATING_INDEX_NAME = "DSR Derating Index.csv"
 DSR_DERATING_NAME = "DSR Derating.csv"
+DSR_CAPACITY_MODULATION_NAME_FILE = "capacity_modulation_DSR.xlsx"
+DSR_EXPORT_DATE_COLUMN = "date"
+DSR_DATE_STR_REFERENCE = "2028"
+DSR_CAPACITY_MODULATION_FOLDER = DSR_EXPORT_ROOT_DIR / "capacity_modulation"
 
 
 class InputDeratingIndexColumns(StrEnum):
