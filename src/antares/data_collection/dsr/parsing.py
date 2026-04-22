@@ -149,7 +149,7 @@ class DsrParser:
 
         return res
 
-    def _filter_columns_for_output(self, dict_of_df: dict[int, pd.DataFrame]) -> dict[int, pd.DataFrame]:
+    def _filter_columns_for_output(self, dict_of_df: dict[YearId, pd.DataFrame]) -> dict[YearId, pd.DataFrame]:
         """
         Only keep the output columns needed for the DSR cluster.
             - Ordering columns from `OutputDsrColumns`
@@ -193,6 +193,6 @@ class DsrParser:
 
     def build_dsr_cluster(self) -> None:
         df = self._build_filtered_dsr_cluster_dataframe()
-        dict_of_df = self._compute_dsr_cluster_years(df)
-        dict_of_df = self._filter_columns_for_output(dict_of_df)
-        self._export_dsr_cluster_dataframe(dict_of_df)
+        dsr_clusters_by_years = self._compute_dsr_cluster_years(df)
+        dsr_clusters_by_years = self._filter_columns_for_output(dsr_clusters_by_years)
+        self._export_dsr_cluster_dataframe(dsr_clusters_by_years)
