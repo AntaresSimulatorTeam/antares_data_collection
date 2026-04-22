@@ -11,17 +11,12 @@
 # This file is part of the Antares project.
 from enum import StrEnum
 
-import pandas as pd
-
 THERMAL_INPUT_FILE = "Thermal.csv"
-DEFAULT_DECOMMISSIONING_DATE = pd.Timestamp(year=2100, month=1, day=1)
 BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
 FUEL_MAPPING = {BIOMASS_CLUSTER_SUFFIX: "Mixed fuel", "virtuel": "Other"}
 
-
 ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
-ANTARES_NODE_NAME_COLUMN = "antares_node"
 
 
 class InputThermalColumns(StrEnum):

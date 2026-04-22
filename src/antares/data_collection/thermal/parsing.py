@@ -17,7 +17,6 @@ import pandas as pd
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     THERMAL_INPUT_FILE,
@@ -27,8 +26,15 @@ from antares.data_collection.thermal.installed_power.parsing import ThermalInsta
 from antares.data_collection.thermal.param_modulation.parsing import ThermalParamModulationParser
 from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from antares.data_collection.thermal.utils import (
-    filter_input_based_on_study_scenarios,
-    filter_thermal_input_file_based_on_commission_date,
+    add_antares_cluster_name_colum,
+)
+from antares.data_collection.utils import (
+    add_code_antares_colum,
+    filter_based_on_commission_date,
+    filter_based_on_net_max_gen_cap,
+    filter_based_on_op_stat,
+    filter_based_on_study_scenarios,
+    filter_non_declared_areas,
     parse_input_file,
 )
 
@@ -52,33 +58,6 @@ class ThermalParser:
     def _read_input_file(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(THERMAL_INPUT_FILE), list(InputThermalColumns))
 
-    def _filter_values_based_on_op_stat(self, df: pd.DataFrame) -> pd.DataFrame:
-        """We want to keep only the lines were the OP_STAT value matches the user given ones"""
-        if not self.op_stat_values:
-            return df
-        df = df[df[InputThermalColumns.OP_STAT].isin(self.op_stat_values)]
-        if df.empty:
-            # We want to raise as soon as possible to have a clear error msg
-            raise ValueError(f"The given op_stat values {self.op_stat_values} are not present in the dataframe")
-        return df
-
-    def _filter_non_declared_areas(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
-        We don't want to consider them.
-        We simply log a message for each area we find in this case
-        """
-        all_market_nodes = set(df[InputThermalColumns.MARKET_NODE])
-        missing_nodes = []
-        for node in all_market_nodes:
-            antares_code = self.main_params.get_antares_code(node)
-            if not antares_code:
-                missing_nodes.append(node)
-
-        if missing_nodes:
-            return df[~df[InputThermalColumns.MARKET_NODE].isin(missing_nodes)]
-        return df
-
     def _filter_non_declared_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Some mapping between ENTSOE clusters and Antares ones might be missing in the `MainParams` file.
@@ -93,15 +72,6 @@ class ThermalParser:
 
         if missing_mappings:
             return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
-        return df
-
-    def _filter_values_based_on_net_max_gen_cap(self, df: pd.DataFrame) -> pd.DataFrame:
-        """We do not consider clusters with a `NET_MAX_GEN_CAP` of 0."""
-        return df.loc[df[InputThermalColumns.NET_MAX_GEN_CAP] > 0]
-
-    def _add_antares_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
-        cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
-        df[ANTARES_CLUSTER_NAME_COLUMN] = self.main_params.get_clusters_bp(cluster_list)
         return df
 
     def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -129,22 +99,22 @@ class ThermalParser:
 
         return df
 
-    def _add_code_antares_colum(self, df: pd.DataFrame) -> pd.DataFrame:
-        node_list = df[InputThermalColumns.MARKET_NODE].tolist()
-        df[ANTARES_NODE_NAME_COLUMN] = self.main_params.get_antares_codes(node_list)
-        return df
-
     def _build_filtered_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file()
-        df = self._filter_values_based_on_op_stat(df)
-        df = self._filter_non_declared_areas(df)
+        df = filter_based_on_op_stat(self.op_stat_values, df, InputThermalColumns.OP_STAT.value)
+        df = filter_non_declared_areas(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
         df = self._filter_non_declared_clusters(df)
-        df = filter_input_based_on_study_scenarios(df, self.main_params, self.years)
-        df = filter_thermal_input_file_based_on_commission_date(df, self.years)
-        df = self._add_antares_cluster_name_colum(df)
+        df = filter_based_on_study_scenarios(df, self.main_params, self.years, InputThermalColumns.STUDY_SCENARIO.value)
+        df = filter_based_on_commission_date(
+            df,
+            self.years,
+            InputThermalColumns.COMMISSIONING_DATE.value,
+            InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
+        )
+        df = add_antares_cluster_name_colum(self.main_params, df)
         df = self._split_clusters_with_biomass_rule(df)
-        df = self._filter_values_based_on_net_max_gen_cap(df)
-        return self._add_code_antares_colum(df)
+        df = filter_based_on_net_max_gen_cap(df, InputThermalColumns.NET_MAX_GEN_CAP.value)
+        return add_code_antares_colum(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
 
     def build_installed_power(self) -> None:
         parser = ThermalInstallerPowerParser(self.output_folder, self.main_params, self.years)

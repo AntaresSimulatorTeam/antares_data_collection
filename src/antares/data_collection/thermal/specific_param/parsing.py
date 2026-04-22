@@ -14,10 +14,10 @@ from typing import Any, TypeAlias
 
 import pandas as pd
 
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, YearId
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    ANTARES_NODE_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     InputThermalColumns,
@@ -39,7 +39,6 @@ from antares.data_collection.thermal.utils import (
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str
-YearId: TypeAlias = int
 MininalCapacityModulation: TypeAlias = float
 
 
