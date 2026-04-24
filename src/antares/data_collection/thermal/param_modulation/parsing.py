@@ -331,7 +331,7 @@ class ThermalParamModulationParser:
         # We want our dataframe to start on the 1st of July at midnight for PEGASE.
         # So we have to reindex it at the right index
         time_delta = pd.Timestamp(year=year, month=7, day=1, hour=0) - pd.Timestamp(year=year, month=1, day=1, hour=0)
-        first_index = time_delta.days * 24
+        first_index = time_delta.days * 24 + 1
         new_index = list(range(first_index, len(df) + 1)) + list(range(1, first_index))
         df.index = pd.RangeIndex(1, len(df) + 1)
         return df.reindex(new_index)
