@@ -320,21 +320,22 @@ class ThermalParamModulationParser:
         df = pd.DataFrame.from_dict(pegase_df_as_dict)
 
         # Add the Hours columns
-        cols_before_hours = list(df.columns)
-        df[OutputModulationColumns.HOUR] = range(1, len(df) + 1)
-        start_time = pd.to_datetime(f"01/01/{year} 00:00:00")
-        df[OutputModulationColumns.DATE] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df))]
-
-        # We should put them as the first 2 columns for the user readability
-        df = df[[OutputModulationColumns.DATE.value, OutputModulationColumns.HOUR.value] + cols_before_hours]
+        df.insert(0, OutputModulationColumns.HOUR, range(1, len(df) + 1))
 
         # We want our dataframe to start on the 1st of July at midnight for PEGASE.
         # So we have to reindex it at the right index
-        time_delta = pd.Timestamp(year=year, month=7, day=1, hour=0) - pd.Timestamp(year=year, month=1, day=1, hour=0)
+        starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
+        time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
         first_index = time_delta.days * 24 + 1
         new_index = list(range(first_index, len(df) + 1)) + list(range(1, first_index))
         df.index = pd.RangeIndex(1, len(df) + 1)
-        return df.reindex(new_index)
+        reindex_df = df.reindex(new_index)
+
+        # Add the `Date` column
+        date_values = [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))]
+        reindex_df.insert(0, OutputModulationColumns.DATE, date_values)
+
+        return reindex_df
 
     def _write_must_run_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition, year)
