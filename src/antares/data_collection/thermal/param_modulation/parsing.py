@@ -332,11 +332,8 @@ class ThermalParamModulationParser:
         reindex_df = df.reindex(new_index)
 
         # Add the `Date` column
-        reindex_df.insert(
-            0,
-            OutputModulationColumns.DATE,
-            [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))],
-        )
+        date_values = [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))]
+        reindex_df.insert(0, OutputModulationColumns.DATE, date_values)
 
         return reindex_df
 
