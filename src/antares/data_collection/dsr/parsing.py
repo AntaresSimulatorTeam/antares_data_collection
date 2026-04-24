@@ -22,7 +22,7 @@ from antares.data_collection.dsr.constants import (
     DSR_CAPACITY_MODULATION_FOLDER,
     DSR_CAPACITY_MODULATION_NAME_FILE,
     DSR_CLUSTER_FOLDER,
-    DSR_DATE_STR_REFERENCE,
+    DSR_DATE_INT_REFERENCE,
     DSR_DERATING_INDEX_NAME,
     DSR_DERATING_NAME,
     DSR_EXPORT_DATE_COLUMN,
@@ -53,12 +53,12 @@ ZoneId: TypeAlias = str
 DeratingId: TypeAlias = str
 CurveIds: TypeAlias = list[str]
 IndexMapping: TypeAlias = dict[ZoneId, dict[DeratingId, CurveIds]]
-SectorId: TypeAlias = str
+DsrClusterId: TypeAlias = tuple[int, int]
 
 # mapping used to add/manage weights calculation
 WeightValue: TypeAlias = float
 AntaresCodeId: TypeAlias = str
-IndexMappingWeight: TypeAlias = dict[AntaresCodeId, dict[SectorId, dict[DeratingId, WeightValue]]]
+IndexDsrClusterWeight: TypeAlias = dict[AntaresCodeId, dict[DsrClusterId, dict[DeratingId, WeightValue]]]
 
 
 @dataclass(frozen=True)
@@ -74,7 +74,7 @@ class TimeSeriesAndClusterPair:
 
 
 DsrWeightTsRepartition: TypeAlias = dict[
-    AntaresCodeId, dict[SectorId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]
+    AntaresCodeId, dict[DsrClusterId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]
 ]
 
 
@@ -254,7 +254,7 @@ class DsrParser:
             mapping.setdefault(area, {})[cluster] = list(grouped_df[curve_id_col])
         return mapping
 
-    def _build_df_weight_by_year(self, df: pd.DataFrame, year: YearId) -> IndexMappingWeight:
+    def _build_index_weight_by_year(self, df: pd.DataFrame, year: YearId) -> IndexDsrClusterWeight:
         # filter data dsr cluster
         date = pd.Timestamp(year=year, month=1, day=1)
 
@@ -263,71 +263,42 @@ class DsrParser:
             df[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
         )
 
-        df_dsr_cluster_year = df.loc[mask]
+        df_year = df.loc[mask].copy()
 
-        dsr_cluster_sector_cols = [
-            ANTARES_NODE_NAME_COLUMN,
-            InputDsrColumns.SECTOR,
-            InputDsrColumns.NET_MAX_GEN_CAP,
-        ]
+        # Define grouping columns based on _compute_dsr_cluster_year
+        group_cols = [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.ACT_PRICE_DA, InputDsrColumns.MAX_HOURS]
+        subgroup_cols = group_cols + [InputDsrColumns.DSR_DERATING_CURVE_ID]
 
-        # compute dsr capacity by sector
-        df_aggregate_sector = (
-            df_dsr_cluster_year[dsr_cluster_sector_cols]
-            .groupby([ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR], as_index=False)
+        # 1. Aggregate capacity by (Area, DSR_cluster, Curve ID)
+        df_weights = df_year.groupby(subgroup_cols, as_index=False, dropna=False)[InputDsrColumns.NET_MAX_GEN_CAP].sum()
+
+        # 2. Compute total capacity per DSR_cluster
+        df_cluster_total = (
+            df_year.groupby(group_cols, as_index=False)[[InputDsrColumns.NET_MAX_GEN_CAP]]
             .sum()
-            .rename(columns={InputDsrColumns.NET_MAX_GEN_CAP: "sector_capacity"})
+            .rename(columns={InputDsrColumns.NET_MAX_GEN_CAP: "total_capacity"})
         )
 
-        # compute dsr capacity by curve id
-        dsr_cluster_derating_id_cols = [
-            ANTARES_NODE_NAME_COLUMN,
-            InputDsrColumns.SECTOR,
-            InputDsrColumns.DSR_DERATING_CURVE_ID,
-            InputDsrColumns.NET_MAX_GEN_CAP,
-        ]
-
-        df_aggregate_sector_derating_id = (
-            df_dsr_cluster_year[dsr_cluster_derating_id_cols]
-            .groupby(
-                [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR, InputDsrColumns.DSR_DERATING_CURVE_ID],
-                as_index=False,
-            )
-            .sum()
-            .rename(columns={InputDsrColumns.NET_MAX_GEN_CAP: "derating_id_capacity"})
+        # 3. Merge and compute weights
+        df_weights = df_weights.merge(df_cluster_total, on=group_cols)
+        df_weights[InputDsrColumns.NET_MAX_GEN_CAP] = (
+            df_weights[InputDsrColumns.NET_MAX_GEN_CAP] / df_weights["total_capacity"]
         )
 
-        # compute the final weight for every area/derating_id
-        df_weight_of_area_sector_derating = df_aggregate_sector_derating_id.merge(
-            df_aggregate_sector, on=[ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR]
-        ).assign(
-            **{InputDsrColumns.NET_MAX_GEN_CAP.value: lambda df: df["derating_id_capacity"] / df["sector_capacity"]}
-        )
+        # 3. Structure into a dictionary
+        dict_of_weight: IndexDsrClusterWeight = {}
+        for _, row in df_weights.iterrows():
+            area = row[ANTARES_NODE_NAME_COLUMN]
+            dsr_cluster_id = (row[InputDsrColumns.ACT_PRICE_DA], row[InputDsrColumns.MAX_HOURS])
+            derating_id = row[InputDsrColumns.DSR_DERATING_CURVE_ID]
+            weight = row[InputDsrColumns.NET_MAX_GEN_CAP]
 
-        col_to_to_keep = [
-            ANTARES_NODE_NAME_COLUMN,
-            InputDsrColumns.SECTOR,
-            InputDsrColumns.DSR_DERATING_CURVE_ID,
-            InputDsrColumns.NET_MAX_GEN_CAP,
-        ]
-
-        # structure to Index
-        dict_of_weight: IndexMappingWeight = {}
-        for (area, sector, derating_id), group_df in df_weight_of_area_sector_derating[col_to_to_keep].groupby(
-            [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.SECTOR, InputDsrColumns.DSR_DERATING_CURVE_ID],
-            as_index=False,
-        ):
-            assert isinstance(area, ZoneId)
-            assert isinstance(sector, SectorId)
-            assert isinstance(derating_id, DeratingId)
-            dict_of_weight.setdefault(area, {}).setdefault(sector, {})[derating_id] = group_df[
-                InputDsrColumns.NET_MAX_GEN_CAP
-            ].iloc[0]
+            dict_of_weight.setdefault(area, {}).setdefault(dsr_cluster_id, {})[derating_id] = weight
 
         return dict_of_weight
 
     def _build_index_weight_repartition(
-        self, index_of_weight: IndexMappingWeight, index_derating_data: InternalMapping
+        self, index_of_weight: IndexDsrClusterWeight, index_derating_data: InternalMapping
     ) -> DsrWeightTsRepartition:
         """
         Structure data in a dictionary with all data :
@@ -335,6 +306,7 @@ class DsrParser:
             - time series associated to the weight
         Several time series can be found for on index id corresponding to several curves.
         In this case, we compute the mean of the time series.
+        If we don't find any time series, we use the value of 1.
         """
         result: DsrWeightTsRepartition = {}
 
@@ -344,12 +316,12 @@ class DsrParser:
                     uid_name = index_derating_data.index.get(zone_id, {}).get(derating_id)
 
                     if uid_name is None:
-                        continue
-
-                    series_df = index_derating_data.data[uid_name]
+                        series_df = pd.DataFrame({"col": [1] * 8760})
+                    else:
+                        series_df = index_derating_data.data[uid_name]
 
                     # compute mean of several time series if necessary
-                    if len(uid_name) > 1:
+                    if len(series_df.columns) > 1:
                         print(f"Warning: {uid_name} is not unique, computing the mean of the time series")
                         series = series_df.mean(axis=1)
                     else:
@@ -367,19 +339,20 @@ class DsrParser:
     def _build_pegase_dataframe(self, data_repartition: DsrWeightTsRepartition) -> pd.DataFrame:
         result: dict[str, pd.Series] = {}
 
-        for area, sectors in data_repartition.items():
-            for sector_id, deratings in sectors.items():
+        for area, dsrclusters in data_repartition.items():
+            i = 1
+            for dsrcluster_id, deratings in dsrclusters.items():
                 for derating_id, pair_of_weights in deratings.items():
                     ts_value = pair_of_weights[0].series * pair_of_weights[0].weight
-                    ts_name = f"{area}_DSR_{sector_id}"
-
+                    ts_name = f"{area}_DSR{i}"
                     result[ts_name] = ts_value
+                i += 1
 
         df_result = pd.DataFrame(result)
 
         # Add the "date" columns
         all_name_columns = list(df_result.columns)
-        start_time = pd.to_datetime(f"01/01/{DSR_DATE_STR_REFERENCE} 00:00:00")
+        start_time = pd.to_datetime(f"01/01/{DSR_DATE_INT_REFERENCE} 00:00:00")
         df_result[DSR_EXPORT_DATE_COLUMN] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df_result))]
 
         # re order columns
@@ -387,7 +360,7 @@ class DsrParser:
 
         # We want our dataframe to start on the 1st of July at midnight for PEGASE.
         # So we have to reindex it at the right index
-        year_int = int(DSR_DATE_STR_REFERENCE)
+        year_int = DSR_DATE_INT_REFERENCE
         time_delta = pd.Timestamp(year=year_int, month=7, day=1, hour=0) - pd.Timestamp(
             year=year_int, month=1, day=1, hour=0
         )
@@ -427,7 +400,7 @@ class DsrParser:
             derating_index_data = InternalMapping(index=index_mapping_year, data=dsr_derating_ts_df)
 
             # buil dictionary with weight by sector/derating_id
-            index_cluster_id_weight = self._build_df_weight_by_year(df_dsr_cluster_filtered, year)
+            index_cluster_id_weight = self._build_index_weight_by_year(df_dsr_cluster_filtered, year)
 
             # group all data DSR + index/ts in a dictionary
             index_repartition_weight_ts = self._build_index_weight_repartition(
