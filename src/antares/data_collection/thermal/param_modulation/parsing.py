@@ -49,8 +49,8 @@ from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
 )
 from antares.data_collection.utils import (
-    filter_based_on_commission_date,
     filter_based_on_study_scenarios,
+    filter_out_based_on_year,
     parse_input_file,
     write_csv_file,
 )
@@ -144,12 +144,14 @@ class ThermalParamModulationParser:
 
     def _filter_thermal_input_file(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
         df = filter_based_on_study_scenarios(df, self.main_params, [year], InputThermalColumns.STUDY_SCENARIO.value)
-        df = filter_based_on_commission_date(
+
+        df = filter_out_based_on_year(
             df,
-            [year],
+            year,
             InputThermalColumns.COMMISSIONING_DATE.value,
             InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         )
+
         useful_columns = [
             InputThermalColumns.ZONE,
             InputThermalColumns.MARKET_NODE,
