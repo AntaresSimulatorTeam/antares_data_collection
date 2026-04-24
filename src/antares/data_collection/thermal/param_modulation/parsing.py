@@ -215,7 +215,7 @@ class ThermalParamModulationParser:
             cluster_id = group[3]
             assert isinstance(cluster_id, ClusterId)
 
-            lowest_mean = search_direction.starting_point
+            starting_mean = search_direction.starting_point
             final_ts = pd.Series()
 
             # If no curve id is provided -> we SHOULD NOT write the final data
@@ -236,9 +236,9 @@ class ThermalParamModulationParser:
                 for curve_id in curve_ids:
                     ts = internal_mapping.data[curve_id]
                     ts_mean = ts.mean()
-                    if search_direction.operator(lowest_mean, ts_mean):
+                    if search_direction.operator(starting_mean, ts_mean):
                         final_ts = ts
-                        lowest_mean = ts_mean
+                        starting_mean = ts_mean
 
             # Use default value for empty rows
             if final_ts.empty:
