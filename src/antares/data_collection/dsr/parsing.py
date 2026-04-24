@@ -45,6 +45,7 @@ from antares.data_collection.utils import (
     filter_based_on_op_stat,
     filter_based_on_study_scenarios,
     filter_non_declared_areas,
+    filter_out_based_on_year,
     parse_input_file,
 )
 
@@ -136,14 +137,9 @@ class DsrParser:
             - ordering columns from `OutputDsrColumns`
         """
 
-        date = pd.Timestamp(year=year, month=1, day=1)
-
-        # Filter active assets
-        mask = (df[InputDsrColumns.COMMISSIONING_DATE] <= date) & (
-            df[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
+        df_year = filter_out_based_on_year(
+            df, year, InputDsrColumns.COMMISSIONING_DATE.value, InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED.value
         )
-
-        df_year = df.loc[mask]
 
         # Group with aggregations
         result = (

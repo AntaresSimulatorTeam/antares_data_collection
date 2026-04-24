@@ -162,6 +162,16 @@ def filter_based_on_net_max_gen_cap(df: pd.DataFrame, net_max_gen_cap_name_colum
     return df.loc[df[net_max_gen_cap_name_column] > 0]
 
 
+def filter_out_based_on_year(
+    df: pd.DataFrame, year: int, commissioning_name_column: str, decommissioning_name_column: str
+) -> pd.DataFrame:
+    """This function only keeps rows where the unit is commissioned on the 1st January of the given year."""
+    date = pd.Timestamp(year=year, month=1, day=1)
+    mask = (df[commissioning_name_column] <= date) & (df[decommissioning_name_column] >= date)
+
+    return df.loc[mask]
+
+
 def add_code_antares_colum(main_params: MainParams, df: pd.DataFrame, market_node_name_column: str) -> pd.DataFrame:
     node_list = df[market_node_name_column].tolist()
     df[ANTARES_NODE_NAME_COLUMN] = main_params.get_antares_codes(node_list)

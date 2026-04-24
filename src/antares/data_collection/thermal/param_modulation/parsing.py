@@ -49,8 +49,8 @@ from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
 )
 from antares.data_collection.utils import (
-    filter_based_on_commission_date,
     filter_based_on_study_scenarios,
+    filter_out_based_on_year,
     parse_input_file,
     write_csv_file,
 )
@@ -144,12 +144,14 @@ class ThermalParamModulationParser:
 
     def _filter_thermal_input_file(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
         df = filter_based_on_study_scenarios(df, self.main_params, [year], InputThermalColumns.STUDY_SCENARIO.value)
-        df = filter_based_on_commission_date(
+
+        df = filter_out_based_on_year(
             df,
-            [year],
+            year,
             InputThermalColumns.COMMISSIONING_DATE.value,
             InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         )
+
         useful_columns = [
             InputThermalColumns.ZONE,
             InputThermalColumns.MARKET_NODE,
@@ -213,7 +215,7 @@ class ThermalParamModulationParser:
             cluster_id = group[3]
             assert isinstance(cluster_id, ClusterId)
 
-            lowest_mean = search_direction.starting_point
+            starting_mean = search_direction.starting_point
             final_ts = pd.Series()
 
             # If no curve id is provided -> we SHOULD NOT write the final data
@@ -234,9 +236,9 @@ class ThermalParamModulationParser:
                 for curve_id in curve_ids:
                     ts = internal_mapping.data[curve_id]
                     ts_mean = ts.mean()
-                    if search_direction.operator(lowest_mean, ts_mean):
+                    if search_direction.operator(starting_mean, ts_mean):
                         final_ts = ts
-                        lowest_mean = ts_mean
+                        starting_mean = ts_mean
 
             # Use default value for empty rows
             if final_ts.empty:
@@ -318,20 +320,22 @@ class ThermalParamModulationParser:
         df = pd.DataFrame.from_dict(pegase_df_as_dict)
 
         # Add the Hours columns
-        cols_before_hours = list(df.columns)
-        df[OutputModulationColumns.HOUR] = range(1, len(df) + 1)
-        start_time = pd.to_datetime(f"01/01/{year} 00:00:00")
-        df[OutputModulationColumns.DATE] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df))]
-
-        # We should put them as the first 2 columns for the user readability
-        df = df[[OutputModulationColumns.DATE.value, OutputModulationColumns.HOUR.value] + cols_before_hours]
+        df.insert(0, OutputModulationColumns.HOUR, range(1, len(df) + 1))
 
         # We want our dataframe to start on the 1st of July at midnight for PEGASE.
         # So we have to reindex it at the right index
-        time_delta = pd.Timestamp(year=year, month=7, day=1, hour=0) - pd.Timestamp(year=year, month=1, day=1, hour=0)
-        first_index = time_delta.days * 24
-        new_index = list(range(first_index, len(df))) + list(range(1, first_index))
-        return df.reindex(new_index)
+        starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
+        time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
+        first_index = time_delta.days * 24 + 1
+        new_index = list(range(first_index, len(df) + 1)) + list(range(1, first_index))
+        df.index = pd.RangeIndex(1, len(df) + 1)
+        reindex_df = df.reindex(new_index)
+
+        # Add the `Date` column
+        date_values = [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))]
+        reindex_df.insert(0, OutputModulationColumns.DATE, date_values)
+
+        return reindex_df
 
     def _write_must_run_file(self, year: int, data_repartition: ClusterGroupTsRepartition) -> None:
         df = self._build_pegase_dataframe(data_repartition, year)
