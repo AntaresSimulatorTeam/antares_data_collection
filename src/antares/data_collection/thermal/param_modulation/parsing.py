@@ -18,7 +18,7 @@ from typing import Callable, TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, SCENARIO_TO_ALWAYS_CONSIDER
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -40,7 +40,6 @@ from antares.data_collection.thermal.param_modulation.constants import (
     MUST_RUN_INDEX_NAME,
     MUST_RUN_NAME,
     MUST_RUN_OUTPUT_NAME,
-    SCENARIO_TO_ALWAYS_CONSIDER,
     TECHNICAL_PARAMS_FOLDER,
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
@@ -49,6 +48,7 @@ from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
 )
 from antares.data_collection.utils import (
+    _filter_index_files_with_year,
     filter_based_on_study_scenarios,
     filter_out_based_on_year,
     parse_input_file,
@@ -117,11 +117,6 @@ class ThermalParamModulationParser:
         df = df.drop(columns=[InputGroupMustRunIndexColumns.LABEL])
         return df
 
-    def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        scenario = self.main_params.get_scenario_type(year=year)
-        acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
-        return df[df[InputIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
-
     def _build_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
         columns_to_group = [InputIndexColumns.ZONE.value, InputIndexColumns.ID.value]
         return self._build_index_internal_mapping(df, year, columns_to_group, InputIndexColumns.CURVE_UID)
@@ -133,7 +128,9 @@ class ThermalParamModulationParser:
     def _build_index_internal_mapping(
         self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
     ) -> IndexMapping:
-        df = self._filter_index_files_with_year(df=df, year=year)
+        df = _filter_index_files_with_year(
+            main_params=self.main_params, df=df, year=year, filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER
+        )
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
         for (area, cluster), grouped_df in groups:

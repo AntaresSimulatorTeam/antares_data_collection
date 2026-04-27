@@ -17,7 +17,12 @@ from typing import TypeAlias
 import numpy as np
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS, YearId
+from antares.data_collection.constants import (
+    ANTARES_NODE_NAME_COLUMN,
+    MAX_DECIMAL_DIGITS,
+    SCENARIO_TO_ALWAYS_CONSIDER,
+    YearId,
+)
 from antares.data_collection.dsr.constants import (
     DSR_CAPACITY_MODULATION_FOLDER,
     DSR_CAPACITY_MODULATION_NAME_FILE,
@@ -37,8 +42,8 @@ from antares.data_collection.dsr.constants import (
     OutputDsrColumns,
 )
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.param_modulation.constants import SCENARIO_TO_ALWAYS_CONSIDER
 from antares.data_collection.utils import (
+    _filter_index_files_with_year,
     add_code_antares_colum,
     filter_based_on_commission_date,
     filter_based_on_net_max_gen_cap,
@@ -47,6 +52,7 @@ from antares.data_collection.utils import (
     filter_non_declared_areas,
     filter_out_based_on_year,
     parse_input_file,
+    write_excel_workbook,
 )
 
 # mapping used for index file
@@ -229,11 +235,6 @@ class DsrParser:
 
         return df
 
-    def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        scenario = self.main_params.get_scenario_type(year=year)
-        acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
-        return df[df[InputDeratingIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
-
     def _build_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
         columns_to_group = [InputDeratingIndexColumns.ZONE.value, InputDeratingIndexColumns.ID.value]
         return self._build_index_internal_mapping(df, year, columns_to_group, InputDeratingIndexColumns.CURVE_UID)
@@ -241,7 +242,9 @@ class DsrParser:
     def _build_index_internal_mapping(
         self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
     ) -> IndexMapping:
-        df = self._filter_index_files_with_year(df=df, year=year)
+        df = _filter_index_files_with_year(
+            self.main_params, df=df, year=year, filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER
+        )
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
         for (area, cluster), grouped_df in groups:
@@ -252,25 +255,23 @@ class DsrParser:
 
     def _build_index_weight_by_year(self, df: pd.DataFrame, year: YearId) -> IndexDsrClusterWeight:
         # filter data dsr cluster
-        date = pd.Timestamp(year=year, month=1, day=1)
-
-        # Filter active assets
-        mask = (df[InputDsrColumns.COMMISSIONING_DATE] <= date) & (
-            df[InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED] >= date
+        df = filter_out_based_on_year(
+            df,
+            year,
+            InputDsrColumns.COMMISSIONING_DATE.value,
+            InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         )
-
-        df_year = df.loc[mask].copy()
 
         # Define grouping columns based on _compute_dsr_cluster_year
         group_cols = [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.ACT_PRICE_DA, InputDsrColumns.MAX_HOURS]
         subgroup_cols = group_cols + [InputDsrColumns.DSR_DERATING_CURVE_ID]
 
         # 1. Aggregate capacity by (Area, DSR_cluster, Curve ID)
-        df_weights = df_year.groupby(subgroup_cols, as_index=False, dropna=False)[InputDsrColumns.NET_MAX_GEN_CAP].sum()
+        df_weights = df.groupby(subgroup_cols, as_index=False, dropna=False)[InputDsrColumns.NET_MAX_GEN_CAP].sum()
 
         # 2. Compute total capacity per DSR_cluster
         df_cluster_total = (
-            df_year.groupby(group_cols, as_index=False)[[InputDsrColumns.NET_MAX_GEN_CAP]]
+            df.groupby(group_cols, as_index=False)[[InputDsrColumns.NET_MAX_GEN_CAP]]
             .sum()
             .rename(columns={InputDsrColumns.NET_MAX_GEN_CAP: "total_capacity"})
         )
@@ -318,7 +319,6 @@ class DsrParser:
 
                     # compute mean of several time series if necessary
                     if len(series_df.columns) > 1:
-                        print(f"Warning: {uid_name} is not unique, computing the mean of the time series")
                         series = series_df.mean(axis=1)
                     else:
                         series = series_df.iloc[:, 0]
@@ -371,15 +371,11 @@ class DsrParser:
 
         output_path = parent_dir / DSR_CAPACITY_MODULATION_NAME_FILE
 
-        with pd.ExcelWriter(output_path) as writer:
-            for year, df_pegase_year in index_of_df_year.items():
-                sheet_name = f"{year - 1}-{year}"
-
-                df_pegase_year.to_excel(
-                    writer,
-                    sheet_name=sheet_name,
-                    index=False,
-                )
+        dict_to_write: dict[str, pd.DataFrame] = {}
+        for year, df_year in index_of_df_year.items():
+            sheet_name = f"{year - 1}-{year}"
+            dict_to_write[sheet_name] = df_year
+            write_excel_workbook(output_path, dict_to_write)
 
     def _build_dsr_capacity_modulation(self, df_dsr_cluster_filtered: pd.DataFrame) -> None:
         # parsing index file

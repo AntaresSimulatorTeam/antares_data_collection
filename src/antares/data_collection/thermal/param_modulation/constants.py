@@ -30,7 +30,6 @@ DEFAULT_CAPACITY_MODULATION_TS = pd.Series(8760 * [1])
 # Input Constants
 ##########
 
-SCENARIO_TO_ALWAYS_CONSIDER = "All_years_ERAA_TYNDP"
 GROUP_MUST_RUN_LABEL = "Must run ratio"
 
 INELASTIC_INDEX_NAME = "Inelastic Index.csv"

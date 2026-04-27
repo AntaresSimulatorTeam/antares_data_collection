@@ -15,8 +15,14 @@ from typing import Iterator
 
 import pandas as pd
 import polars as pl
+import xlsxwriter  # type: ignore[import-untyped]
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, DEFAULT_DECOMMISSIONING_DATE, MAX_DECIMAL_DIGITS
+from antares.data_collection.constants import (
+    ANTARES_NODE_NAME_COLUMN,
+    DEFAULT_DECOMMISSIONING_DATE,
+    MAX_DECIMAL_DIGITS,
+)
+from antares.data_collection.dsr.constants import InputDeratingIndexColumns
 from antares.data_collection.referential_data.main_params import MainParams
 
 
@@ -191,3 +197,49 @@ def parse_input_file(input_file_path: Path, expected_columns: list[str]) -> pd.D
 
     # Keep useful columns only
     return df[expected_columns]
+
+
+def write_excel_workbook(
+    file_path: Path,
+    dataframes_by_sheet: dict[str, pd.DataFrame],
+) -> None:
+    """
+    Write multiple pandas DataFrames to an Excel file using xlsxwriter.
+
+    Each key in the dictionary corresponds to a sheet name.
+
+    Args:
+        file_path (str):
+            Path to the output Excel file (will be overwritten if exists).
+
+        dataframes_by_sheet (Dict[str, pd.DataFrame]):
+            Dictionary where:
+                - key = sheet name (str)
+                - value = pandas DataFrame to write in the sheet
+
+    Returns:
+        None
+    """
+    workbook = xlsxwriter.Workbook(file_path)
+
+    try:
+        for sheet_name, df in dataframes_by_sheet.items():
+            worksheet = workbook.add_worksheet(sheet_name)
+
+            # Write headers
+            worksheet.write_row(0, 0, df.columns.tolist())
+
+            # Write data
+            for row_num, row in enumerate(df.values, start=1):
+                worksheet.write_row(row_num, 0, row)
+
+    finally:
+        workbook.close()
+
+
+def _filter_index_files_with_year(
+    main_params: MainParams, df: pd.DataFrame, year: int, filter_scenario_value: str
+) -> pd.DataFrame:
+    scenario = main_params.get_scenario_type(year=year)
+    acceptable_scenario_types = [filter_scenario_value, f"{scenario}_{year}", f"All_years_{scenario}"]
+    return df[df[InputDeratingIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
