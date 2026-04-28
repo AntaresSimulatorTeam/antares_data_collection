@@ -22,7 +22,7 @@ from antares.data_collection.constants import (
     DEFAULT_DECOMMISSIONING_DATE,
     MAX_DECIMAL_DIGITS,
 )
-from antares.data_collection.dsr.constants import InputDeratingIndexColumns
+from antares.data_collection.dsr.capacity_modulation.constants import InputDeratingIndexColumns
 from antares.data_collection.referential_data.main_params import MainParams
 
 
