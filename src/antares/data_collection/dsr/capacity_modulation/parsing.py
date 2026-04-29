@@ -16,11 +16,15 @@ from typing import TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, SCENARIO_TO_ALWAYS_CONSIDER, YearId
+from antares.data_collection.constants import (
+    ANTARES_NODE_NAME_COLUMN,
+    OUTPUT_DATE_INT_REFERENCE,
+    SCENARIO_TO_ALWAYS_CONSIDER,
+    YearId,
+)
 from antares.data_collection.dsr.capacity_modulation.constants import (
     DSR_CAPACITY_MODULATION_FOLDER,
     DSR_CAPACITY_MODULATION_NAME_FILE,
-    DSR_DATE_INT_REFERENCE,
     DSR_DERATING_INDEX_NAME,
     DSR_DERATING_NAME,
     DSR_EXPORT_DATE_COLUMN,
@@ -29,8 +33,9 @@ from antares.data_collection.dsr.capacity_modulation.constants import (
 from antares.data_collection.dsr.constants import InputDsrColumns
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
-    _filter_index_files_with_year,
+    filter_index_files_with_scenario_year,
     filter_out_based_on_year,
+    insert_str_date_time_reindex,
     parse_input_file,
     write_excel_workbook,
 )
@@ -75,8 +80,12 @@ class DsrCapacityModulationParser:
     def _build_index_internal_mapping(
         self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
     ) -> IndexMapping:
-        df = _filter_index_files_with_year(
-            self.main_params, df=df, year=year, filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER
+        df = filter_index_files_with_scenario_year(
+            self.main_params,
+            df=df,
+            year=year,
+            filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER,
+            target_year_col=InputDeratingIndexColumns.TARGET_YEAR.value,
         )
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
@@ -183,24 +192,10 @@ class DsrCapacityModulationParser:
 
         df_result = pd.DataFrame(result)
 
-        # Add the "date" columns
-        all_name_columns = list(df_result.columns)
-        start_time = pd.to_datetime(f"01/01/{DSR_DATE_INT_REFERENCE} 00:00:00")
-        df_result[DSR_EXPORT_DATE_COLUMN] = [str(start_time + pd.Timedelta(hours=i)) for i in range(len(df_result))]
+        # Add the Hours columns
+        reindex_df = insert_str_date_time_reindex(df_result, OUTPUT_DATE_INT_REFERENCE, DSR_EXPORT_DATE_COLUMN)
 
-        # re order columns
-        df_result = df_result[[DSR_EXPORT_DATE_COLUMN] + all_name_columns]
-
-        # We want our dataframe to start on the 1st of July at midnight for PEGASE.
-        # So we have to reindex it at the right index
-        year_int = DSR_DATE_INT_REFERENCE
-        time_delta = pd.Timestamp(year=year_int, month=7, day=1, hour=0) - pd.Timestamp(
-            year=year_int, month=1, day=1, hour=0
-        )
-        first_index = time_delta.days * 24
-        new_index = list(range(first_index, len(df_result))) + list(range(0, first_index))
-
-        return df_result.reindex(new_index)
+        return reindex_df
 
     def _export_dsr_capacity_modulation_dataframe(self, index_of_df_year: dict[int, pd.DataFrame]) -> None:
         parent_dir = self.output_folder / DSR_CAPACITY_MODULATION_FOLDER
