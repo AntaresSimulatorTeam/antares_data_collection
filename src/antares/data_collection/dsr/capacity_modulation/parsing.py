@@ -113,7 +113,7 @@ class DsrCapacityModulationParser:
         subgroup_cols = group_cols + [InputDsrColumns.DSR_DERATING_CURVE_ID]
 
         # 1. Aggregate capacity by (Area, DSR_cluster, Curve ID)
-        df_weights = df.groupby(subgroup_cols, as_index=False, dropna=False)[InputDsrColumns.NET_MAX_GEN_CAP].sum()
+        df_weights = df.groupby(subgroup_cols, as_index=False)[InputDsrColumns.NET_MAX_GEN_CAP].sum()
 
         # 2. Compute total capacity per DSR_cluster
         df_cluster_total = (
@@ -207,7 +207,8 @@ class DsrCapacityModulationParser:
         for year, df_year in index_of_df_year.items():
             sheet_name = f"{year - 1}-{year}"
             dict_to_write[sheet_name] = df_year
-            write_excel_workbook(output_path, dict_to_write)
+
+        write_excel_workbook(output_path, dict_to_write)
 
     def _parse_derating_index(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder / DSR_DERATING_INDEX_NAME, list(InputDeratingIndexColumns))
