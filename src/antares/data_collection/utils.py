@@ -22,7 +22,6 @@ from antares.data_collection.constants import (
     DEFAULT_DECOMMISSIONING_DATE,
     MAX_DECIMAL_DIGITS,
 )
-from antares.data_collection.dsr.constants import InputDeratingIndexColumns
 from antares.data_collection.referential_data.main_params import MainParams
 
 
@@ -237,9 +236,26 @@ def write_excel_workbook(
         workbook.close()
 
 
-def _filter_index_files_with_year(
-    main_params: MainParams, df: pd.DataFrame, year: int, filter_scenario_value: str
+def filter_index_files_with_scenario_year(
+    main_params: MainParams, df: pd.DataFrame, year: int, filter_scenario_value: str, target_year_col: str
 ) -> pd.DataFrame:
     scenario = main_params.get_scenario_type(year=year)
     acceptable_scenario_types = [filter_scenario_value, f"{scenario}_{year}", f"All_years_{scenario}"]
-    return df[df[InputDeratingIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
+    return df[df[target_year_col].isin(acceptable_scenario_types)]
+
+
+def insert_str_date_time_reindex(df: pd.DataFrame, year: int, datetime_column_name: str) -> pd.DataFrame:
+    # We want our dataframe to start on the 1st of July at midnight for PEGASE.
+    # So we have to reindex it at the right index
+    new_df = df.copy()
+    starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
+    time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
+    first_index = time_delta.days * 24
+    new_index = list(range(first_index, len(new_df))) + list(range(0, first_index))
+    reindex_df = new_df.reindex(new_index)
+
+    # Add the `Date` column
+    date_values = [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))]
+    reindex_df.insert(0, datetime_column_name, date_values)
+
+    return reindex_df

@@ -45,5 +45,4 @@ class InputThermalColumns(StrEnum):
 
 
 class OutputModulationColumns(StrEnum):
-    HOUR = "heure"
     DATE = "DATE_HEURE"
