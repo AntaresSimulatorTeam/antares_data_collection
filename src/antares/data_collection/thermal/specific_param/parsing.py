@@ -351,7 +351,7 @@ class ThermalSpecificParamParser:
             df_year = pd.read_csv(cm_path_file)
 
             # compute min of TS
-            excluded_cols = [OutputModulationColumns.HOUR.value, OutputModulationColumns.DATE.value]
+            excluded_cols = [OutputModulationColumns.DATE.value]
             dict_zone_cluster_min = self._compute_min_of_ts_modulation_year(df_year, excluded_cols)
 
             result[year] = dict_zone_cluster_min

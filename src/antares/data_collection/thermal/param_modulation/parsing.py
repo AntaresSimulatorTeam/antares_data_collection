@@ -18,7 +18,11 @@ from typing import Callable, TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, SCENARIO_TO_ALWAYS_CONSIDER
+from antares.data_collection.constants import (
+    ANTARES_NODE_NAME_COLUMN,
+    OUTPUT_DATE_INT_REFERENCE,
+    SCENARIO_TO_ALWAYS_CONSIDER,
+)
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -48,9 +52,10 @@ from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
 )
 from antares.data_collection.utils import (
-    _filter_index_files_with_year,
     filter_based_on_study_scenarios,
+    filter_index_files_with_scenario_year,
     filter_out_based_on_year,
+    insert_str_date_time_reindex,
     parse_input_file,
     write_csv_file,
 )
@@ -128,8 +133,12 @@ class ThermalParamModulationParser:
     def _build_index_internal_mapping(
         self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
     ) -> IndexMapping:
-        df = _filter_index_files_with_year(
-            main_params=self.main_params, df=df, year=year, filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER
+        df = filter_index_files_with_scenario_year(
+            main_params=self.main_params,
+            df=df,
+            year=year,
+            filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER,
+            target_year_col=InputIndexColumns.TARGET_YEAR.value,
         )
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
@@ -317,20 +326,7 @@ class ThermalParamModulationParser:
         df = pd.DataFrame.from_dict(pegase_df_as_dict)
 
         # Add the Hours columns
-        df.insert(0, OutputModulationColumns.HOUR, range(1, len(df) + 1))
-
-        # We want our dataframe to start on the 1st of July at midnight for PEGASE.
-        # So we have to reindex it at the right index
-        starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
-        time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
-        first_index = time_delta.days * 24 + 1
-        new_index = list(range(first_index, len(df) + 1)) + list(range(1, first_index))
-        df.index = pd.RangeIndex(1, len(df) + 1)
-        reindex_df = df.reindex(new_index)
-
-        # Add the `Date` column
-        date_values = [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))]
-        reindex_df.insert(0, OutputModulationColumns.DATE, date_values)
+        reindex_df = insert_str_date_time_reindex(df, OUTPUT_DATE_INT_REFERENCE, OutputModulationColumns.DATE.value)
 
         return reindex_df
 
