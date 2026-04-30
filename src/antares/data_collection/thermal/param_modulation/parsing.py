@@ -18,7 +18,11 @@ from typing import Callable, TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN
+from antares.data_collection.constants import (
+    ANTARES_NODE_NAME_COLUMN,
+    OUTPUT_DATE_INT_REFERENCE,
+    SCENARIO_TO_ALWAYS_CONSIDER,
+)
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     ANTARES_CLUSTER_NAME_COLUMN,
@@ -40,7 +44,6 @@ from antares.data_collection.thermal.param_modulation.constants import (
     MUST_RUN_INDEX_NAME,
     MUST_RUN_NAME,
     MUST_RUN_OUTPUT_NAME,
-    SCENARIO_TO_ALWAYS_CONSIDER,
     TECHNICAL_PARAMS_FOLDER,
     InputGroupMustRunIndexColumns,
     InputIndexColumns,
@@ -50,7 +53,9 @@ from antares.data_collection.thermal.utils import (
 )
 from antares.data_collection.utils import (
     filter_based_on_study_scenarios,
+    filter_index_files_with_scenario_year,
     filter_out_based_on_year,
+    insert_str_date_time_reindex,
     parse_input_file,
     write_csv_file,
 )
@@ -117,11 +122,6 @@ class ThermalParamModulationParser:
         df = df.drop(columns=[InputGroupMustRunIndexColumns.LABEL])
         return df
 
-    def _filter_index_files_with_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
-        scenario = self.main_params.get_scenario_type(year=year)
-        acceptable_scenario_types = [SCENARIO_TO_ALWAYS_CONSIDER, f"{scenario}_{year}", f"All_years_{scenario}"]
-        return df[df[InputIndexColumns.TARGET_YEAR].isin(acceptable_scenario_types)]
-
     def _build_index_mapping(self, df: pd.DataFrame, year: int) -> IndexMapping:
         columns_to_group = [InputIndexColumns.ZONE.value, InputIndexColumns.ID.value]
         return self._build_index_internal_mapping(df, year, columns_to_group, InputIndexColumns.CURVE_UID)
@@ -133,7 +133,13 @@ class ThermalParamModulationParser:
     def _build_index_internal_mapping(
         self, df: pd.DataFrame, year: int, cols_to_group: list[str], curve_id_col: str
     ) -> IndexMapping:
-        df = self._filter_index_files_with_year(df=df, year=year)
+        df = filter_index_files_with_scenario_year(
+            main_params=self.main_params,
+            df=df,
+            year=year,
+            filter_scenario_value=SCENARIO_TO_ALWAYS_CONSIDER,
+            target_year_col=InputIndexColumns.TARGET_YEAR.value,
+        )
         groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
         for (area, cluster), grouped_df in groups:
@@ -320,20 +326,7 @@ class ThermalParamModulationParser:
         df = pd.DataFrame.from_dict(pegase_df_as_dict)
 
         # Add the Hours columns
-        df.insert(0, OutputModulationColumns.HOUR, range(1, len(df) + 1))
-
-        # We want our dataframe to start on the 1st of July at midnight for PEGASE.
-        # So we have to reindex it at the right index
-        starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
-        time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
-        first_index = time_delta.days * 24 + 1
-        new_index = list(range(first_index, len(df) + 1)) + list(range(1, first_index))
-        df.index = pd.RangeIndex(1, len(df) + 1)
-        reindex_df = df.reindex(new_index)
-
-        # Add the `Date` column
-        date_values = [str(starting_time + pd.Timedelta(hours=i)) for i in range(len(reindex_df))]
-        reindex_df.insert(0, OutputModulationColumns.DATE, date_values)
+        reindex_df = insert_str_date_time_reindex(df, OUTPUT_DATE_INT_REFERENCE, OutputModulationColumns.DATE.value)
 
         return reindex_df
 

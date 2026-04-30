@@ -13,9 +13,9 @@
 from enum import StrEnum
 from pathlib import Path
 
+# DSR CLUSTER
 DSR_INPUT_FILE = "DSR.csv"
-DSR_FOLDER = Path("DSR") / "cluster"
-DSR_NAME_FILE = "cluster_DSR.xlsx"
+DSR_EXPORT_ROOT_DIR = Path("DSR")
 
 
 class InputDsrColumns(StrEnum):
@@ -25,30 +25,9 @@ class InputDsrColumns(StrEnum):
     COMMISSIONING_DATE = "COMMISSIONING_DATE"
     DECOMMISSIONING_DATE_EXPECTED = "DECOMMISSIONING_DATE_EXPECTED"
     OP_STAT = "OP_STAT"
+    SECTOR = "SECTOR"
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     DSR_DERATING_CURVE_ID = "DSR_DERATING_CURVE_ID"
     DSR_TYPE = "DSR_TYPE"
     MAX_HOURS = "MAX_HOURS"
     ACT_PRICE_DA = "ACT_PRICE_DA"
-
-
-class OutputDsrColumns(StrEnum):
-    TO_USE = "ToUse"
-    AREA = "Area"
-    NAME = "Name"
-    GROUP = "Group"
-    CAPACITY = "Capacity"
-    NB_HOUR_PER_DAY = "nb_hour_per_day"
-    MAX_HOUR_PER_DAY = "max_hour_per_day"
-    PRICE = "price"
-    NB_UNITS = "nb_units"
-    FO_RATE = "FO_rate"
-    FO_DURATION = "FO_duration"
-    MODULATION = "Modulation"
-
-
-# default values for static output columns
-DSR_GROUP = "DSR"
-DSR_NB_HOUR_PER_DAY = 24
-DSR_FO_RATE = 0
-DSR_FO_DURATION = 1
