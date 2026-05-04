@@ -46,6 +46,14 @@ def _build_mock_main_params_dict() -> dict[str, pd.DataFrame]:
                 "min_stable_generation_default": [0.5],
             }
         ),
+        "PEAK_PARAMS": pd.DataFrame(
+            {
+                "hour": [1, 2, 3],
+                "period_hour": ["HC", "HC", "HC"],
+                "month": [1, 2, 3],
+                "period_month": ["winter", "winter", "winter"],
+            }
+        ),
     }
 
 
@@ -61,10 +69,11 @@ def test_parse_main_params_file_not_exist(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "written_sheets,missing_sheet",
     [
-        (["PAYS", "STUDY_SCENARIO", "Common Data"], "CLUSTER"),
-        (["CLUSTER", "STUDY_SCENARIO", "Common Data"], "PAYS"),
-        (["CLUSTER", "PAYS", "Common Data"], "STUDY_SCENARIO"),
-        (["CLUSTER", "PAYS", "STUDY_SCENARIO"], "Common Data"),
+        (["PAYS", "STUDY_SCENARIO", "Common Data", "PEAK_PARAMS"], "CLUSTER"),
+        (["CLUSTER", "STUDY_SCENARIO", "Common Data", "PEAK_PARAMS"], "PAYS"),
+        (["CLUSTER", "PAYS", "Common Data", "PEAK_PARAMS"], "STUDY_SCENARIO"),
+        (["CLUSTER", "PAYS", "STUDY_SCENARIO", "PEAK_PARAMS"], "Common Data"),
+        (["CLUSTER", "PAYS", "STUDY_SCENARIO", "Common Data"], "PEAK_PARAMS"),
     ],
 )
 def test_parse_main_params_mandatory_sheets(
@@ -103,6 +112,10 @@ def test_parse_main_params_mandatory_sheets(
         {"Common Data": "PO_duration_default"},
         {"Common Data": "PO_winter_default"},
         {"Common Data": "min_stable_generation_default"},
+        {"PEAK_PARAMS": "hour"},
+        {"PEAK_PARAMS": "period_hour"},
+        {"PEAK_PARAMS": "month"},
+        {"PEAK_PARAMS": "period_month"},
     ],
 )
 def test_parse_main_params_mandatory_columns(tmp_path: Path, missing_column: dict[str, str]) -> None:
@@ -176,6 +189,48 @@ def test_common_data_int_validation(tmp_path: Path, column: str, invalid_value: 
             df.to_excel(writer, sheet_name=name, index=False)
 
     msg = f"Column '{column}' must be integer"
+    with pytest.raises(ValueError, match=msg):
+        parse_main_params(file_path=path_file)
+
+
+@pytest.mark.parametrize(
+    "column, invalid_value",
+    [("hour", 0), ("hour", 25)],
+)
+def test_peak_param_hour_value_validation(tmp_path: Path, column: str, invalid_value: int) -> None:
+    path_file = tmp_path / "MAIN_PARAMS.xlsx"
+    mocked_main_params = _build_mock_main_params_dict()
+
+    # inject error
+    mocked_main_params["PEAK_PARAMS"].loc[0, column] = invalid_value
+
+    # write excel
+    with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
+        for name, df in mocked_main_params.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+
+    msg = f"Column '{column}' must be between 1 and 24"
+    with pytest.raises(ValueError, match=msg):
+        parse_main_params(file_path=path_file)
+
+
+@pytest.mark.parametrize(
+    "column, invalid_value",
+    [("month", 0), ("month", 25)],
+)
+def test_peak_param_month_value_validation(tmp_path: Path, column: str, invalid_value: int) -> None:
+    path_file = tmp_path / "MAIN_PARAMS.xlsx"
+    mocked_main_params = _build_mock_main_params_dict()
+
+    # inject error
+    mocked_main_params["PEAK_PARAMS"].loc[0, column] = invalid_value
+
+    # write excel
+    with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
+        for name, df in mocked_main_params.items():
+            df.to_excel(writer, sheet_name=name, index=False)
+
+    msg = f"Column '{column}' must be between 1 and 12"
     with pytest.raises(ValueError, match=msg):
         parse_main_params(file_path=path_file)
 
@@ -877,4 +932,46 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
             po_winter_default=0.15,
             min_stable_generation_default=0.4,
         ),
+    }
+
+    assert main_params._peak_hour_label == {
+        1: "HC",
+        2: "HC",
+        3: "HC",
+        4: "HC",
+        5: "HC",
+        6: "HC",
+        7: "HC",
+        8: "HC",
+        9: "HP",
+        10: "HP",
+        11: "HP",
+        12: "HP",
+        13: "HP",
+        14: "HP",
+        15: "HP",
+        16: "HP",
+        17: "HP",
+        18: "HP",
+        19: "HP",
+        20: "HP",
+        21: "HC",
+        22: "HC",
+        23: "HC",
+        24: "HC",
+    }
+
+    assert main_params._peak_month_label == {
+        1.0: "winter",
+        2.0: "winter",
+        3.0: "winter",
+        4.0: "summer",
+        5.0: "summer",
+        6.0: "summer",
+        7.0: "summer",
+        8.0: "summer",
+        9.0: "summer",
+        10.0: "winter",
+        11.0: "winter",
+        12.0: "winter",
     }
