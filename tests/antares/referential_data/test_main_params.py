@@ -235,6 +235,20 @@ def test_peak_param_month_value_validation(tmp_path: Path, column: str, invalid_
         parse_main_params(file_path=path_file)
 
 
+def test_main_params_getters() -> None:
+    file_path = RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"
+    main_params = parse_main_params(file_path=file_path)
+
+    # PEAK PARAMS
+    assert main_params.get_peak_hour_label(1) == "HC"
+    assert main_params.get_peak_hour_label(10) == "HP"
+    assert main_params.get_peak_month_label(1) == "winter"
+    assert main_params.get_peak_month_label(8) == "summer"
+
+    assert main_params.get_peak_hours_label([1, 10]) == ["HC", "HP"]
+    assert main_params.get_peak_months_label([1, 8]) == ["winter", "summer"]
+
+
 def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     # Use real test case
     file_path = RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"
