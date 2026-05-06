@@ -259,3 +259,33 @@ def insert_str_date_time_reindex(df: pd.DataFrame, year: int, datetime_column_na
     reindex_df.insert(0, datetime_column_name, date_values)
 
     return reindex_df
+
+
+def filter_based_on_year_range(
+    df: pd.DataFrame,
+    years: list[int],
+    start_column: str,
+    end_column: str,
+) -> pd.DataFrame:
+    """
+    Keep rows where at least one year in `years` satisfies:
+    start_column <= year <= end_column
+    """
+    if not years:
+        return df
+
+    for column in [start_column, end_column]:
+        if column not in df.columns:
+            raise ValueError(f"Column {column} not found in the dataframe")
+
+    # Create a mask that is True if any of the requested years are within the range
+    mask = pd.Series(False, index=df.index)
+    for year in years:
+        mask |= (df[start_column] <= year) & (df[end_column] >= year)
+
+    df = df[mask]
+
+    if df.empty:
+        raise ValueError(f"No input data matched the given years {years} in range {start_column} - {end_column}")
+
+    return df
