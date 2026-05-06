@@ -16,6 +16,7 @@ LINKS_NTC_TS_NAME = "NTCs.csv"
 LINKS_TRANSFER_LINKS_NAME = "Transfer Links.csv"
 
 NTC_FILTER_STR_VALUE = "NTC"
+CURVE_UID_SPLIT_SYMBOL = ":"
 
 
 # data "Transfer Links.csv"
