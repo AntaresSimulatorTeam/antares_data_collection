@@ -65,7 +65,9 @@ class ExportLinksColumnsNames(StrEnum):
 
     FLOWBASED_PERIMETER = "Flowbased_perimeter"
 
-    HVDC = "HVDC"
-
-    SPECIFIC_TS = "Specific_TS"
-    FORCED_OUTAGE_HVAC = "Forced_Outage_HVAC"
+    HVDC_DIRECT = "HVDC_Direct"
+    HVDC_INDIRECT = "HVDC_Indirect"
+    HVDC_NB_DIRECT = "HVDC_Nb_Direct"
+    HVDC_NB_INDIRECT = "HVDC_Nb_Indirect"
+    HVDC_FOR_DIRECT = "HVDC_For_Direct"
+    HVDC_FOR_INDIRECT = "HVDC_For_Indirect"
