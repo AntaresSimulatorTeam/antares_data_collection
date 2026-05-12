@@ -11,9 +11,8 @@
 # This file is part of the Antares project.
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypeAlias
+from typing import Literal, NamedTuple, TypeAlias
 
-import numpy as np
 import pandas as pd
 
 from antares.data_collection.links.constants import (
@@ -58,6 +57,39 @@ NtcMedianRepartition: TypeAlias = dict[ZoneId, dict[CurveUid, list[TimeSeriesMed
 class InternalMapping:
     index: IndexMapping
     data: NtcMedianRepartition
+
+
+# @dataclass
+# class LinkProfile:
+#     # zone_id: ZoneId
+#     # antares_border_pair: str
+#     technology: list[str]
+#     # market_node_pair: str
+#     direction: str
+#     ntc_curve_id: list[NtcCurveId]
+#     ntc_value: list[int]
+#     poles: list[float]
+#     for_rate: list[float]
+#
+#
+# MarketNodePair: TypeAlias = tuple[str, str]
+# InternalLinksProfile: TypeAlias = dict[ZoneId, dict[MarketNodePair, LinkProfile]]
+
+
+class AggregatedValues(NamedTuple):
+    winter_hp: float = 0.0
+    winter_hc: float = 0.0
+    summer_hp: float = 0.0
+    summer_hc: float = 0.0
+    reference_capacity: float = 0.0
+    hvdc_mw: float = 0.0
+    hvdc_nb: int = 0
+    hvdc_for: float = 0.0
+
+
+Direction: TypeAlias = Literal["direct", "indirect"]
+# index by "border" pair (sorted), tuple(sorted([node1, node2])) -> "FR-IT"
+CrossGrtIndex: TypeAlias = dict[tuple[str, str], dict[ZoneId, dict[Direction, AggregatedValues]]]
 
 
 class LinksParser:
@@ -173,14 +205,20 @@ class LinksParser:
         return result
 
     def _build_links_index_mapping(self, df: pd.DataFrame) -> IndexMapping:
-        cols_to_group = [InputNTCsIndexColumns.ZONE.value, InputNTCsIndexColumns.ID.value]
-        groups = df.groupby(by=cols_to_group, as_index=False)
         mapping: IndexMapping = {}
+        cols = [InputNTCsIndexColumns.ZONE.value, InputNTCsIndexColumns.ID.value, InputNTCsIndexColumns.CURVE_UID.value]
 
-        for (zone, ntc_id), grouped_df in groups:
+        for row in df[cols].itertuples(index=False):
+            # Extraction explicite des valeurs du tuple
+            zone = row[0]
+            ntc_id = row[1]
+            curve_uid = row[2]
+
             assert isinstance(zone, ZoneId)
             assert isinstance(ntc_id, NtcCurveId)
-            mapping.setdefault(zone, {})[ntc_id] = str(grouped_df[InputNTCsIndexColumns.CURVE_UID])
+            assert isinstance(curve_uid, CurveUid)
+
+            mapping.setdefault(zone, {})[ntc_id] = curve_uid
 
         return mapping
 
@@ -207,6 +245,172 @@ class LinksParser:
 
         return df
 
+    # def _build_market_node_pair_value(self, market_node_source: str, market_node_destination: str) -> MarketNodePair:
+    #     return (market_node_source, market_node_destination)
+    #
+    # def _get_link_direction(self, market_node_source: str, market_node_destination: str) -> Direction:
+    #     return "direct" if market_node_source < market_node_destination else "indirect"
+    #
+    # def _to_link_profile(
+    #     self,
+    #     source: str,
+    #     destination: str,
+    #     df: pd.DataFrame,
+    # ) -> LinkProfile:
+    #     return LinkProfile(
+    #         technology=df[InputTransferLinksColumns.TRANSFER_TECHNOLOGY].tolist(),
+    #         direction=self._get_link_direction(source, destination),
+    #         ntc_curve_id=df[InputTransferLinksColumns.NTC_CURVE_ID].tolist(),
+    #         ntc_value=df[InputTransferLinksColumns.NTC_LIMIT_CAPACITY_STATIC].tolist(),
+    #         poles=df[InputTransferLinksColumns.NO_POLES].tolist(),
+    #         for_rate=df[InputTransferLinksColumns.FOR].tolist(),
+    #     )
+    #
+    # def _build_links_profile_index(self, df: pd.DataFrame) -> InternalLinksProfile:
+    #     cols_to_group = [
+    #         InputTransferLinksColumns.ZONE,
+    #         InputTransferLinksColumns.MARKET_ZONE_SOURCE,
+    #         InputTransferLinksColumns.MARKET_ZONE_DESTINATION,
+    #     ]
+    #     grouped = df.groupby(cols_to_group)
+    #     links_mapping: InternalLinksProfile = {}
+    #
+    #     for keys, group in grouped:
+    #         zone, source, destination = keys
+    #         assert isinstance(zone, ZoneId)
+    #         assert isinstance(source, str)
+    #         assert isinstance(destination, str)
+    #         antares_pair = self._build_market_node_pair_value(source, destination)
+    #
+    #         links_mapping.setdefault(zone, {})[antares_pair] = self._to_link_profile(
+    #             source=source,
+    #             destination=destination,
+    #             df=group,
+    #         )
+    #
+    #     return links_mapping
+
+    # def _select_links_profile(self, index: InternalLinksProfile):
+    #     result: InternalLinksProfile = {}
+    #     for zone, links_profile in index.items():
+    #         # result[zone] = {}
+    #         for antares_pair, link_profile in links_profile.items():
+    #             if link_profile.ntc_value:
+    #                 result[zone][antares_pair] = link_profile
+    #     return result
+
+    def _get_profile_values(self, row: pd.Series, mapping: InternalMapping) -> AggregatedValues:
+        """For every row/profile we treat cas with NTC curve and NTC static value."""
+        tech = row[InputTransferLinksColumns.TRANSFER_TECHNOLOGY]
+        curve_id = row[InputTransferLinksColumns.NTC_CURVE_ID]
+        static_ntc = row[InputTransferLinksColumns.NTC_LIMIT_CAPACITY_STATIC]
+        zone = row[InputTransferLinksColumns.ZONE]
+
+        # HVDC
+        is_hvdc = tech == "HVDC"
+        hvdc_nb = int(row[InputTransferLinksColumns.NO_POLES]) if is_hvdc else 0
+        hvdc_for = float(row[InputTransferLinksColumns.FOR]) if is_hvdc else 0.0
+
+        # CASE: curve (priority)
+        if pd.notna(curve_id) and curve_id in mapping.index.get(zone, {}):
+            curve_uid = mapping.index[zone][curve_id]
+            stats_list = mapping.data.get(zone, {}).get(curve_uid, [])
+            if stats_list:
+                stats = stats_list[0]
+                val = AggregatedValues(
+                    winter_hp=stats.winter_hp,
+                    winter_hc=stats.winter_hc,
+                    summer_hp=stats.summer_hp,
+                    summer_hc=stats.summer_hc,
+                    reference_capacity=stats.median_value,
+                    hvdc_mw=stats.median_value if is_hvdc else 0.0,
+                    hvdc_nb=hvdc_nb,
+                    hvdc_for=hvdc_for,
+                )
+                return val
+
+        # CASE (only static value)
+        val_static = float(static_ntc) if pd.notna(static_ntc) else 0.0
+        return AggregatedValues(
+            winter_hp=val_static,
+            winter_hc=val_static,
+            summer_hp=val_static,
+            summer_hc=val_static,
+            reference_capacity=val_static,
+            hvdc_mw=val_static if is_hvdc else 0.0,
+            hvdc_nb=hvdc_nb,
+            hvdc_for=hvdc_for,
+        )
+
+    def _select_links_profile(self, df: pd.DataFrame, mapping: InternalMapping) -> pd.DataFrame:
+        # 1. Grouper par paire de nœuds (triée A-Z) et par GRT (ZoneId)
+        # rows = []
+
+        # On normalise d'abord les paires pour identifier les "Direct" vs "Indirect"
+        # par rapport à l'ordre alphabétique du couple Name (ex: DE-FR)
+        processed_data: CrossGrtIndex = {}
+
+        for _, row in df.iterrows():
+            n1, n2 = (
+                row[InputTransferLinksColumns.MARKET_ZONE_SOURCE],
+                row[InputTransferLinksColumns.MARKET_ZONE_DESTINATION],
+            )
+            pair = tuple(sorted([n1, n2]))
+            direction: Direction = "direct" if n1 < n2 else "indirect"
+            zone = row[InputTransferLinksColumns.ZONE]
+
+            vals = self._get_profile_values(row, mapping)
+
+            # Initialisation structures imbriquées
+            pair_data = processed_data.setdefault(pair, {})
+            grt_data = pair_data.setdefault(zone, {"direct": AggregatedValues(), "indirect": AggregatedValues()})
+
+            # Somme des technologies (HVAC + HVDC) et des market nodes pour le même GRT
+            current = grt_data[direction]
+            grt_data[direction] = AggregatedValues(
+                winter_hp=current.winter_hp + vals.winter_hp,
+                winter_hc=current.winter_hc + vals.winter_hc,
+                summer_hp=current.summer_hp + vals.summer_hp,
+                summer_hc=current.summer_hc + vals.summer_hc,
+                reference_capacity=current.reference_capacity + vals.reference_capacity,
+                hvdc_mw=current.hvdc_mw + vals.hvdc_mw,
+                hvdc_nb=current.hvdc_nb + vals.hvdc_nb,
+                hvdc_for=(current.hvdc_for + vals.hvdc_for) / 2 if current.hvdc_nb > 0 else vals.hvdc_for,
+            )
+
+        # 2. Application de la règle du Minimum entre GRT
+        final_output = []
+        for pair, grts in processed_data.items():
+            name = f"{pair[0]}-{pair[1]}"
+
+            # Sélection du minimum pour le sens DIRECT
+            direct_winner = min(grts.values(), key=lambda x: x["direct"].reference_capacity)["direct"]
+            # Sélection du minimum pour le sens INDIRECT
+            indirect_winner = min(grts.values(), key=lambda x: x["indirect"].reference_capacity)["indirect"]
+
+            final_output.append(
+                {
+                    ExportLinksColumnsNames.NAME: name,
+                    ExportLinksColumnsNames.WINTER_HP_DIRECT_MW: direct_winner.winter_hp,
+                    ExportLinksColumnsNames.WINTER_HP_INDIRECT_MW: indirect_winner.winter_hp,
+                    ExportLinksColumnsNames.WINTER_HC_DIRECT_MW: direct_winner.winter_hc,
+                    ExportLinksColumnsNames.WINTER_HC_INDIRECT_MW: indirect_winner.winter_hc,
+                    ExportLinksColumnsNames.SUMMER_HP_DIRECT_MW: direct_winner.summer_hp,
+                    ExportLinksColumnsNames.SUMMER_HP_INDIRECT_MW: indirect_winner.summer_hp,
+                    ExportLinksColumnsNames.SUMMER_HC_DIRECT_MW: direct_winner.summer_hc,
+                    ExportLinksColumnsNames.SUMMER_HC_INDIRECT_MW: indirect_winner.summer_hc,
+                    ExportLinksColumnsNames.FLOWBASED_PERIMETER: False,
+                    ExportLinksColumnsNames.HVDC_DIRECT: direct_winner.hvdc_mw,
+                    ExportLinksColumnsNames.HVDC_INDIRECT: indirect_winner.hvdc_mw,
+                    ExportLinksColumnsNames.HVDC_NB_DIRECT: direct_winner.hvdc_nb,
+                    ExportLinksColumnsNames.HVDC_NB_INDIRECT: indirect_winner.hvdc_nb,
+                    ExportLinksColumnsNames.HVDC_FOR_DIRECT: direct_winner.hvdc_for,
+                    ExportLinksColumnsNames.HVDC_FOR_INDIRECT: indirect_winner.hvdc_for,
+                }
+            )
+
+        return pd.DataFrame(final_output).sort_values(by=ExportLinksColumnsNames.NAME)
+
     def _build_pegase_dataframe(self, df: pd.DataFrame, year: int, data: InternalMapping) -> pd.DataFrame:
         # filter on year
         mask = (df[InputTransferLinksColumns.YEAR_VALID_START] <= year) & (
@@ -214,65 +418,19 @@ class LinksParser:
         )
         df = df.loc[mask]
 
+        # links_profile_indexed = self._build_links_profile_index(df)
+        #
+        # selected_links_profile = self._select_links_profile(links_profile_indexed)
+
+        df_pegase = self._select_links_profile(df, data)
+
         # TODO have a pattern
         # profile = normalize(row)
         # profile = merge_technologies(profile)
         # profile = aggregate_nodes(profile)
         # profile = select_min_grt(profile)
 
-        # TODO create data class
-        # @dataclass
-        # class LinkProfile:
-        #     corridor: str
-        #     direction: str
-        #     grt: str
-        #     technology: str
-        #     market_node_pair: str
-        #
-        #     whp: float
-        #     whc: float
-        #     shp: float
-        #     shc: float
-        #
-        #     hvdc: float
-        #     poles: float
-        #     for_rate: float
-        #
-        #     score: float
-
-        # normalize
-        # sum
-        # select
-        # min
-        # curve > ntc
-
-        # add column "NAME" (market node source + market node destination)
-        df[ExportLinksColumnsNames.NAME] = (
-            df[InputTransferLinksColumns.MARKET_ZONE_SOURCE]
-            + "-"
-            + df[InputTransferLinksColumns.MARKET_ZONE_DESTINATION.value]
-        )
-
-        # tagg direction direct/indirect of NAME according to alphabetical order
-        df["links_way"] = np.where(
-            df[InputTransferLinksColumns.MARKET_ZONE_SOURCE] < df[InputTransferLinksColumns.MARKET_ZONE_DESTINATION],
-            "direct",
-            "indirect",
-        )
-
-        # # aggregate data for zone with multi market zone
-        # aggregated_df = (
-        #     df.groupby([ExportLinksColumnsNames.NAME, InputTransferLinksColumns.TRANSFER_TECHNOLOGY, InputTransferLinksColumns.NTC_CURVE_ID],
-        #                as_index=False,
-        #                dropna=False)
-        #     .agg({
-        #         InputTransferLinksColumns.NTC_LIMIT_CAPACITY_STATIC.value: "sum",
-        #         InputTransferLinksColumns.NO_POLES.value: "sum",
-        #         InputTransferLinksColumns.FOR.value: "mean"
-        #     })
-        # )
-
-        return df
+        return df_pegase
 
     def build_links(self) -> None:
         df = self._parse_transfer_links()
