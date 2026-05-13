@@ -18,6 +18,12 @@ LINKS_TRANSFER_LINKS_NAME = "Transfer Links.csv"
 NTC_FILTER_STR_VALUE = "NTC"
 CURVE_UID_SPLIT_SYMBOL = ":"
 
+LINKS_CLUSTER_FOLDER = "link"
+LINKS_OUTPUT_NAME_FILE = "PEMMDB_LINK.xlsx"
+
+HURDLE_COSTS_NAME = "Hurdle Costs"
+HURDLE_COSTS_VALUE = 0.5
+
 
 # data "Transfer Links.csv"
 class InputTransferLinksColumns(StrEnum):

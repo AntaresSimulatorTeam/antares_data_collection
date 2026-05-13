@@ -289,3 +289,10 @@ def filter_based_on_year_range(
         raise ValueError(f"No input data matched the given years {years} in range {start_column} - {end_column}")
 
     return df
+
+
+def transform_year_to_straddling_year(year_list: list[int]) -> list[str]:
+    result_list = []
+    for year in year_list:
+        result_list.append(str(year - 1) + "-" + str(year))
+    return result_list

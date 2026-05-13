@@ -17,8 +17,12 @@ import pandas as pd
 
 from antares.data_collection.links.constants import (
     CURVE_UID_SPLIT_SYMBOL,
+    HURDLE_COSTS_NAME,
+    HURDLE_COSTS_VALUE,
+    LINKS_CLUSTER_FOLDER,
     LINKS_NTC_INDEX_NAME,
     LINKS_NTC_TS_NAME,
+    LINKS_OUTPUT_NAME_FILE,
     LINKS_TRANSFER_LINKS_NAME,
     NTC_FILTER_STR_VALUE,
     ExportLinksColumnsNames,
@@ -31,6 +35,8 @@ from antares.data_collection.utils import (
     filter_based_on_study_scenarios,
     filter_based_on_year_range,
     parse_input_file,
+    transform_year_to_straddling_year,
+    write_excel_workbook,
 )
 
 # mapping used for an index file
@@ -57,23 +63,6 @@ NtcMedianRepartition: TypeAlias = dict[ZoneId, dict[CurveUid, list[TimeSeriesMed
 class InternalMapping:
     index: IndexMapping
     data: NtcMedianRepartition
-
-
-# @dataclass
-# class LinkProfile:
-#     # zone_id: ZoneId
-#     # antares_border_pair: str
-#     technology: list[str]
-#     # market_node_pair: str
-#     direction: str
-#     ntc_curve_id: list[NtcCurveId]
-#     ntc_value: list[int]
-#     poles: list[float]
-#     for_rate: list[float]
-#
-#
-# MarketNodePair: TypeAlias = tuple[str, str]
-# InternalLinksProfile: TypeAlias = dict[ZoneId, dict[MarketNodePair, LinkProfile]]
 
 
 class AggregatedValues(NamedTuple):
@@ -209,7 +198,6 @@ class LinksParser:
         cols = [InputNTCsIndexColumns.ZONE.value, InputNTCsIndexColumns.ID.value, InputNTCsIndexColumns.CURVE_UID.value]
 
         for row in df[cols].itertuples(index=False):
-            # Extraction explicite des valeurs du tuple
             zone = row[0]
             ntc_id = row[1]
             curve_uid = row[2]
@@ -245,60 +233,6 @@ class LinksParser:
 
         return df
 
-    # def _build_market_node_pair_value(self, market_node_source: str, market_node_destination: str) -> MarketNodePair:
-    #     return (market_node_source, market_node_destination)
-    #
-    # def _get_link_direction(self, market_node_source: str, market_node_destination: str) -> Direction:
-    #     return "direct" if market_node_source < market_node_destination else "indirect"
-    #
-    # def _to_link_profile(
-    #     self,
-    #     source: str,
-    #     destination: str,
-    #     df: pd.DataFrame,
-    # ) -> LinkProfile:
-    #     return LinkProfile(
-    #         technology=df[InputTransferLinksColumns.TRANSFER_TECHNOLOGY].tolist(),
-    #         direction=self._get_link_direction(source, destination),
-    #         ntc_curve_id=df[InputTransferLinksColumns.NTC_CURVE_ID].tolist(),
-    #         ntc_value=df[InputTransferLinksColumns.NTC_LIMIT_CAPACITY_STATIC].tolist(),
-    #         poles=df[InputTransferLinksColumns.NO_POLES].tolist(),
-    #         for_rate=df[InputTransferLinksColumns.FOR].tolist(),
-    #     )
-    #
-    # def _build_links_profile_index(self, df: pd.DataFrame) -> InternalLinksProfile:
-    #     cols_to_group = [
-    #         InputTransferLinksColumns.ZONE,
-    #         InputTransferLinksColumns.MARKET_ZONE_SOURCE,
-    #         InputTransferLinksColumns.MARKET_ZONE_DESTINATION,
-    #     ]
-    #     grouped = df.groupby(cols_to_group)
-    #     links_mapping: InternalLinksProfile = {}
-    #
-    #     for keys, group in grouped:
-    #         zone, source, destination = keys
-    #         assert isinstance(zone, ZoneId)
-    #         assert isinstance(source, str)
-    #         assert isinstance(destination, str)
-    #         antares_pair = self._build_market_node_pair_value(source, destination)
-    #
-    #         links_mapping.setdefault(zone, {})[antares_pair] = self._to_link_profile(
-    #             source=source,
-    #             destination=destination,
-    #             df=group,
-    #         )
-    #
-    #     return links_mapping
-
-    # def _select_links_profile(self, index: InternalLinksProfile):
-    #     result: InternalLinksProfile = {}
-    #     for zone, links_profile in index.items():
-    #         # result[zone] = {}
-    #         for antares_pair, link_profile in links_profile.items():
-    #             if link_profile.ntc_value:
-    #                 result[zone][antares_pair] = link_profile
-    #     return result
-
     def _get_profile_values(self, row: pd.Series, mapping: InternalMapping) -> AggregatedValues:
         """For every row/profile we treat cas with NTC curve and NTC static value."""
         tech = row[InputTransferLinksColumns.TRANSFER_TECHNOLOGY]
@@ -325,7 +259,7 @@ class LinksParser:
                     reference_capacity=stats.median_value,
                     hvdc_mw=stats.median_value if is_hvdc else 0.0,
                     hvdc_nb=hvdc_nb,
-                    hvdc_for=hvdc_for,
+                    hvdc_for=hvdc_for if pd.notna(hvdc_for) else 0.0,
                 )
                 return val
 
@@ -343,11 +277,8 @@ class LinksParser:
         )
 
     def _select_links_profile(self, df: pd.DataFrame, mapping: InternalMapping) -> pd.DataFrame:
-        # 1. Grouper par paire de nœuds (triée A-Z) et par GRT (ZoneId)
-        # rows = []
-
-        # On normalise d'abord les paires pour identifier les "Direct" vs "Indirect"
-        # par rapport à l'ordre alphabétique du couple Name (ex: DE-FR)
+        # 1. Build an index by pair of nodes (source/destination)
+        # Identify direction: "Direct" vs "Indirect" (alphabetical order)
         processed_data: CrossGrtIndex = {}
 
         for _, row in df.iterrows():
@@ -359,33 +290,37 @@ class LinksParser:
             direction: Direction = "direct" if n1 < n2 else "indirect"
             zone = row[InputTransferLinksColumns.ZONE]
 
-            vals = self._get_profile_values(row, mapping)
+            aggregated_values = self._get_profile_values(row, mapping)
 
-            # Initialisation structures imbriquées
+            # Init structure
             pair_data = processed_data.setdefault(pair, {})
             grt_data = pair_data.setdefault(zone, {"direct": AggregatedValues(), "indirect": AggregatedValues()})
 
-            # Somme des technologies (HVAC + HVDC) et des market nodes pour le même GRT
+            # Same GRT can contain different "technology" (hvac/hvdc)
+            # Same profile (pair/zone/direction) are summed
             current = grt_data[direction]
             grt_data[direction] = AggregatedValues(
-                winter_hp=current.winter_hp + vals.winter_hp,
-                winter_hc=current.winter_hc + vals.winter_hc,
-                summer_hp=current.summer_hp + vals.summer_hp,
-                summer_hc=current.summer_hc + vals.summer_hc,
-                reference_capacity=current.reference_capacity + vals.reference_capacity,
-                hvdc_mw=current.hvdc_mw + vals.hvdc_mw,
-                hvdc_nb=current.hvdc_nb + vals.hvdc_nb,
-                hvdc_for=(current.hvdc_for + vals.hvdc_for) / 2 if current.hvdc_nb > 0 else vals.hvdc_for,
+                winter_hp=current.winter_hp + aggregated_values.winter_hp,
+                winter_hc=current.winter_hc + aggregated_values.winter_hc,
+                summer_hp=current.summer_hp + aggregated_values.summer_hp,
+                summer_hc=current.summer_hc + aggregated_values.summer_hc,
+                reference_capacity=current.reference_capacity + aggregated_values.reference_capacity,
+                hvdc_mw=current.hvdc_mw + aggregated_values.hvdc_mw,
+                hvdc_nb=current.hvdc_nb + aggregated_values.hvdc_nb,
+                hvdc_for=(current.hvdc_for + aggregated_values.hvdc_for) / 2
+                if current.hvdc_nb > 0
+                else aggregated_values.hvdc_for,
             )
 
-        # 2. Application de la règle du Minimum entre GRT
+        # 2. Selection with minimum values (by NTC Capacity or by median value)
+        # Select by GRT with same direction (row selection)
         final_output = []
         for pair, grts in processed_data.items():
             name = f"{pair[0]}-{pair[1]}"
 
-            # Sélection du minimum pour le sens DIRECT
+            # DIRECT minimum Selection
             direct_winner = min(grts.values(), key=lambda x: x["direct"].reference_capacity)["direct"]
-            # Sélection du minimum pour le sens INDIRECT
+            # INDIRECT minimum selection
             indirect_winner = min(grts.values(), key=lambda x: x["indirect"].reference_capacity)["indirect"]
 
             final_output.append(
@@ -418,19 +353,40 @@ class LinksParser:
         )
         df = df.loc[mask]
 
-        # links_profile_indexed = self._build_links_profile_index(df)
-        #
-        # selected_links_profile = self._select_links_profile(links_profile_indexed)
-
         df_pegase = self._select_links_profile(df, data)
-
-        # TODO have a pattern
-        # profile = normalize(row)
-        # profile = merge_technologies(profile)
-        # profile = aggregate_nodes(profile)
-        # profile = select_min_grt(profile)
-
         return df_pegase
+
+    def _export_links_to_excel(self, index_of_df_year: dict[int, pd.DataFrame]) -> None:
+        parent_dir = self.output_folder / LINKS_CLUSTER_FOLDER
+        parent_dir.mkdir(parents=True, exist_ok=True)
+
+        output_path = parent_dir / LINKS_OUTPUT_NAME_FILE
+
+        # create fist sheet
+        # preparation of data of first sheet "parameters"
+        years_int: list[int] = [k for k in index_of_df_year.keys()]
+        all_straddling_years = transform_year_to_straddling_year(years_int)
+        df_parameters = pd.DataFrame(
+            {
+                "year": all_straddling_years,
+                HURDLE_COSTS_NAME: HURDLE_COSTS_VALUE,
+            }
+        )
+
+        df_parameters_out = pd.DataFrame(
+            data=[df_parameters[HURDLE_COSTS_NAME].values],
+            columns=df_parameters["year"],
+            index=[HURDLE_COSTS_NAME],
+        )
+
+        parameters_dict = {"parameters": df_parameters_out}
+
+        # append to have full dictionary to write
+        for year, df_year in index_of_df_year.items():
+            sheet_name = f"{year - 1}-{year}"
+            parameters_dict[sheet_name] = df_year
+
+        write_excel_workbook(output_path, parameters_dict)
 
     def build_links(self) -> None:
         df = self._parse_transfer_links()
@@ -453,3 +409,5 @@ class LinksParser:
         for year in self.years:
             df_year = self._build_pegase_dataframe(df, year, all_data_indexes)
             index_of_df_pegase[year] = df_year
+
+        self._export_links_to_excel(index_of_df_pegase)
