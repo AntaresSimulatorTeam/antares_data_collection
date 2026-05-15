@@ -17,8 +17,10 @@ import pandas as pd
 
 from antares.data_collection.links.constants import (
     CURVE_UID_SPLIT_SYMBOL,
+    FIRST_SHEET_NAME,
     HURDLE_COSTS_NAME,
     HURDLE_COSTS_VALUE,
+    HVDC_NAME_TECHNOLOGY,
     LINKS_CLUSTER_FOLDER,
     LINKS_NTC_INDEX_NAME,
     LINKS_NTC_TS_NAME,
@@ -36,7 +38,6 @@ from antares.data_collection.utils import (
     filter_based_on_year_range,
     parse_input_file,
     transform_year_to_straddling_year,
-    write_excel_workbook,
 )
 
 # mapping used for an index file
@@ -241,7 +242,7 @@ class LinksParser:
         zone = row[InputTransferLinksColumns.ZONE]
 
         # HVDC
-        is_hvdc = tech == "HVDC"
+        is_hvdc = tech == HVDC_NAME_TECHNOLOGY
         hvdc_nb = int(row[InputTransferLinksColumns.NO_POLES]) if is_hvdc else 0
         hvdc_for = float(row[InputTransferLinksColumns.FOR]) if is_hvdc else 0.0
 
@@ -362,8 +363,8 @@ class LinksParser:
 
         output_path = parent_dir / LINKS_OUTPUT_NAME_FILE
 
-        # create fist sheet
-        # preparation of data of first sheet "parameters"
+        # create first sheet
+        # preparation of data of first sheet "parameters" (format business)
         years_int: list[int] = [k for k in index_of_df_year.keys()]
         all_straddling_years = transform_year_to_straddling_year(years_int)
         df_parameters = pd.DataFrame(
@@ -378,15 +379,24 @@ class LinksParser:
             columns=df_parameters["year"],
             index=[HURDLE_COSTS_NAME],
         )
+        df_parameters_out.columns.name = None
 
-        parameters_dict = {"parameters": df_parameters_out}
+        with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+            # first sheet
+            df_parameters_out.to_excel(
+                writer,
+                sheet_name=FIRST_SHEET_NAME,
+            )
 
-        # append to have full dictionary to write
-        for year, df_year in index_of_df_year.items():
-            sheet_name = f"{year - 1}-{year}"
-            parameters_dict[sheet_name] = df_year
+            # yearly sheets
+            for year, df in index_of_df_year.items():
+                sheet_name = f"{year - 1}-{year}"
 
-        write_excel_workbook(output_path, parameters_dict)
+                df.to_excel(
+                    writer,
+                    sheet_name=sheet_name,
+                    index=False,
+                )
 
     def build_links(self) -> None:
         df = self._parse_transfer_links()
