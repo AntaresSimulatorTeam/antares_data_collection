@@ -9,5 +9,20 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+from enum import StrEnum
 
 # TODO all class (strEnum) + constants
+
+MISC_INPUT_FILE = "Renewables.csv"
+
+
+class InputMiscColumns(StrEnum):
+    STUDY_SCENARIO = "STUDY_SCENARIO"
+    ZONE = "ZONE"
+    MARKET_NODE = "MARKET_NODE"
+    COMMISSIONING_DATE = "COMMISSIONING_DATE"
+    DECOMMISSIONING_DATE_EXPECTED = "DECOMMISSIONING_DATE_EXPECTED"
+    OP_STAT = "OP_STAT"
+    NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
+    PEMMDB_PLANT_TYPE = "PEMMDB_PLANT_TYPE"
+    CURVE_ID = "CURVE_ID"
