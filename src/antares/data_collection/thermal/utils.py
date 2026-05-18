@@ -14,8 +14,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.thermal.constants import ANTARES_CLUSTER_NAME_COLUMN, InputThermalColumns
 from antares.data_collection.thermal.param_modulation.constants import CAPACITY_MODULATION_NAME, TECHNICAL_PARAMS_FOLDER
 
 
@@ -41,10 +39,4 @@ def apply_round_to_numeric_columns(
         if not pd.api.types.is_numeric_dtype(df[col]):
             raise ValueError(f"Column {col} must be numeric")
     df[numeric_columns] = df[numeric_columns].round(decimals_precision)
-    return df
-
-
-def add_antares_cluster_name_colum(main_params: MainParams, df: pd.DataFrame) -> pd.DataFrame:
-    cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
-    df[ANTARES_CLUSTER_NAME_COLUMN] = main_params.get_clusters_bp(cluster_list)
     return df

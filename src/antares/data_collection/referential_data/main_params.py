@@ -70,6 +70,7 @@ class CommonDataColumnsNames(StrEnum):
 
 
 THERMAL_TYPE_NAME = "Thermal"
+MISC_TYPE_NAME = "misc"
 
 
 # "PEAK_PARAMS"
@@ -166,7 +167,7 @@ class MainParams:
         return [self.get_antares_cluster_common_data_params(c) for c in antares_clusters]
 
 
-def parse_main_params(file_path: Path) -> MainParams:
+def parse_main_params(file_path: Path, filter_type_cluster: str = THERMAL_TYPE_NAME) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.
 
     This function:
@@ -234,7 +235,7 @@ def parse_main_params(file_path: Path) -> MainParams:
         if cluster_col.value not in actual_cols:
             raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
-    df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
+    df = df[df[ClusterColumnsNames.TYPE] == filter_type_cluster]
 
     pemmdb_to_antares_mapping = {}
     intermediate_dict = {}  # Used to get the Technology attribute for the upcoming `ClusterParams` class
@@ -270,6 +271,7 @@ def parse_main_params(file_path: Path) -> MainParams:
         po_winter_default = row[CommonDataColumnsNames.PO_WINTER_DEFAULT]
         min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
 
+        # TODO only work with thermal cluster not "misc"
         cluster_antares_dict[bp_name] = ClusterParams(
             technology=intermediate_dict[bp_name],
             fuel=fuel,
