@@ -167,7 +167,7 @@ class MainParams:
         return [self.get_antares_cluster_common_data_params(c) for c in antares_clusters]
 
 
-def parse_main_params(file_path: Path, filter_type_cluster: str = THERMAL_TYPE_NAME) -> MainParams:
+def parse_main_params(file_path: Path) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.
 
     This function:
@@ -235,13 +235,15 @@ def parse_main_params(file_path: Path, filter_type_cluster: str = THERMAL_TYPE_N
         if cluster_col.value not in actual_cols:
             raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
-    df = df[df[ClusterColumnsNames.TYPE] == filter_type_cluster]
+    pemmdb_to_antares_mapping = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB], df[ClusterColumnsNames.CLUSTER_BP]))
 
-    pemmdb_to_antares_mapping = {}
-    intermediate_dict = {}  # Used to get the Technology attribute for the upcoming `ClusterParams` class
-    for _, row in df.iterrows():
-        pemmdb_to_antares_mapping[row[ClusterColumnsNames.CLUSTER_PEMMDB]] = row[ClusterColumnsNames.CLUSTER_BP]
-        intermediate_dict[row[ClusterColumnsNames.CLUSTER_BP]] = row[ClusterColumnsNames.TECHNOLOGY]
+    # only for thermal cluster
+    df_thermal = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
+
+    # Used to get the Technology attribute for the upcoming `ClusterParams` class
+    cluster_thermal_technology_mapping = dict(
+        zip(df_thermal[ClusterColumnsNames.CLUSTER_BP], df_thermal[ClusterColumnsNames.TECHNOLOGY])
+    )
 
     # Parse the `Common Data` sheet
     df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
@@ -271,9 +273,8 @@ def parse_main_params(file_path: Path, filter_type_cluster: str = THERMAL_TYPE_N
         po_winter_default = row[CommonDataColumnsNames.PO_WINTER_DEFAULT]
         min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
 
-        # TODO only work with thermal cluster not "misc"
         cluster_antares_dict[bp_name] = ClusterParams(
-            technology=intermediate_dict[bp_name],
+            technology=cluster_thermal_technology_mapping[bp_name],
             fuel=fuel,
             efficiency_default=efficiency_default,
             fo_rate_default=fo_rate_default,
