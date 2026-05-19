@@ -15,13 +15,13 @@ from pathlib import Path
 import pandas as pd
 
 from antares.data_collection.misc.parsing import MiscParser
-from antares.data_collection.referential_data.main_params import MISC_TYPE_NAME, parse_main_params
+from antares.data_collection.referential_data.main_params import parse_main_params
 from tests.conftest import RESOURCE_PATH
 
 
 def test_nominal_case(tmp_path: Path) -> None:
     # Use the real MainParams file
-    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx", filter_type_cluster=MISC_TYPE_NAME)
+    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
 
     # Build a thermal installed power file
     parser = MiscParser(
