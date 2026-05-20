@@ -234,13 +234,15 @@ def parse_main_params(file_path: Path) -> MainParams:
         if cluster_col.value not in actual_cols:
             raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
-    df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
+    pemmdb_to_antares_mapping = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB], df[ClusterColumnsNames.CLUSTER_BP]))
 
-    pemmdb_to_antares_mapping = {}
-    intermediate_dict = {}  # Used to get the Technology attribute for the upcoming `ClusterParams` class
-    for _, row in df.iterrows():
-        pemmdb_to_antares_mapping[row[ClusterColumnsNames.CLUSTER_PEMMDB]] = row[ClusterColumnsNames.CLUSTER_BP]
-        intermediate_dict[row[ClusterColumnsNames.CLUSTER_BP]] = row[ClusterColumnsNames.TECHNOLOGY]
+    # only for thermal cluster
+    df_thermal = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
+
+    # Used to get the Technology attribute for the upcoming `ClusterParams` class
+    cluster_thermal_technology_mapping = dict(
+        zip(df_thermal[ClusterColumnsNames.CLUSTER_BP], df_thermal[ClusterColumnsNames.TECHNOLOGY])
+    )
 
     # Parse the `Common Data` sheet
     df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
@@ -271,7 +273,7 @@ def parse_main_params(file_path: Path) -> MainParams:
         min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
 
         cluster_antares_dict[bp_name] = ClusterParams(
-            technology=intermediate_dict[bp_name],
+            technology=cluster_thermal_technology_mapping[bp_name],
             fuel=fuel,
             efficiency_default=efficiency_default,
             fo_rate_default=fo_rate_default,

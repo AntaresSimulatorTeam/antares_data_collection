@@ -1,0 +1,111 @@
+"CURVE_UID","TARGET_YEAR","WEATHER_SCENARIO","ZONE","ID","LABEL","COUNT"
+"AT:Other_RES_Hourly_Other_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","AT","Other Small Biomass","Hourly ratios",1
+"AT:Other_RES_Hourly_Other_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","AT","Other Waste","Hourly ratios",1
+"BE:Other_RES_Hourly_Other_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Other Small Biomass","Hourly ratios",8190
+"BE:Other_RES_Hourly_Other_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BE","Other Waste","Hourly ratios",8190
+"BG:Other_RES_Hourly_Other_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","BG","Other Small Biomass","Hourly ratios",7867
+"CH:Other_RES_Hourly_biomass_2028_ERAA_2028_All__other__weather_scenarios","ERAA_2028","All (other) weather scenarios","CH","biomass_2028","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2030_ERAA_2030_All__other__weather_scenarios","ERAA_2030","All (other) weather scenarios","CH","biomass_2030","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2030_TYNDP_2030_All__other__weather_scenarios","TYNDP_2030","All (other) weather scenarios","CH","biomass_2030","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2033_ERAA_2033_All__other__weather_scenarios","ERAA_2033","All (other) weather scenarios","CH","biomass_2033","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2035_ERAA_2035_All__other__weather_scenarios","ERAA_2035","All (other) weather scenarios","CH","biomass_2035","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2035_TYNDP_2035_All__other__weather_scenarios","TYNDP_2035","All (other) weather scenarios","CH","biomass_2035","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2040_TYNDP_2040_All__other__weather_scenarios","TYNDP_2040","All (other) weather scenarios","CH","biomass_2040","Hourly ratios",1
+"CH:Other_RES_Hourly_biomass_2050_TYNDP_2050_All__other__weather_scenarios","TYNDP_2050","All (other) weather scenarios","CH","biomass_2050","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2030_ERAA_2030_All__other__weather_scenarios","ERAA_2030","All (other) weather scenarios","CH","geothermal_2030","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2030_TYNDP_2030_All__other__weather_scenarios","TYNDP_2030","All (other) weather scenarios","CH","geothermal_2030","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2033_ERAA_2033_All__other__weather_scenarios","ERAA_2033","All (other) weather scenarios","CH","geothermal_2033","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2035_ERAA_2035_All__other__weather_scenarios","ERAA_2035","All (other) weather scenarios","CH","geothermal_2035","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2035_TYNDP_2035_All__other__weather_scenarios","TYNDP_2035","All (other) weather scenarios","CH","geothermal_2035","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2040_TYNDP_2040_All__other__weather_scenarios","TYNDP_2040","All (other) weather scenarios","CH","geothermal_2040","Hourly ratios",1
+"CH:Other_RES_Hourly_geothermal_2050_TYNDP_2050_All__other__weather_scenarios","TYNDP_2050","All (other) weather scenarios","CH","geothermal_2050","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2028_ERAA_2028_All__other__weather_scenarios","ERAA_2028","All (other) weather scenarios","CH","waste_2028","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2030_ERAA_2030_All__other__weather_scenarios","ERAA_2030","All (other) weather scenarios","CH","waste_2030","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2030_TYNDP_2030_All__other__weather_scenarios","TYNDP_2030","All (other) weather scenarios","CH","waste_2030","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2033_ERAA_2033_All__other__weather_scenarios","ERAA_2033","All (other) weather scenarios","CH","waste_2033","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2035_ERAA_2035_All__other__weather_scenarios","ERAA_2035","All (other) weather scenarios","CH","waste_2035","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2035_TYNDP_2035_All__other__weather_scenarios","TYNDP_2035","All (other) weather scenarios","CH","waste_2035","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2040_TYNDP_2040_All__other__weather_scenarios","TYNDP_2040","All (other) weather scenarios","CH","waste_2040","Hourly ratios",1
+"CH:Other_RES_Hourly_waste_2050_TYNDP_2050_All__other__weather_scenarios","TYNDP_2050","All (other) weather scenarios","CH","waste_2050","Hourly ratios",1
+"CY:Other_RES_Hourly_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CY","Biomass","Hourly ratios",10
+"CZ:Other_RES_Hourly_Other_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","Other_Biomass","Hourly ratios",15
+"CZ:Other_RES_Hourly_Other_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","CZ","Other_Waste","Hourly ratios",3
+"DE:Other_RES_Hourly_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","DE","Small_Biomass","Hourly ratios",1
+"DE:Other_RES_Hourly_Zwangseinsatz_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","DE","Zwangseinsatz_Waste","Hourly ratios",1
+"EE:Other_RES_Hourly_Biomass_derating_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","EE","Biomass derating","Hourly ratios",1
+"ES:Other_RES_Hourly_Other_RES_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","ES","Other RES","Hourly ratios",8134
+"FI:Other_RES_Hourly_Other_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FI","Other Small Biomass","Hourly ratios",51
+"FI:Other_RES_Hourly_Other_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FI","Other Waste","Hourly ratios",1
+"FR:Other_RES_Hourly_Biogas_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Biogas","Hourly ratios",1
+"FR:Other_RES_Hourly_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Biomass","Hourly ratios",1
+"FR:Other_RES_Hourly_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","FR","Waste","Hourly ratios",1
+"GR:Other_RES_Hourly_Small_Biomass_Series_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","GR","Small Biomass Series","Hourly ratios",1
+"HU:Other_RES_Hourly_Other_Geothermal___HU00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Other Geothermal - HU00","Hourly ratios",12
+"HU:Other_RES_Hourly_Other_Small_Biomass___HU00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Other Small Biomass - HU00","Hourly ratios",11
+"HU:Other_RES_Hourly_Other_Waste___HU00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","HU","Other Waste - HU00","Hourly ratios",11
+"IT:Other_RES_Hourly_ITA_Bioenergy_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA_Bioenergy","Hourly ratios",1
+"IT:Other_RES_Hourly_ITA_Bioenergy_UPnR_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA_Bioenergy_UPnR","Hourly ratios",1
+"IT:Other_RES_Hourly_ITA_Geothermal_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Geothermal","Hourly ratios",1
+"IT:Other_RES_Hourly_ITA_Inelastic_Calabria_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic_Calabria","Hourly ratios",10
+"IT:Other_RES_Hourly_ITA_Inelastic_CenterNorth_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-CenterNorth","Hourly ratios",1
+"IT:Other_RES_Hourly_ITA_Inelastic_CenterSouth_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-CenterSouth","Hourly ratios",9
+"IT:Other_RES_Hourly_ITA_Inelastic_North_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-North","Hourly ratios",11
+"IT:Other_RES_Hourly_ITA_Inelastic_Sardinia_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-Sardinia","Hourly ratios",11
+"IT:Other_RES_Hourly_ITA_Inelastic_Sicily_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-Sicily","Hourly ratios",12
+"IT:Other_RES_Hourly_ITA_Inelastic_South_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Inelastic-South","Hourly ratios",7
+"IT:Other_RES_Hourly_ITA_Seasonal_DistrictHeating_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","IT","ITA-Seasonal-DistrictHeating","Hourly ratios",8
+"LT:Other_RES_Hourly_Other_Small_Biomass_LT00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","LT","Other Small Biomass LT00","Hourly ratios",1
+"LT:Other_RES_Hourly_Virtual_Other_Waste_LT00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","LT","Virtual Other Waste LT00","Hourly ratios",1
+"NL:Other_RES_Hourly_RES_NL00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","NL","RES_NL00","Hourly ratios",1
+"NL:Other_RES_Hourly_WASTE_NL00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","NL","WASTE_NL00","Hourly ratios",1
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS01","All_years_ERAA","ERAA-WS01","PL","Other RES Band 1","Hourly ratios",5231
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS02","All_years_ERAA","ERAA-WS02","PL","Other RES Band 1","Hourly ratios",5517
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS03","All_years_ERAA","ERAA-WS03","PL","Other RES Band 1","Hourly ratios",5689
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS04","All_years_ERAA","ERAA-WS04","PL","Other RES Band 1","Hourly ratios",5316
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS05","All_years_ERAA","ERAA-WS05","PL","Other RES Band 1","Hourly ratios",5240
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS06","All_years_ERAA","ERAA-WS06","PL","Other RES Band 1","Hourly ratios",5360
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS07","All_years_ERAA","ERAA-WS07","PL","Other RES Band 1","Hourly ratios",5880
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS08","All_years_ERAA","ERAA-WS08","PL","Other RES Band 1","Hourly ratios",5801
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS09","All_years_ERAA","ERAA-WS09","PL","Other RES Band 1","Hourly ratios",5715
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS10","All_years_ERAA","ERAA-WS10","PL","Other RES Band 1","Hourly ratios",6043
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS11","All_years_ERAA","ERAA-WS11","PL","Other RES Band 1","Hourly ratios",5467
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS12","All_years_ERAA","ERAA-WS12","PL","Other RES Band 1","Hourly ratios",5661
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS13","All_years_ERAA","ERAA-WS13","PL","Other RES Band 1","Hourly ratios",5399
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS14","All_years_ERAA","ERAA-WS14","PL","Other RES Band 1","Hourly ratios",5468
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS15","All_years_ERAA","ERAA-WS15","PL","Other RES Band 1","Hourly ratios",4982
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS16","All_years_ERAA","ERAA-WS16","PL","Other RES Band 1","Hourly ratios",5906
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS17","All_years_ERAA","ERAA-WS17","PL","Other RES Band 1","Hourly ratios",5345
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS18","All_years_ERAA","ERAA-WS18","PL","Other RES Band 1","Hourly ratios",5159
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS19","All_years_ERAA","ERAA-WS19","PL","Other RES Band 1","Hourly ratios",4853
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS20","All_years_ERAA","ERAA-WS20","PL","Other RES Band 1","Hourly ratios",5530
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS21","All_years_ERAA","ERAA-WS21","PL","Other RES Band 1","Hourly ratios",5521
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS22","All_years_ERAA","ERAA-WS22","PL","Other RES Band 1","Hourly ratios",5753
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS23","All_years_ERAA","ERAA-WS23","PL","Other RES Band 1","Hourly ratios",5466
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS24","All_years_ERAA","ERAA-WS24","PL","Other RES Band 1","Hourly ratios",5608
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS25","All_years_ERAA","ERAA-WS25","PL","Other RES Band 1","Hourly ratios",5424
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS26","All_years_ERAA","ERAA-WS26","PL","Other RES Band 1","Hourly ratios",5572
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS27","All_years_ERAA","ERAA-WS27","PL","Other RES Band 1","Hourly ratios",5444
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS28","All_years_ERAA","ERAA-WS28","PL","Other RES Band 1","Hourly ratios",5311
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS29","All_years_ERAA","ERAA-WS29","PL","Other RES Band 1","Hourly ratios",5429
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS30","All_years_ERAA","ERAA-WS30","PL","Other RES Band 1","Hourly ratios",5147
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS31","All_years_ERAA","ERAA-WS31","PL","Other RES Band 1","Hourly ratios",5182
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS32","All_years_ERAA","ERAA-WS32","PL","Other RES Band 1","Hourly ratios",4090
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS33","All_years_ERAA","ERAA-WS33","PL","Other RES Band 1","Hourly ratios",5419
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS34","All_years_ERAA","ERAA-WS34","PL","Other RES Band 1","Hourly ratios",5614
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS35","All_years_ERAA","ERAA-WS35","PL","Other RES Band 1","Hourly ratios",5315
+"PL:Other_RES_Hourly_Other_RES_Band_1_All_years_ERAA_ERAA_WS36","All_years_ERAA","ERAA-WS36","PL","Other RES Band 1","Hourly ratios",5282
+"PL:Other_RES_Hourly_Other_Waste___PL00_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PL","Other Waste - PL00","Hourly ratios",12
+"PT:Other_RES_Hourly_Marine_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Marine","Hourly ratios",8617
+"PT:Other_RES_Hourly_Not_defined_or_splitting_not_known_RES_2028_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Not defined or splitting not known RES_2028","Hourly ratios",7935
+"PT:Other_RES_Hourly_Not_defined_or_splitting_not_known_RES_2030_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Not defined or splitting not known RES_2030","Hourly ratios",7966
+"PT:Other_RES_Hourly_Not_defined_or_splitting_not_known_RES_2033_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Not defined or splitting not known RES_2033","Hourly ratios",7951
+"PT:Other_RES_Hourly_Not_defined_or_splitting_not_known_RES_2035_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Not defined or splitting not known RES_2035","Hourly ratios",7974
+"PT:Other_RES_Hourly_Not_defined_or_splitting_not_known_RES_2040_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Not defined or splitting not known RES_2040","Hourly ratios",7983
+"PT:Other_RES_Hourly_Small_biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Small biomass","Hourly ratios",8106
+"PT:Other_RES_Hourly_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","PT","Waste","Hourly ratios",8186
+"RO:Other_RES_Hourly_Other_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RO","Other Small Biomass","Hourly ratios",4074
+"RS:Other_RES_Hourly_CHP_Vinca_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","RS","CHP Vinca","Hourly ratios",1
+"SK:Other_RES_Hourly_Not_Defined_or_Splitting_not_known_RES_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","Not Defined or Splitting not known RES","Hourly ratios",300
+"SK:Other_RES_Hourly_Other_Geothermal_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","Other Geothermal","Hourly ratios",1
+"SK:Other_RES_Hourly_Other_Small_Biomass_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","Other Small Biomass","Hourly ratios",8067
+"SK:Other_RES_Hourly_Other_Waste_All_years_ERAA_TYNDP_All__other__weather_scenarios","All_years_ERAA_TYNDP","All (other) weather scenarios","SK","Other Waste","Hourly ratios",8375
