@@ -11,9 +11,8 @@
 # This file is part of the Antares project.
 from enum import StrEnum
 
-# TODO all class (strEnum) + constants
-
 MISC_INPUT_FILE = "Renewables.csv"
+MISC_CATEGORY_NAME = "power"
 
 
 class InputMiscColumns(StrEnum):

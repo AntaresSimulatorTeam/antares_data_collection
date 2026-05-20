@@ -12,8 +12,6 @@
 
 from pathlib import Path
 
-import pandas as pd
-
 from antares.data_collection.misc.parsing import MiscParser
 from antares.data_collection.referential_data.main_params import parse_main_params
 from tests.conftest import RESOURCE_PATH
@@ -27,6 +25,4 @@ def test_nominal_case(tmp_path: Path) -> None:
     parser = MiscParser(
         RESOURCE_PATH, tmp_path, ["Available on market", "Inelastic supply / fixed profile"], main_params, [2030, 2035]
     )
-    test_df = parser._build_filtered_dataframe()
-
-    assert isinstance(test_df, pd.DataFrame)
+    parser.build_misc_installed_power_part()

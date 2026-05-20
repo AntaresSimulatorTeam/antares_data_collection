@@ -14,6 +14,7 @@ from pathlib import Path
 import pandas as pd
 
 from antares.data_collection.misc.constants import MISC_INPUT_FILE, InputMiscColumns
+from antares.data_collection.misc.installed_power.parsing import MiscInstalledPowerParser
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
     add_antares_cluster_name_colum,
@@ -26,13 +27,6 @@ from antares.data_collection.utils import (
     filter_non_declared_clusters,
     parse_input_file,
 )
-
-# TODO
-# context
-# one part to compute capacity of clusters with an excel workbook exported (installed power)
-# one part to compute weight time series (load factor)
-
-# the internal folder structure will be similar like thermal/dsr with the main class and one method to build specific export
 
 
 class MiscParser:
@@ -49,6 +43,7 @@ class MiscParser:
         self.op_stat_values = op_stat_values
         self.main_params = main_params
         self.years = years
+        self.filtered_dataframe = self._build_filtered_dataframe()
 
     def _read_input_file(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(MISC_INPUT_FILE), list(InputMiscColumns))
@@ -68,3 +63,7 @@ class MiscParser:
         df = add_antares_cluster_name_colum(self.main_params, df, InputMiscColumns.PEMMDB_PLANT_TYPE)
         df = filter_based_on_net_max_gen_cap(df, InputMiscColumns.NET_MAX_GEN_CAP.value)
         return add_code_antares_colum(self.main_params, df, InputMiscColumns.MARKET_NODE.value)
+
+    def build_misc_installed_power_part(self) -> None:
+        parser = MiscInstalledPowerParser(self.output_folder, self.main_params, self.years)
+        parser.build_misc_installed_power(self._build_filtered_dataframe())

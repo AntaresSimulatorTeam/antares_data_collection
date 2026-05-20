@@ -9,4 +9,12 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+from enum import StrEnum
 
+
+class OutputMiscPowerColumns(StrEnum):
+    TO_USE = "ToUse"
+    AREA = "Area"
+    GROUP = "Group"
+    CLUSTER = "Cluster"
+    CATEGORY = "Category"
