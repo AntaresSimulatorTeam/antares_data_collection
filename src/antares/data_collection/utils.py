@@ -11,6 +11,7 @@
 # This file is part of the Antares project.
 from dataclasses import dataclass
 from pathlib import Path
+from statistics import mean
 from typing import Iterator
 
 import pandas as pd
@@ -296,3 +297,10 @@ def transform_year_to_straddling_year(year_list: list[int]) -> list[str]:
     for year in year_list:
         result_list.append(str(year - 1) + "-" + str(year))
     return result_list
+
+
+def mean_strict_positive(x: list[int | float]) -> float:
+    pos = [v for v in x if v > 0]
+    if len(pos) == 0:
+        return 0.0
+    return mean(pos)

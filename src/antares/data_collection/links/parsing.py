@@ -36,6 +36,7 @@ from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
     filter_based_on_study_scenarios,
     filter_based_on_year_range,
+    mean_strict_positive,
     parse_input_file,
     transform_year_to_straddling_year,
 )
@@ -314,9 +315,7 @@ class LinksParser:
                 reference_capacity=current.reference_capacity + aggregated_values.reference_capacity,
                 hvdc_mw=current.hvdc_mw + aggregated_values.hvdc_mw,
                 hvdc_nb=current.hvdc_nb + aggregated_values.hvdc_nb,
-                hvdc_for=(current.hvdc_for + aggregated_values.hvdc_for) / 2
-                if current.hvdc_nb > 0
-                else aggregated_values.hvdc_for,
+                hvdc_for=mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for]),
                 has_curve=current.has_curve or aggregated_values.has_curve,
             )
 
