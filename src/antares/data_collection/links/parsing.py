@@ -75,6 +75,11 @@ class AggregatedValues(NamedTuple):
     hvdc_mw: float = 0.0
     hvdc_nb: int = 0
     hvdc_for: float = 0.0
+    has_curve: bool = False
+
+    @property
+    def selection_priority(self) -> tuple[int, float]:
+        return (0 if self.has_curve else 1, self.reference_capacity)
 
 
 Direction: TypeAlias = Literal["direct", "indirect"]
@@ -261,6 +266,7 @@ class LinksParser:
                     hvdc_mw=stats.median_value if is_hvdc else 0.0,
                     hvdc_nb=hvdc_nb,
                     hvdc_for=hvdc_for if pd.notna(hvdc_for) else 0.0,
+                    has_curve=True,
                 )
                 return val
 
@@ -311,18 +317,19 @@ class LinksParser:
                 hvdc_for=(current.hvdc_for + aggregated_values.hvdc_for) / 2
                 if current.hvdc_nb > 0
                 else aggregated_values.hvdc_for,
+                has_curve=current.has_curve or aggregated_values.has_curve,
             )
 
         # 2. Selection with minimum values (by NTC Capacity or by median value)
         # Select by GRT with same direction (row selection)
         final_output = []
-        for pair, grts in processed_data.items():
+        for pair, grts_aggregated in processed_data.items():
             name = f"{pair[0]}-{pair[1]}"
 
             # DIRECT minimum Selection
-            direct_winner = min(grts.values(), key=lambda x: x["direct"].reference_capacity)["direct"]
+            direct_winner = min(grts_aggregated.values(), key=lambda x: x["direct"].selection_priority)["direct"]
             # INDIRECT minimum selection
-            indirect_winner = min(grts.values(), key=lambda x: x["indirect"].reference_capacity)["indirect"]
+            indirect_winner = min(grts_aggregated.values(), key=lambda x: x["indirect"].selection_priority)["indirect"]
 
             final_output.append(
                 {
