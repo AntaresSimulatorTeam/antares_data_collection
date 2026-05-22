@@ -19,7 +19,7 @@ from tests.conftest import RESOURCE_PATH
 
 def test_nominal_case(tmp_path: Path) -> None:
     # Use the real MainParams file
-    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx", cluster_type="misc")
 
     # Build a thermal installed power file
     parser = MiscParser(

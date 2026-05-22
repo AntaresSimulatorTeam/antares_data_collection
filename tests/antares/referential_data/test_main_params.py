@@ -414,25 +414,6 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
         "OtherNon-RES/Hydrogen/CCGT": "CCGT H2",
         "OtherNon-RES/Light oil/-": "Light oil",
         "OtherNon-RES/Hydrogen/OCGT": "OCGT H2",
-        "Wind onshore": "wind_onshore",
-        "Wind offshore fixed": "wind_offshore",
-        "Wind offshore floating": "wind_offshore",
-        "Solar thermal without storage": "solar_thermo",
-        "Solar thermal with storage": "solar_thermo",
-        "Solar PV utility non-tracking": "solar_pv",
-        "Solar PV utility tracking": "solar_pv",
-        "Solar PV rooftop residential": "solar_pv",
-        "Solar PV rooftop industrial": "solar_pv",
-        "Marine": "wave",
-        "Waste": "waste",
-        "Small biomass": "biomass",
-        "Geothermal": "geothermal",
-        "Not defined or splitting not known RES": "other",
-        "Run of river": "Run of River",
-        "Pondage": "Pondage",
-        "Reservoir": "Reservoir",
-        "Closed loop pumping": "PS Closed",
-        "Open loop pumping": "PS Open",
     }
 
     assert main_params._cluster_antares == {
@@ -896,4 +877,13 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
             po_winter_default=0.15,
             min_stable_generation_default=0.4,
         ),
+    }
+    # "MISC"
+    main_params_cluster_misc = parse_main_params(file_path=file_path, cluster_type="misc")
+    assert main_params_cluster_misc._cluster_pemmdb_to_antares == {
+        "Marine": "wave",
+        "Waste": "waste",
+        "Small biomass": "biomass",
+        "Geothermal": "geothermal",
+        "Not defined or splitting not known RES": "other",
     }

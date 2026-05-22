@@ -21,9 +21,10 @@ from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import ANTARES_CLUSTER_NAME_COLUMN, filter_out_based_on_year
 
 AntaresNodeId: TypeAlias = str
+PemmdbPlantTypeId: TypeAlias = str
 MiscClusterId: TypeAlias = str
 CapacityValue: TypeAlias = float
-IndexCapacityCluster: TypeAlias = dict[AntaresNodeId, dict[MiscClusterId, CapacityValue]]
+IndexCapacityCluster: TypeAlias = dict[AntaresNodeId, dict[tuple[PemmdbPlantTypeId, MiscClusterId], CapacityValue]]
 
 
 class MiscInstalledPowerParser:
@@ -42,14 +43,17 @@ class MiscInstalledPowerParser:
             df, year, InputMiscColumns.COMMISSIONING_DATE.value, InputMiscColumns.DECOMMISSIONING_DATE_EXPECTED.value
         )
 
-        # Group
-        grouped_df = df_year.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN], as_index=False)
+        # Group (specific to misc, group by pemmdb cluster+cluster bp due to export format)
+        grouped_df = df_year.groupby(
+            [ANTARES_NODE_NAME_COLUMN, InputMiscColumns.PEMMDB_PLANT_TYPE, ANTARES_CLUSTER_NAME_COLUMN], as_index=False
+        )
 
         output_dict: IndexCapacityCluster = {}
-        for (area, cluster), grouped_df_cluster in grouped_df:
+        for (area, pantype_id, clusterbp_id), grouped_df_cluster in grouped_df:
             assert isinstance(area, AntaresNodeId)
-            assert isinstance(cluster, MiscClusterId)
-            output_dict.setdefault(area, {})[cluster] = round(
+            assert isinstance(pantype_id, PemmdbPlantTypeId)
+            assert isinstance(clusterbp_id, MiscClusterId)
+            output_dict.setdefault(area, {})[(pantype_id, clusterbp_id)] = round(
                 grouped_df_cluster[InputMiscColumns.NET_MAX_GEN_CAP].sum(), MAX_DECIMAL_DIGITS
             )
 
