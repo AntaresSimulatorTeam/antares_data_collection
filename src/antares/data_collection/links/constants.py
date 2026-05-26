@@ -27,6 +27,16 @@ HURDLE_COSTS_VALUE = 0.5
 
 FIRST_SHEET_NAME = "parameters"
 
+WINTER_SEASON = "winter"
+SUMMER_SEASON = "summer"
+HOUR_PEAK = "HP"
+HOUR_OFFPEAK = "HC"
+
+
+class Direction(StrEnum):
+    DIRECT = "Direct"
+    INDIRECT = "Indirect"
+
 
 # data "Transfer Links.csv"
 class InputTransferLinksColumns(StrEnum):

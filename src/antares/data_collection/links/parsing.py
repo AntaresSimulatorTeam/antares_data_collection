@@ -11,13 +11,16 @@
 # This file is part of the Antares project.
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, NamedTuple, TypeAlias
+from statistics import mean
+from typing import NamedTuple, TypeAlias
 
 import pandas as pd
 
 from antares.data_collection.links.constants import (
     CURVE_UID_SPLIT_SYMBOL,
     FIRST_SHEET_NAME,
+    HOUR_OFFPEAK,
+    HOUR_PEAK,
     HURDLE_COSTS_NAME,
     HURDLE_COSTS_VALUE,
     HVDC_NAME_TECHNOLOGY,
@@ -27,6 +30,9 @@ from antares.data_collection.links.constants import (
     LINKS_OUTPUT_NAME_FILE,
     LINKS_TRANSFER_LINKS_NAME,
     NTC_FILTER_STR_VALUE,
+    SUMMER_SEASON,
+    WINTER_SEASON,
+    Direction,
     ExportLinksColumnsNames,
     InputNTCsColumns,
     InputNTCsIndexColumns,
@@ -35,10 +41,7 @@ from antares.data_collection.links.constants import (
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
     filter_based_on_study_scenarios,
-    filter_based_on_year_range,
-    mean_strict_positive,
     parse_input_file,
-    transform_year_to_straddling_year,
 )
 
 # mapping used for an index file
@@ -83,7 +86,6 @@ class AggregatedValues(NamedTuple):
         return (0 if self.has_curve else 1, self.reference_capacity)
 
 
-Direction: TypeAlias = Literal["direct", "indirect"]
 # index by "border" pair (sorted), tuple(sorted([node1, node2])) -> "FR-IT"
 CrossGrtIndex: TypeAlias = dict[tuple[str, str], dict[ZoneId, dict[Direction, AggregatedValues]]]
 
@@ -98,13 +100,34 @@ class LinksParser:
     def _parse_transfer_links(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder / LINKS_TRANSFER_LINKS_NAME, list(InputTransferLinksColumns))
 
-    def _filter_based_on_transfer_type(self, ntc_name_column: str, df: pd.DataFrame) -> pd.DataFrame:
-        if ntc_name_column not in df.columns:
-            raise ValueError(f"Column {ntc_name_column} not found in the dataframe 'Transfer Links'")
-        return df[df[ntc_name_column] == NTC_FILTER_STR_VALUE]
+    def _filter_based_on_transfer_type(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df[df[InputTransferLinksColumns.TRANSFER_TYPE] == NTC_FILTER_STR_VALUE]
 
     def _parse_index_links(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder / LINKS_NTC_INDEX_NAME, list(InputNTCsIndexColumns))
+
+    def _filter_based_on_year_range(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Keep rows where at least one year in `years` satisfies:
+        start_column <= year <= end_column
+        """
+        years = self.years
+
+        # Create a mask that is True if any of the requested years are within the range
+        mask = pd.Series(False, index=df.index)
+        for year in years:
+            mask |= (df[InputTransferLinksColumns.YEAR_VALID_START] <= year) & (
+                df[InputTransferLinksColumns.YEAR_VALID_END] >= year
+            )
+
+        df = df[mask]
+
+        if df.empty:
+            raise ValueError(
+                f"No input data matched the given years {years} in range {InputTransferLinksColumns.YEAR_VALID_START} - {InputTransferLinksColumns.YEAR_VALID_END}"
+            )
+
+        return df
 
     def _add_links_code_antares_column(self, df: pd.DataFrame, market_node_name_column: str) -> pd.DataFrame:
         if market_node_name_column not in df.columns:
@@ -134,7 +157,7 @@ class LinksParser:
             return df[~df[market_node_name_column].isin(missing_nodes)]
         return df
 
-    def _filter_duplicate_market(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _filter_duplicate_market_zone(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Filter row if the market source and destination are the same.
         """
@@ -181,13 +204,11 @@ class LinksParser:
         result: NtcMedianRepartition = {}
 
         for col in cols_to_use:
-            assert pd.api.types.is_float_dtype(df[col])
-
             zone_id = col.split(CURVE_UID_SPLIT_SYMBOL)[0]
-            w_hc = dict_medians["winter"]["HC"][col]
-            w_hp = dict_medians["winter"]["HP"][col]
-            s_hc = dict_medians["summer"]["HC"][col]
-            s_hp = dict_medians["summer"]["HP"][col]
+            w_hc = dict_medians[WINTER_SEASON][HOUR_OFFPEAK][col]
+            w_hp = dict_medians[WINTER_SEASON][HOUR_PEAK][col]
+            s_hc = dict_medians[SUMMER_SEASON][HOUR_OFFPEAK][col]
+            s_hp = dict_medians[SUMMER_SEASON][HOUR_PEAK][col]
             g_median = df[col].median()
 
             # Create the dataclass instance
@@ -225,18 +246,13 @@ class LinksParser:
         df = filter_based_on_study_scenarios(
             df, self.main_params, self.years, InputTransferLinksColumns.STUDY_SCENARIO.value
         )
-        df = filter_based_on_year_range(
-            df,
-            self.years,
-            InputTransferLinksColumns.YEAR_VALID_START.value,
-            InputTransferLinksColumns.YEAR_VALID_END.value,
-        )
-        df = self._filter_based_on_transfer_type(InputTransferLinksColumns.TRANSFER_TYPE, df)
+        df = self._filter_based_on_year_range(df)
+        df = self._filter_based_on_transfer_type(df)
 
         df = self._add_links_code_antares_column(df, InputTransferLinksColumns.MARKET_ZONE_SOURCE)
         df = self._add_links_code_antares_column(df, InputTransferLinksColumns.MARKET_ZONE_DESTINATION)
 
-        df = self._filter_duplicate_market(df)
+        df = self._filter_duplicate_market_zone(df)
 
         return df
 
@@ -284,6 +300,12 @@ class LinksParser:
             hvdc_for=hvdc_for,
         )
 
+    def _mean_strict_positive(self, x: list[int | float]) -> float:
+        pos = [v for v in x if v > 0]
+        if len(pos) == 0:
+            return 0.0
+        return mean(pos)
+
     def _select_links_profile(self, df: pd.DataFrame, mapping: InternalMapping) -> pd.DataFrame:
         # 1. Build an index by pair of nodes (source/destination)
         # Identify direction: "Direct" vs "Indirect" (alphabetical order)
@@ -295,14 +317,16 @@ class LinksParser:
                 row[InputTransferLinksColumns.MARKET_ZONE_DESTINATION],
             )
             pair = tuple(sorted([n1, n2]))
-            direction: Direction = "direct" if n1 < n2 else "indirect"
+            direction = Direction.DIRECT if n1 < n2 else Direction.INDIRECT
             zone = row[InputTransferLinksColumns.ZONE]
 
             aggregated_values = self._get_profile_values(row, mapping)
 
             # Init structure
             pair_data = processed_data.setdefault(pair, {})
-            grt_data = pair_data.setdefault(zone, {"direct": AggregatedValues(), "indirect": AggregatedValues()})
+            grt_data = pair_data.setdefault(
+                zone, {Direction.DIRECT: AggregatedValues(), Direction.INDIRECT: AggregatedValues()}
+            )
 
             # Same GRT can contain different "technology" (hvac/hvdc)
             # Same profile (pair/zone/direction) are summed
@@ -315,7 +339,7 @@ class LinksParser:
                 reference_capacity=current.reference_capacity + aggregated_values.reference_capacity,
                 hvdc_mw=current.hvdc_mw + aggregated_values.hvdc_mw,
                 hvdc_nb=current.hvdc_nb + aggregated_values.hvdc_nb,
-                hvdc_for=mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for]),
+                hvdc_for=self._mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for]),
                 has_curve=current.has_curve or aggregated_values.has_curve,
             )
 
@@ -326,9 +350,13 @@ class LinksParser:
             name = f"{pair[0]}-{pair[1]}"
 
             # DIRECT minimum Selection
-            direct_winner = min(grts_aggregated.values(), key=lambda x: x["direct"].selection_priority)["direct"]
+            direct_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.DIRECT].selection_priority)[
+                Direction.DIRECT
+            ]
             # INDIRECT minimum selection
-            indirect_winner = min(grts_aggregated.values(), key=lambda x: x["indirect"].selection_priority)["indirect"]
+            indirect_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.INDIRECT].selection_priority)[
+                Direction.INDIRECT
+            ]
 
             final_output.append(
                 {
@@ -360,8 +388,15 @@ class LinksParser:
         )
         df = df.loc[mask]
 
+        # profile processing
         df_pegase = self._select_links_profile(df, data)
         return df_pegase
+
+    def _transform_year_to_straddling_year(self) -> list[str]:
+        result_list = []
+        for year in self.years:
+            result_list.append(str(year - 1) + "-" + str(year))
+        return result_list
 
     def _export_links_to_excel(self, index_of_df_year: dict[int, pd.DataFrame]) -> None:
         parent_dir = self.output_folder / LINKS_CLUSTER_FOLDER
@@ -369,23 +404,14 @@ class LinksParser:
 
         output_path = parent_dir / LINKS_OUTPUT_NAME_FILE
 
-        # create first sheet
-        # preparation of data of first sheet "parameters" (format business)
-        years_int: list[int] = [k for k in index_of_df_year.keys()]
-        all_straddling_years = transform_year_to_straddling_year(years_int)
-        df_parameters = pd.DataFrame(
-            {
-                "year": all_straddling_years,
-                HURDLE_COSTS_NAME: HURDLE_COSTS_VALUE,
-            }
-        )
+        # create the first sheet "parameters" (business format)
+        all_straddling_years = self._transform_year_to_straddling_year()
 
         df_parameters_out = pd.DataFrame(
-            data=[df_parameters[HURDLE_COSTS_NAME].values],
-            columns=df_parameters["year"],
+            columns=all_straddling_years,
+            data=[[HURDLE_COSTS_VALUE] * len(all_straddling_years)],
             index=[HURDLE_COSTS_NAME],
         )
-        df_parameters_out.columns.name = None
 
         with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
             # first sheet
