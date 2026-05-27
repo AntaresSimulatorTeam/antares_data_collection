@@ -186,6 +186,7 @@ class MainParams:
     def get_peak_months_label(self, month_values: list[int]) -> list[str | None]:
         return [self.get_peak_month_label(c) for c in month_values]
 
+
 def parse_main_params(file_path: Path) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.
 
@@ -333,5 +334,5 @@ def parse_main_params(file_path: Path) -> MainParams:
         _cluster_pemmdb_to_antares=pemmdb_to_antares_mapping,
         _cluster_antares=cluster_antares_dict,
         _peak_hour_label=peak_hour_dict,
-        _peak_month_label=peak_month_dict
+        _peak_month_label=peak_month_dict,
     )
