@@ -9,3 +9,12 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+
+from antares.data_collection.referential_data.main_params import parse_main_params
+
+
+__all__ = [
+    "parse_main_params"
+]
+
+
