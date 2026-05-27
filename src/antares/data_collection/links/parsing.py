@@ -41,6 +41,7 @@ from antares.data_collection.links.constants import (
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
     filter_based_on_study_scenarios,
+    filter_non_declared_areas,
     parse_input_file,
 )
 
@@ -130,31 +131,8 @@ class LinksParser:
         return df
 
     def _add_links_code_antares_column(self, df: pd.DataFrame, market_node_name_column: str) -> pd.DataFrame:
-        if market_node_name_column not in df.columns:
-            raise ValueError(f"Column {market_node_name_column} not found in the dataframe 'Transfer Links'")
-
         node_list = df[market_node_name_column].tolist()
-        df[market_node_name_column] = self.main_params.get_links_antares_codes(node_list)
-        return df
-
-    def _filter_non_declared_links_areas(self, df: pd.DataFrame, market_node_name_column: str) -> pd.DataFrame:
-        """
-        Some nodes are not inside RTE study perimeter and therefore not registered inside the main parameters file.
-        We don't want to consider them.
-        We simply log a message for each area we find in this case
-        """
-        if market_node_name_column not in df.columns:
-            raise ValueError(f"Column {market_node_name_column} not found in the dataframe")
-
-        all_market_nodes = set(df[market_node_name_column])
-        missing_nodes = []
-        for node in all_market_nodes:
-            antares_code = self.main_params.get_links_antares_code(node)
-            if not antares_code:
-                missing_nodes.append(node)
-
-        if missing_nodes:
-            return df[~df[market_node_name_column].isin(missing_nodes)]
+        df[market_node_name_column] = self.main_params.get_antares_codes(node_list)
         return df
 
     def _filter_duplicate_market_zone(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -240,8 +218,8 @@ class LinksParser:
 
     def _build_transfer_links_filtered(self, df: pd.DataFrame) -> pd.DataFrame:
         # process transfer links file pre filter
-        df = self._filter_non_declared_links_areas(df, InputTransferLinksColumns.MARKET_ZONE_SOURCE)
-        df = self._filter_non_declared_links_areas(df, InputTransferLinksColumns.MARKET_ZONE_DESTINATION)
+        df = filter_non_declared_areas(self.main_params, df, InputTransferLinksColumns.MARKET_ZONE_SOURCE)
+        df = filter_non_declared_areas(self.main_params, df, InputTransferLinksColumns.MARKET_ZONE_DESTINATION)
 
         df = filter_based_on_study_scenarios(
             df, self.main_params, self.years, InputTransferLinksColumns.STUDY_SCENARIO.value
