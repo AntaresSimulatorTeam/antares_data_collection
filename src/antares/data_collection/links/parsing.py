@@ -14,6 +14,7 @@ from pathlib import Path
 from statistics import mean
 from typing import NamedTuple, TypeAlias
 
+import numpy as np
 import pandas as pd
 
 from antares.data_collection.links.constants import (
@@ -83,8 +84,18 @@ class AggregatedValues(NamedTuple):
     has_curve: bool = False
 
     @property
-    def selection_priority(self) -> tuple[int, float]:
-        return (0 if self.has_curve else 1, self.reference_capacity)
+    def selection_priority(self) -> tuple[int, int, float, float]:
+        is_hvdc = self.hvdc_nb > 0
+        is_na_hvdc = is_hvdc and pd.isna(self.hvdc_for)
+
+        hvdc_for_priority = self.hvdc_for if pd.notna(self.hvdc_for) else float("inf")
+
+        return (
+            1 if is_na_hvdc else 0,  # exclude NA only for HVDC
+            0 if self.has_curve else 1,  # curve first
+            self.reference_capacity,  # value capacity curve or NTC
+            hvdc_for_priority,  # value to discriminate
+        )
 
 
 # index by "border" pair (sorted), tuple(sorted([node1, node2])) -> "FR-IT"
@@ -260,7 +271,7 @@ class LinksParser:
                     reference_capacity=stats.median_value,
                     hvdc_mw=stats.median_value if is_hvdc else 0.0,
                     hvdc_nb=hvdc_nb,
-                    hvdc_for=hvdc_for if pd.notna(hvdc_for) else 0.0,
+                    hvdc_for=hvdc_for,  # if pd.notna(hvdc_for) else 0.0,
                     has_curve=True,
                 )
                 return val
@@ -279,10 +290,10 @@ class LinksParser:
         )
 
     def _mean_strict_positive(self, x: list[int | float]) -> float:
-        pos = [v for v in x if v > 0]
-        if len(pos) == 0:
+        positive = [v for v in x if v > 0]
+        if len(positive) == 0:
             return 0.0
-        return mean(pos)
+        return mean(positive)
 
     def _select_links_profile(self, df: pd.DataFrame, mapping: InternalMapping) -> pd.DataFrame:
         # 1. Build an index by pair of nodes (source/destination)
@@ -317,12 +328,30 @@ class LinksParser:
                 reference_capacity=current.reference_capacity + aggregated_values.reference_capacity,
                 hvdc_mw=current.hvdc_mw + aggregated_values.hvdc_mw,
                 hvdc_nb=current.hvdc_nb + aggregated_values.hvdc_nb,
-                hvdc_for=self._mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for]),
+                hvdc_for=np.nan
+                if (current.hvdc_for == 0) & pd.isna(aggregated_values.hvdc_for)
+                else self._mean_strict_positive(
+                    [current.hvdc_for, aggregated_values.hvdc_for]
+                ),  # available with nan value
                 has_curve=current.has_curve or aggregated_values.has_curve,
             )
 
         # 2. Selection with minimum values (by NTC Capacity or by median value)
         # Select by GRT with same direction (row selection)
+
+        # def discrim_profil(grt_dict_values: dict[Direction, AggregatedValues], direction_way: Direction) -> AggregatedValues:
+        #     profiles = []
+        #     for direction in grt_dict_values:
+        #         profile_direction = direction[direction_way]
+        #         profiles.append(profile_direction)
+        #     for available_profile in profiles:
+        #         if available_profile.selection_priority[0]==0:
+        #             if pd.isna(available_profile.selection_priority[2]):
+        #                 return available_profile
+        #     return min(grt_dict_values, key=lambda x: x[direction_way].selection_priority)[
+        #         direction_way
+        #     ]
+
         final_output = []
         for pair, grts_aggregated in processed_data.items():
             name = f"{pair[0]}-{pair[1]}"
@@ -331,6 +360,9 @@ class LinksParser:
             direct_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.DIRECT].selection_priority)[
                 Direction.DIRECT
             ]
+
+            # test = discrim_profil(grts_aggregated.values(), Direction.DIRECT)
+
             # INDIRECT minimum selection
             indirect_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.INDIRECT].selection_priority)[
                 Direction.INDIRECT
