@@ -338,20 +338,6 @@ class LinksParser:
 
         # 2. Selection with minimum values (by NTC Capacity or by median value)
         # Select by GRT with same direction (row selection)
-
-        # def discrim_profil(grt_dict_values: dict[Direction, AggregatedValues], direction_way: Direction) -> AggregatedValues:
-        #     profiles = []
-        #     for direction in grt_dict_values:
-        #         profile_direction = direction[direction_way]
-        #         profiles.append(profile_direction)
-        #     for available_profile in profiles:
-        #         if available_profile.selection_priority[0]==0:
-        #             if pd.isna(available_profile.selection_priority[2]):
-        #                 return available_profile
-        #     return min(grt_dict_values, key=lambda x: x[direction_way].selection_priority)[
-        #         direction_way
-        #     ]
-
         final_output = []
         for pair, grts_aggregated in processed_data.items():
             name = f"{pair[0]}-{pair[1]}"
@@ -360,8 +346,6 @@ class LinksParser:
             direct_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.DIRECT].selection_priority)[
                 Direction.DIRECT
             ]
-
-            # test = discrim_profil(grts_aggregated.values(), Direction.DIRECT)
 
             # INDIRECT minimum selection
             indirect_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.INDIRECT].selection_priority)[
