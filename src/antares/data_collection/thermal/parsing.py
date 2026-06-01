@@ -68,7 +68,7 @@ class ThermalParser:
         for cluster_pemmdb in all_pemmdb_clusters:
             antares_cluster = self.main_params.get_cluster_bp(cluster_pemmdb)
             if not antares_cluster:
-                missing_mappings.append(antares_cluster)
+                missing_mappings.append(cluster_pemmdb)
 
         if missing_mappings:
             return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
