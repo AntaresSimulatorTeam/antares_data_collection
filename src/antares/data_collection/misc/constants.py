@@ -12,7 +12,6 @@
 from enum import StrEnum
 
 MISC_INPUT_FILE = "Renewables.csv"
-MISC_CATEGORY_NAME = "power"
 
 
 class InputMiscColumns(StrEnum):

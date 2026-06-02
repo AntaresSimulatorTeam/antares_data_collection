@@ -10,6 +10,7 @@
 #
 # This file is part of the Antares project.
 from enum import StrEnum
+from pathlib import Path
 
 
 class OutputMiscPowerColumns(StrEnum):
@@ -18,3 +19,9 @@ class OutputMiscPowerColumns(StrEnum):
     GROUP = "Group"
     CLUSTER = "Cluster"
     CATEGORY = "Category"
+
+
+MISC_CATEGORY_NAME = "power"
+
+MISC_INSTALL_POWER_FOLDER = Path("misc") / "installed power"
+MISC_INSTALL_POWER_NAME_FILE = "installedMisc_PEMMDB.xlsx"
