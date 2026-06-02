@@ -276,7 +276,7 @@ def filter_non_declared_clusters(main_params: MainParams, df: pd.DataFrame, pemm
     for cluster_pemmdb in all_pemmdb_clusters:
         antares_cluster = main_params.get_cluster_bp(cluster_pemmdb)
         if not antares_cluster:
-            missing_mappings.append(antares_cluster)
+            missing_mappings.append(cluster_pemmdb)
 
     if missing_mappings:
         return df[~df[pemmdb_cluster_column].isin(missing_mappings)]
