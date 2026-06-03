@@ -174,17 +174,9 @@ class MainParams:
             return None
         return value
 
-    def get_peak_hours_label(self, hour_values: list[int]) -> list[str | None]:
-        return [self.get_peak_hour_label(c) for c in hour_values]
-
     def get_peak_month_label(self, month_value: int) -> str | None:
         value = self._peak_month_label.get(month_value)
-        if pd.isna(value):
-            print(f"Peak month value '{month_value}' was not found inside `MainParams`")
         return value
-
-    def get_peak_months_label(self, month_values: list[int]) -> list[str | None]:
-        return [self.get_peak_month_label(c) for c in month_values]
 
 
 def parse_main_params(file_path: Path) -> MainParams:
@@ -310,17 +302,18 @@ def parse_main_params(file_path: Path) -> MainParams:
         if peak_col.value not in actual_cols:
             raise ValueError(f"Column '{peak_col}' not found inside sheet '{ReferentialSheetNames.PEAK_PARAMS}'")
 
-    # check "hours" columns must be between 1 and 24
-    column_hours = PeakParamsColumnsNames.HOUR.value
-    hours_values = df[column_hours]
-    if not hours_values.between(1, 24).all():
-        raise ValueError(f"Column '{column_hours}' must be between 1 and 24")
+    expected_hours = list(range(1, 25))
+    expected_months = list(range(1, 13))
 
-    # check "months" columns must be between 1 and 12
-    column_months = PeakParamsColumnsNames.MONTH.value
-    month_values = df[column_months].dropna()
-    if not month_values.between(1, 24).all():
-        raise ValueError(f"Column '{column_months}' must be between 1 and 12")
+    # check "hour" columns values
+    hours_column_values = df[PeakParamsColumnsNames.HOUR].tolist()
+    if hours_column_values != expected_hours:
+        raise ValueError(f"Invalid 'hour' column. Provide: '{expected_hours}'")
+
+    # check "month" columns values
+    months_values = df[PeakParamsColumnsNames.MONTH].dropna().tolist()
+    if months_values != expected_months:
+        raise ValueError(f"Invalid 'month' column. Provide: '{expected_months}'")
 
     peak_hour_dict = dict(zip(df[PeakParamsColumnsNames.HOUR], df[PeakParamsColumnsNames.PERIOD_HOUR]))
     peak_month_dict = dict(

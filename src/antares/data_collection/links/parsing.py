@@ -63,7 +63,7 @@ class TimeSeriesMedianValues:
     median_value: float
 
 
-NtcMedianRepartition: TypeAlias = dict[ZoneId, dict[CurveUid, list[TimeSeriesMedianValues]]]
+NtcMedianRepartition: TypeAlias = dict[ZoneId, dict[CurveUid, TimeSeriesMedianValues]]
 
 
 @dataclass(frozen=True)
@@ -118,13 +118,12 @@ class LinksParser:
     def _parse_index_links(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder / LINKS_NTC_INDEX_NAME, list(InputNTCsIndexColumns))
 
-    def _filter_based_on_year_range(self, df: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def _filter_based_on_year_range(df: pd.DataFrame, years: list[int]) -> pd.DataFrame:
         """
         Keep rows where at least one year in `years` satisfies:
         start_column <= year <= end_column
         """
-        years = self.years
-
         # Create a mask that is True if any of the requested years are within the range
         mask = pd.Series(False, index=df.index)
         for year in years:
@@ -132,14 +131,15 @@ class LinksParser:
                 df[InputTransferLinksColumns.YEAR_VALID_END] >= year
             )
 
-        df = df[mask]
+        df_filtered = df[mask]
 
-        if df.empty:
+        if df_filtered.empty:
             raise ValueError(
-                f"No input data matched the given years {years} in range {InputTransferLinksColumns.YEAR_VALID_START} - {InputTransferLinksColumns.YEAR_VALID_END}"
+                f"No input data matched the given years {years} in range "
+                f"{InputTransferLinksColumns.YEAR_VALID_START} - {InputTransferLinksColumns.YEAR_VALID_END}"
             )
 
-        return df
+        return df_filtered
 
     def _add_links_code_antares_column(self, df: pd.DataFrame, market_node_name_column: str) -> pd.DataFrame:
         node_list = df[market_node_name_column].tolist()
@@ -183,9 +183,7 @@ class LinksParser:
 
             for col, value in medians.items():
                 assert isinstance(col, str)
-
-                if pd.notna(value):
-                    typed_medians[col] = float(value)
+                typed_medians[col] = float(value)
 
             dict_medians.setdefault(month, {})[hour] = typed_medians
 
@@ -206,7 +204,7 @@ class LinksParser:
             )
 
             # Assign to the nested mapping
-            result.setdefault(zone_id, {})[col] = [median_stats]
+            result.setdefault(zone_id, {})[col] = median_stats
 
         return result
 
@@ -235,7 +233,7 @@ class LinksParser:
         df = filter_based_on_study_scenarios(
             df, self.main_params, self.years, InputTransferLinksColumns.STUDY_SCENARIO.value
         )
-        df = self._filter_based_on_year_range(df)
+        df = self._filter_based_on_year_range(df, self.years)
         df = self._filter_based_on_transfer_type(df)
 
         df = self._add_links_code_antares_column(df, InputTransferLinksColumns.MARKET_ZONE_SOURCE)
@@ -246,7 +244,16 @@ class LinksParser:
         return df
 
     def _get_profile_values(self, row: pd.Series, mapping: InternalMapping) -> AggregatedValues:
-        """For every row/profile we treat cas with NTC curve and NTC static value."""
+        """
+        For every row we build a profile and then select links with minimum values later.
+        The profile is modeled by `AggregatedValues` dataclass.
+        We need to know the following:
+            - NTC curve id
+            - NTC static value
+            - HVDC nb poles
+            - HVDC for value
+            - Transfer technology (HVAC/HVDC)
+        """
         tech = row[InputTransferLinksColumns.TRANSFER_TECHNOLOGY]
         curve_id = row[InputTransferLinksColumns.NTC_CURVE_ID]
         static_ntc = row[InputTransferLinksColumns.NTC_LIMIT_CAPACITY_STATIC]
@@ -260,21 +267,23 @@ class LinksParser:
         # CASE: curve (priority)
         if pd.notna(curve_id) and curve_id in mapping.index.get(zone, {}):
             curve_uid = mapping.index[zone][curve_id]
-            stats_list = mapping.data.get(zone, {}).get(curve_uid, [])
-            if stats_list:
-                stats = stats_list[0]
-                val = AggregatedValues(
-                    winter_hp=stats.winter_hp,
-                    winter_hc=stats.winter_hc,
-                    summer_hp=stats.summer_hp,
-                    summer_hc=stats.summer_hc,
-                    reference_capacity=stats.median_value,
-                    hvdc_mw=stats.median_value if is_hvdc else 0.0,
-                    hvdc_nb=hvdc_nb,
-                    hvdc_for=hvdc_for,  # if pd.notna(hvdc_for) else 0.0,
-                    has_curve=True,
-                )
-                return val
+            stats = mapping.data[zone][curve_uid]
+
+            ref_cap = stats.median_value
+            hvdc_mw = ref_cap if is_hvdc else 0.0
+
+            val = AggregatedValues(
+                winter_hp=stats.winter_hp,
+                winter_hc=stats.winter_hc,
+                summer_hp=stats.summer_hp,
+                summer_hc=stats.summer_hc,
+                reference_capacity=ref_cap,
+                hvdc_mw=hvdc_mw,
+                hvdc_nb=hvdc_nb,
+                hvdc_for=hvdc_for,
+                has_curve=True,
+            )
+            return val
 
         # CASE (only static value)
         val_static = float(static_ntc) if pd.notna(static_ntc) else 0.0
@@ -297,7 +306,7 @@ class LinksParser:
 
     def _select_links_profile(self, df: pd.DataFrame, mapping: InternalMapping) -> pd.DataFrame:
         # 1. Build an index by pair of nodes (source/destination)
-        # Identify direction: "Direct" vs "Indirect" (alphabetical order)
+        # Identify a direction: "Direct" versus "Indirect" (alphabetical order)
         processed_data: CrossGrtIndex = {}
 
         for _, row in df.iterrows():
@@ -317,9 +326,16 @@ class LinksParser:
                 zone, {Direction.DIRECT: AggregatedValues(), Direction.INDIRECT: AggregatedValues()}
             )
 
-            # Same GRT can contain different "technology" (hvac/hvdc)
-            # Same profile (pair/zone/direction) are summed
+            # The same GRT can contain different "technology" (hvac/hvdc)
+            # Same profile (pair/zone/direction) is summed
             current = grt_data[direction]
+
+            # Prepare the HVDC FOR calculation to avoid heavy nesting in the constructor
+            if (current.hvdc_for == 0) and pd.isna(aggregated_values.hvdc_for):
+                valid_hvdc_for = np.nan
+            else:
+                valid_hvdc_for = self._mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for])
+
             grt_data[direction] = AggregatedValues(
                 winter_hp=current.winter_hp + aggregated_values.winter_hp,
                 winter_hc=current.winter_hc + aggregated_values.winter_hc,
@@ -328,48 +344,44 @@ class LinksParser:
                 reference_capacity=current.reference_capacity + aggregated_values.reference_capacity,
                 hvdc_mw=current.hvdc_mw + aggregated_values.hvdc_mw,
                 hvdc_nb=current.hvdc_nb + aggregated_values.hvdc_nb,
-                hvdc_for=np.nan
-                if (current.hvdc_for == 0) & pd.isna(aggregated_values.hvdc_for)
-                else self._mean_strict_positive(
-                    [current.hvdc_for, aggregated_values.hvdc_for]
-                ),  # available with nan value
+                hvdc_for=valid_hvdc_for,  # available with nan value
                 has_curve=current.has_curve or aggregated_values.has_curve,
             )
 
         # 2. Selection with minimum values (by NTC Capacity or by median value)
-        # Select by GRT with same direction (row selection)
+        # Select by GRT with the same direction (row selection)
         final_output = []
         for pair, grts_aggregated in processed_data.items():
             name = f"{pair[0]}-{pair[1]}"
 
             # DIRECT minimum Selection
-            direct_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.DIRECT].selection_priority)[
+            direct_minimum = min(grts_aggregated.values(), key=lambda x: x[Direction.DIRECT].selection_priority)[
                 Direction.DIRECT
             ]
 
             # INDIRECT minimum selection
-            indirect_winner = min(grts_aggregated.values(), key=lambda x: x[Direction.INDIRECT].selection_priority)[
+            indirect_minimum = min(grts_aggregated.values(), key=lambda x: x[Direction.INDIRECT].selection_priority)[
                 Direction.INDIRECT
             ]
 
             final_output.append(
                 {
                     ExportLinksColumnsNames.NAME: name,
-                    ExportLinksColumnsNames.WINTER_HP_DIRECT_MW: direct_winner.winter_hp,
-                    ExportLinksColumnsNames.WINTER_HP_INDIRECT_MW: indirect_winner.winter_hp,
-                    ExportLinksColumnsNames.WINTER_HC_DIRECT_MW: direct_winner.winter_hc,
-                    ExportLinksColumnsNames.WINTER_HC_INDIRECT_MW: indirect_winner.winter_hc,
-                    ExportLinksColumnsNames.SUMMER_HP_DIRECT_MW: direct_winner.summer_hp,
-                    ExportLinksColumnsNames.SUMMER_HP_INDIRECT_MW: indirect_winner.summer_hp,
-                    ExportLinksColumnsNames.SUMMER_HC_DIRECT_MW: direct_winner.summer_hc,
-                    ExportLinksColumnsNames.SUMMER_HC_INDIRECT_MW: indirect_winner.summer_hc,
+                    ExportLinksColumnsNames.WINTER_HP_DIRECT_MW: direct_minimum.winter_hp,
+                    ExportLinksColumnsNames.WINTER_HP_INDIRECT_MW: indirect_minimum.winter_hp,
+                    ExportLinksColumnsNames.WINTER_HC_DIRECT_MW: direct_minimum.winter_hc,
+                    ExportLinksColumnsNames.WINTER_HC_INDIRECT_MW: indirect_minimum.winter_hc,
+                    ExportLinksColumnsNames.SUMMER_HP_DIRECT_MW: direct_minimum.summer_hp,
+                    ExportLinksColumnsNames.SUMMER_HP_INDIRECT_MW: indirect_minimum.summer_hp,
+                    ExportLinksColumnsNames.SUMMER_HC_DIRECT_MW: direct_minimum.summer_hc,
+                    ExportLinksColumnsNames.SUMMER_HC_INDIRECT_MW: indirect_minimum.summer_hc,
                     ExportLinksColumnsNames.FLOWBASED_PERIMETER: False,
-                    ExportLinksColumnsNames.HVDC_DIRECT: direct_winner.hvdc_mw,
-                    ExportLinksColumnsNames.HVDC_INDIRECT: indirect_winner.hvdc_mw,
-                    ExportLinksColumnsNames.HVDC_NB_DIRECT: direct_winner.hvdc_nb,
-                    ExportLinksColumnsNames.HVDC_NB_INDIRECT: indirect_winner.hvdc_nb,
-                    ExportLinksColumnsNames.HVDC_FOR_DIRECT: direct_winner.hvdc_for,
-                    ExportLinksColumnsNames.HVDC_FOR_INDIRECT: indirect_winner.hvdc_for,
+                    ExportLinksColumnsNames.HVDC_DIRECT: direct_minimum.hvdc_mw,
+                    ExportLinksColumnsNames.HVDC_INDIRECT: indirect_minimum.hvdc_mw,
+                    ExportLinksColumnsNames.HVDC_NB_DIRECT: direct_minimum.hvdc_nb,
+                    ExportLinksColumnsNames.HVDC_NB_INDIRECT: indirect_minimum.hvdc_nb,
+                    ExportLinksColumnsNames.HVDC_FOR_DIRECT: direct_minimum.hvdc_for,
+                    ExportLinksColumnsNames.HVDC_FOR_INDIRECT: indirect_minimum.hvdc_for,
                 }
             )
 
@@ -377,10 +389,7 @@ class LinksParser:
 
     def _build_pegase_dataframe(self, df: pd.DataFrame, year: int, data: InternalMapping) -> pd.DataFrame:
         # filter on year
-        mask = (df[InputTransferLinksColumns.YEAR_VALID_START] <= year) & (
-            df[InputTransferLinksColumns.YEAR_VALID_END] >= year
-        )
-        df = df.loc[mask]
+        df = self._filter_based_on_year_range(df, [year])
 
         # profile processing
         df_pegase = self._select_links_profile(df, data)
@@ -409,10 +418,7 @@ class LinksParser:
 
         with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
             # first sheet
-            df_parameters_out.to_excel(
-                writer,
-                sheet_name=FIRST_SHEET_NAME,
-            )
+            df_parameters_out.to_excel(writer, sheet_name=FIRST_SHEET_NAME)
 
             # yearly sheets
             for year, df in index_of_df_year.items():

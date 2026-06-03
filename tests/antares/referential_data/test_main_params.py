@@ -194,44 +194,80 @@ def test_common_data_int_validation(tmp_path: Path, column: str, invalid_value: 
 
 
 @pytest.mark.parametrize(
-    "column, invalid_value",
-    [("hour", 0), ("hour", 25)],
+    "wrong_peak_df",
+    [
+        pd.DataFrame(
+            {
+                "hour": [1, 2, 3],
+                "period_hour": ["HC", "HC", "HC"],
+                "month": [1, 2, 3],
+                "period_month": ["winter", "winter", "winter"],
+            }
+        ),
+        pd.DataFrame(
+            {
+                "hour": [1] + list(range(1, 24)),
+                "period_hour": ["HC" for i in range(1, 25)],
+                "month": list(range(1, 25)),
+                "period_month": ["winter" for i in range(1, 25)],
+            }
+        ),
+    ],
 )
-def test_peak_param_hour_value_validation(tmp_path: Path, column: str, invalid_value: int) -> None:
+def test_peak_param_hour_value_validation(tmp_path: Path, wrong_peak_df: pd.DataFrame) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
     mocked_main_params = _build_mock_main_params_dict()
 
     # inject error
-    mocked_main_params["PEAK_PARAMS"].loc[0, column] = invalid_value
+    mocked_main_params["PEAK_PARAMS"] = wrong_peak_df
 
     # write excel
     with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
         for name, df in mocked_main_params.items():
             df.to_excel(writer, sheet_name=name, index=False)
 
-    msg = f"Column '{column}' must be between 1 and 24"
-    with pytest.raises(ValueError, match=msg):
+    expected_hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+    msg = f"Invalid 'hour' column. Provide: '{expected_hours}'"
+    with pytest.raises(ValueError, match=re.escape(msg)):
         parse_main_params(file_path=path_file)
 
 
 @pytest.mark.parametrize(
-    "column, invalid_value",
-    [("month", 0), ("month", 25)],
+    "wrong_peak_df",
+    [
+        pd.DataFrame(
+            {
+                "hour": list(range(1, 25)),
+                "period_hour": ["HC" for i in range(1, 25)],
+                "month": [1] + list(range(1, 12)) + [pd.NA for i in range(1, 13)],
+                "period_month": ["winter" for i in range(1, 25)],
+            }
+        ),
+        pd.DataFrame(
+            {
+                "hour": list(range(1, 25)),
+                "period_hour": ["HC" for i in range(1, 25)],
+                "month": [1] + list(range(1, 13)) + [pd.NA for i in range(1, 12)],
+                "period_month": ["winter" for i in range(1, 25)],
+            }
+        ),
+    ],
 )
-def test_peak_param_month_value_validation(tmp_path: Path, column: str, invalid_value: int) -> None:
+def test_peak_param_month_value_validation(tmp_path: Path, wrong_peak_df: pd.DataFrame) -> None:
     path_file = tmp_path / "MAIN_PARAMS.xlsx"
     mocked_main_params = _build_mock_main_params_dict()
 
     # inject error
-    mocked_main_params["PEAK_PARAMS"].loc[0, column] = invalid_value
+    mocked_main_params["PEAK_PARAMS"] = wrong_peak_df
 
     # write excel
     with pd.ExcelWriter(path_file, engine="openpyxl") as writer:
         for name, df in mocked_main_params.items():
             df.to_excel(writer, sheet_name=name, index=False)
 
-    msg = f"Column '{column}' must be between 1 and 12"
-    with pytest.raises(ValueError, match=msg):
+    expected_months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    msg = f"Invalid 'month' column. Provide: '{expected_months}'"
+    with pytest.raises(ValueError, match=re.escape(msg)):
         parse_main_params(file_path=path_file)
 
 
@@ -244,9 +280,6 @@ def test_main_params_getters() -> None:
     assert main_params.get_peak_hour_label(10) == "HP"
     assert main_params.get_peak_month_label(1) == "winter"
     assert main_params.get_peak_month_label(8) == "summer"
-
-    assert main_params.get_peak_hours_label([1, 10]) == ["HC", "HP"]
-    assert main_params.get_peak_months_label([1, 8]) == ["winter", "summer"]
 
 
 def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
