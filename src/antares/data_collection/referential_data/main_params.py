@@ -169,9 +169,6 @@ class MainParams:
 
     def get_peak_hour_label(self, hour_value: int) -> str | None:
         value = self._peak_hour_label.get(hour_value)
-        if pd.isna(value):
-            print(f"Peak hour value '{hour_value}' was not found inside `MainParams`")
-            return None
         return value
 
     def get_peak_month_label(self, month_value: int) -> str | None:

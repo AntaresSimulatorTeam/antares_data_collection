@@ -19,11 +19,10 @@ import pandas as pd
 
 from antares.data_collection.links.constants import (
     CURVE_UID_SPLIT_SYMBOL,
+    DEFAULT_LINK_PARAMETERS,
     FIRST_SHEET_NAME,
     HOUR_OFFPEAK,
     HOUR_PEAK,
-    HURDLE_COSTS_NAME,
-    HURDLE_COSTS_VALUE,
     HVDC_NAME_TECHNOLOGY,
     LINKS_CLUSTER_FOLDER,
     LINKS_NTC_INDEX_NAME,
@@ -410,11 +409,7 @@ class LinksParser:
         # create the first sheet "parameters" (business format)
         all_straddling_years = self._transform_year_to_straddling_year()
 
-        df_parameters_out = pd.DataFrame(
-            columns=all_straddling_years,
-            data=[[HURDLE_COSTS_VALUE] * len(all_straddling_years)],
-            index=[HURDLE_COSTS_NAME],
-        )
+        df_parameters_out = pd.DataFrame({year: DEFAULT_LINK_PARAMETERS["value"] for year in all_straddling_years})
 
         with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
             # first sheet

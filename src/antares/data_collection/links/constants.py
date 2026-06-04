@@ -11,6 +11,8 @@
 # This file is part of the Antares project.
 from enum import StrEnum
 
+import pandas as pd
+
 LINKS_NTC_INDEX_NAME = "NTCs Index.csv"
 LINKS_NTC_TS_NAME = "NTCs.csv"
 LINKS_TRANSFER_LINKS_NAME = "Transfer Links.csv"
@@ -21,9 +23,6 @@ HVDC_NAME_TECHNOLOGY = "HVDC"
 
 LINKS_CLUSTER_FOLDER = "link"
 LINKS_OUTPUT_NAME_FILE = "PEMMDB_LINK.xlsx"
-
-HURDLE_COSTS_NAME = "Hurdle Costs"
-HURDLE_COSTS_VALUE = 0.5
 
 FIRST_SHEET_NAME = "parameters"
 
@@ -90,3 +89,11 @@ class ExportLinksColumnsNames(StrEnum):
     HVDC_NB_INDIRECT = "HVDC_Nb_Indirect"
     HVDC_FOR_DIRECT = "HVDC_FO_Rate_direct"
     HVDC_FOR_INDIRECT = "HVDC_FO_Rate_indirect"
+
+
+# The first tab in the export file is a data frame of constant parameters
+DEFAULT_LINK_PARAMETERS = pd.DataFrame(
+    data=[0.5, False],
+    index=["Hurdle Costs", "HVDC"],
+    columns=["value"],
+)
