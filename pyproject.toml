@@ -49,6 +49,3 @@ dev = [
     "click~=8.1.7",
     "types-openpyxl>=3.1.5.20250919",
 ]
-
-[project.optional-dependencies]
-parquet = ["pyarrow"]
