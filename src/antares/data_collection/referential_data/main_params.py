@@ -167,13 +167,11 @@ class MainParams:
     def get_antares_clusters_common_data_params(self, antares_clusters: list[str]) -> list[ClusterParams]:
         return [self.get_antares_cluster_common_data_params(c) for c in antares_clusters]
 
-    def get_peak_hour_label(self, hour_value: int) -> str | None:
-        value = self._peak_hour_label.get(hour_value)
-        return value
+    def get_peak_hour_label(self, hour_value: int) -> str:
+        return self._peak_hour_label[hour_value]
 
-    def get_peak_month_label(self, month_value: int) -> str | None:
-        value = self._peak_month_label.get(month_value)
-        return value
+    def get_peak_month_label(self, month_value: int) -> str:
+        return self._peak_month_label[month_value]
 
 
 def parse_main_params(file_path: Path) -> MainParams:
