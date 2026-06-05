@@ -254,9 +254,9 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
     df = df[df[ClusterColumnsNames.TYPE] == cluster_type]
     pemmdb_to_antares_mapping = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB], df[ClusterColumnsNames.CLUSTER_BP]))
 
-    # only for thermal cluster (linked with cluster params from `Common Data` sheet)
+    # Parsing `Common Data` sheet only for thermal cluster (`Common Data` are additional properties only for thermal clusters)
     if cluster_type == THERMAL_TYPE_NAME:
-        cluster_antares_dict = _build_thermal_cluster_parameters(df, cluster_type, excel_sheets)
+        cluster_antares_dict = _build_thermal_cluster_parameters(df, excel_sheets[ReferentialSheetNames.COMMON_DATA])
     else:
         cluster_antares_dict = {}
 
@@ -296,19 +296,14 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
     )
 
 
-def _build_thermal_cluster_parameters(
-    df: pd.DataFrame, cluster_type: str, global_excel_sheets: dict[str, pd.DataFrame]
-) -> dict[str, ClusterParams]:
-    # only for thermal cluster (linked with cluster params from `Common Data` sheet)
-    df = df[df[ClusterColumnsNames.TYPE] == cluster_type]
-
+def _build_thermal_cluster_parameters(df: pd.DataFrame, common_data_sheet: pd.DataFrame) -> dict[str, ClusterParams]:
     # Used to get the Technology attribute for the upcoming `ClusterParams` class
     cluster_thermal_technology_mapping = dict(
         zip(df[ClusterColumnsNames.CLUSTER_BP], df[ClusterColumnsNames.TECHNOLOGY])
     )
 
     # Parse the `Common Data` sheet
-    df = global_excel_sheets[ReferentialSheetNames.COMMON_DATA]
+    df = common_data_sheet
     actual_cols = set(df.columns)
     for common_col in CommonDataColumnsNames:
         if common_col.value not in actual_cols:
@@ -346,4 +341,4 @@ def _build_thermal_cluster_parameters(
             min_stable_generation_default=min_stable_generation_default,
         )
 
-        return cluster_antares_dict
+    return cluster_antares_dict
