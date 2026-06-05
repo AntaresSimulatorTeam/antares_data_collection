@@ -12,7 +12,7 @@
 from dataclasses import dataclass
 
 # structure Referential (MAIN_PARAMS.xlsx)
-from enum import Enum, StrEnum
+from enum import StrEnum
 from pathlib import Path
 
 import pandas as pd
@@ -44,7 +44,7 @@ class StudyScenarioColumnsNames(StrEnum):
 
 
 # sheet "LINKS"
-class LinksColumnsNames(Enum):
+class LinksColumnsNames(StrEnum):
     MARKET_NODE = "market_node"
     CODE_ANTARES = "code_antares"
 
@@ -76,7 +76,7 @@ AVAILABLE_CLUSTER_TYPES = [THERMAL_TYPE_NAME, MISC_TYPE_NAME]
 
 
 # "PEAK_PARAMS"
-class PeakParamsColumnsNames(Enum):
+class PeakParamsColumnsNames(StrEnum):
     HOUR = "hour"
     PERIOD_HOUR = "period_hour"
     MONTH = "month"
@@ -129,6 +129,8 @@ class MainParams:
     _year_to_scenario: dict[int, str]
     _cluster_pemmdb_to_antares: dict[str, str]
     _cluster_antares: dict[str, ClusterParams]
+    _peak_hour_label: dict[int, str]
+    _peak_month_label: dict[int, str]
 
     def get_antares_code(self, market_code: str) -> str | None:
         value = self._market_to_antares.get(market_code)
@@ -168,6 +170,12 @@ class MainParams:
     def get_antares_clusters_common_data_params(self, antares_clusters: list[str]) -> list[ClusterParams]:
         return [self.get_antares_cluster_common_data_params(c) for c in antares_clusters]
 
+    def get_peak_hour_label(self, hour_value: int) -> str:
+        return self._peak_hour_label[hour_value]
+
+    def get_peak_month_label(self, month_value: int) -> str:
+        return self._peak_month_label[month_value]
+
 
 def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.
@@ -205,6 +213,7 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
         ReferentialSheetNames.STUDY_SCENARIO,
         ReferentialSheetNames.CLUSTER,
         ReferentialSheetNames.COMMON_DATA,
+        ReferentialSheetNames.PEAK_PARAMS,
     ]
     excel_sheets = pd.read_excel(file_path, sheet_name=None)
     for sheet in expected_sheets:
@@ -251,12 +260,39 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
     else:
         cluster_antares_dict = {}
 
+    # Parse "PEAK_PARAMS" sheet
+    df = excel_sheets[ReferentialSheetNames.PEAK_PARAMS]
+    actual_cols = set(df.columns)
+    for peak_col in PeakParamsColumnsNames:
+        if peak_col.value not in actual_cols:
+            raise ValueError(f"Column '{peak_col}' not found inside sheet '{ReferentialSheetNames.PEAK_PARAMS}'")
+
+    expected_hours = list(range(1, 25))
+    expected_months = list(range(1, 13))
+
+    # check "hour" columns values
+    hours_column_values = df[PeakParamsColumnsNames.HOUR].tolist()
+    if hours_column_values != expected_hours:
+        raise ValueError(f"Invalid 'hour' column. Provide: '{expected_hours}'")
+
+    # check "month" columns values
+    months_values = df[PeakParamsColumnsNames.MONTH].dropna().tolist()
+    if months_values != expected_months:
+        raise ValueError(f"Invalid 'month' column. Provide: '{expected_months}'")
+
+    peak_hour_dict = dict(zip(df[PeakParamsColumnsNames.HOUR], df[PeakParamsColumnsNames.PERIOD_HOUR]))
+    peak_month_dict = dict(
+        zip(df[PeakParamsColumnsNames.MONTH].dropna(), df[PeakParamsColumnsNames.PERIOD_MONTH].dropna())
+    )
+
     # Return validated dataclass
     return MainParams(
         _market_to_antares=countries_dict,
         _year_to_scenario=scenario_dict,
         _cluster_pemmdb_to_antares=pemmdb_to_antares_mapping,
         _cluster_antares=cluster_antares_dict,
+        _peak_hour_label=peak_hour_dict,
+        _peak_month_label=peak_month_dict,
     )
 
 
@@ -310,4 +346,4 @@ def _build_thermal_cluster_parameters(
             min_stable_generation_default=min_stable_generation_default,
         )
 
-    return cluster_antares_dict
+        return cluster_antares_dict
