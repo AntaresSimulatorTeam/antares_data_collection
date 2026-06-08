@@ -26,14 +26,14 @@ from antares.data_collection.thermal.param_modulation.parsing import ThermalPara
 from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
 from antares.data_collection.utils import (
     ANTARES_CLUSTER_NAME_COLUMN,
-    add_antares_cluster_name_colum,
+    add_antares_thermal_cluster_name_colum,
     add_code_antares_colum,
     filter_based_on_commission_date,
     filter_based_on_net_max_gen_cap,
     filter_based_on_op_stat,
     filter_based_on_study_scenarios,
     filter_non_declared_areas,
-    filter_non_declared_clusters,
+    filter_non_declared_thermal_clusters,
     parse_input_file,
 )
 
@@ -86,7 +86,7 @@ class ThermalParser:
         df = self._read_input_file()
         df = filter_based_on_op_stat(self.op_stat_values, df, InputThermalColumns.OP_STAT.value)
         df = filter_non_declared_areas(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
-        df = filter_non_declared_clusters(self.main_params, df, InputThermalColumns.PEMMDB_TECHNOLOGY)
+        df = filter_non_declared_thermal_clusters(self.main_params, df, InputThermalColumns.PEMMDB_TECHNOLOGY)
         df = filter_based_on_study_scenarios(df, self.main_params, self.years, InputThermalColumns.STUDY_SCENARIO.value)
         df = filter_based_on_commission_date(
             df,
@@ -94,7 +94,7 @@ class ThermalParser:
             InputThermalColumns.COMMISSIONING_DATE.value,
             InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         )
-        df = add_antares_cluster_name_colum(self.main_params, df, InputThermalColumns.PEMMDB_TECHNOLOGY)
+        df = add_antares_thermal_cluster_name_colum(self.main_params, df, InputThermalColumns.PEMMDB_TECHNOLOGY)
         df = self._split_clusters_with_biomass_rule(df)
         df = filter_based_on_net_max_gen_cap(df, InputThermalColumns.NET_MAX_GEN_CAP.value)
         return add_code_antares_colum(self.main_params, df, InputThermalColumns.MARKET_NODE.value)

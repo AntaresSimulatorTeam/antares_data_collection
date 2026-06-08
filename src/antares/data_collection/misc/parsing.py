@@ -17,14 +17,13 @@ from antares.data_collection.misc.constants import MISC_INPUT_FILE, InputMiscCol
 from antares.data_collection.misc.installed_power.parsing import MiscInstalledPowerParser
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
-    add_antares_cluster_name_colum,
+    ANTARES_CLUSTER_NAME_COLUMN,
     add_code_antares_colum,
     filter_based_on_commission_date,
     filter_based_on_net_max_gen_cap,
     filter_based_on_op_stat,
     filter_based_on_study_scenarios,
     filter_non_declared_areas,
-    filter_non_declared_clusters,
     parse_input_file,
 )
 
@@ -48,11 +47,28 @@ class MiscParser:
     def _read_input_file(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(MISC_INPUT_FILE), list(InputMiscColumns))
 
+    def _filter_non_declared_misc_clusters(self, df: pd.DataFrame, pemmdb_cluster_column: str) -> pd.DataFrame:
+        all_pemmdb_clusters = set(df[pemmdb_cluster_column])
+        missing_mappings = []
+        for cluster_pemmdb in all_pemmdb_clusters:
+            antares_cluster = self.main_params.get_misc_cluster_bp(cluster_pemmdb)
+            if not antares_cluster:
+                missing_mappings.append(cluster_pemmdb)
+
+        if missing_mappings:
+            return df[~df[pemmdb_cluster_column].isin(missing_mappings)]
+        return df
+
+    def _add_antares_misc_cluster_name_colum(self, df: pd.DataFrame, pemmdb_cluster_column: str) -> pd.DataFrame:
+        cluster_list = df[pemmdb_cluster_column].tolist()
+        df[ANTARES_CLUSTER_NAME_COLUMN] = self.main_params.get_misc_clusters_bp(cluster_list)
+        return df
+
     def _build_filtered_dataframe(self) -> pd.DataFrame:
         df = self._read_input_file()
         df = filter_based_on_op_stat(self.op_stat_values, df, InputMiscColumns.OP_STAT)
         df = filter_non_declared_areas(self.main_params, df, InputMiscColumns.MARKET_NODE)
-        df = filter_non_declared_clusters(self.main_params, df, InputMiscColumns.PEMMDB_PLANT_TYPE)
+        df = self._filter_non_declared_misc_clusters(df, InputMiscColumns.PEMMDB_PLANT_TYPE)
         df = filter_based_on_study_scenarios(df, self.main_params, self.years, InputMiscColumns.STUDY_SCENARIO)
         df = filter_based_on_commission_date(
             df,
@@ -60,7 +76,7 @@ class MiscParser:
             InputMiscColumns.COMMISSIONING_DATE,
             InputMiscColumns.DECOMMISSIONING_DATE_EXPECTED,
         )
-        df = add_antares_cluster_name_colum(self.main_params, df, InputMiscColumns.PEMMDB_PLANT_TYPE)
+        df = self._add_antares_misc_cluster_name_colum(df, InputMiscColumns.PEMMDB_PLANT_TYPE)
         df = filter_based_on_net_max_gen_cap(df, InputMiscColumns.NET_MAX_GEN_CAP.value)
         return add_code_antares_colum(self.main_params, df, InputMiscColumns.MARKET_NODE.value)
 

@@ -72,8 +72,6 @@ class CommonDataColumnsNames(StrEnum):
 THERMAL_TYPE_NAME = "Thermal"
 MISC_TYPE_NAME = "misc"
 
-AVAILABLE_CLUSTER_TYPES = [THERMAL_TYPE_NAME, MISC_TYPE_NAME]
-
 
 # "PEAK_PARAMS"
 class PeakParamsColumnsNames(StrEnum):
@@ -127,7 +125,8 @@ class MainParams:
 
     _market_to_antares: dict[str, str]
     _year_to_scenario: dict[int, str]
-    _cluster_pemmdb_to_antares: dict[str, str]
+    _thermal_cluster_pemmdb_to_antares: dict[str, str]
+    _misc_cluster_pemmdb_to_antares: dict[str, str]
     _cluster_antares: dict[str, ClusterParams]
     _peak_hour_label: dict[int, str]
     _peak_month_label: dict[int, str]
@@ -151,16 +150,29 @@ class MainParams:
     def get_scenario_types(self, years: list[int]) -> set[str]:
         return {self.get_scenario_type(y) for y in years}
 
-    def get_cluster_bp(self, cluster_pemmdb: str) -> str | None:
-        value = self._cluster_pemmdb_to_antares.get(cluster_pemmdb)
+    # thermal
+    def get_thermal_cluster_bp(self, cluster_pemmdb: str) -> str | None:
+        value = self._thermal_cluster_pemmdb_to_antares.get(cluster_pemmdb)
         if pd.isna(value):
             # The value is either missing or the line does not even exist. We should log the information but not crash.
             print(f"ENTSOE Cluster '{cluster_pemmdb}' was not found inside `MainParams`")
             return None
         return value
 
-    def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
-        return [self.get_cluster_bp(c) for c in clusters_pemmdb]
+    def get_thermal_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
+        return [self.get_thermal_cluster_bp(c) for c in clusters_pemmdb]
+
+    # misc
+    def get_misc_cluster_bp(self, cluster_pemmdb: str) -> str | None:
+        value = self._misc_cluster_pemmdb_to_antares.get(cluster_pemmdb)
+        if pd.isna(value):
+            # The value is either missing or the line does not even exist. We should log the information but not crash.
+            print(f"ENTSOE Cluster '{cluster_pemmdb}' was not found inside `MainParams`")
+            return None
+        return value
+
+    def get_misc_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
+        return [self.get_misc_cluster_bp(c) for c in clusters_pemmdb]
 
     def get_antares_cluster_common_data_params(self, antares_cluster: str) -> ClusterParams:
         if self._cluster_antares is None or antares_cluster not in self._cluster_antares:
@@ -177,7 +189,7 @@ class MainParams:
         return self._peak_month_label[month_value]
 
 
-def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) -> MainParams:
+def parse_main_params(file_path: Path) -> MainParams:
     """Parse and validate a MAIN_PARAMS.xlsx workbook.
 
     This function:
@@ -192,7 +204,6 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
 
     Args:
         file_path: Path to the MAIN_PARAMS.xlsx file.
-        cluster_type: The type of cluster to parse (default is 'Thermal').
 
     Returns:
         A validated MainParams object containing referential mappings.
@@ -204,9 +215,6 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
 
     if not file_path.exists():
         raise FileNotFoundError(f"Input file does not exist: {file_path}")
-
-    if cluster_type not in AVAILABLE_CLUSTER_TYPES:
-        raise ValueError(f"Cluster type '{cluster_type}' not found in {AVAILABLE_CLUSTER_TYPES}")
 
     expected_sheets = [
         ReferentialSheetNames.PAYS,
@@ -238,9 +246,8 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
 
     scenario_dict = dict(zip(df[StudyScenarioColumnsNames.YEAR], df[StudyScenarioColumnsNames.STUDY_SCENARIO]))
 
-    # Parse the `CLUSTER` sheet
+    # Parse the Thermal `CLUSTER` sheet
     df = excel_sheets[ReferentialSheetNames.CLUSTER]
-
     actual_cols = set(df.columns)
     for cluster_col in [
         ClusterColumnsNames.CLUSTER_PEMMDB,
@@ -251,14 +258,59 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
         if cluster_col.value not in actual_cols:
             raise ValueError(f"Column '{cluster_col}' not found inside sheet '{ReferentialSheetNames.CLUSTER}'")
 
-    df = df[df[ClusterColumnsNames.TYPE] == cluster_type]
-    pemmdb_to_antares_mapping = dict(zip(df[ClusterColumnsNames.CLUSTER_PEMMDB], df[ClusterColumnsNames.CLUSTER_BP]))
+    df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
 
-    # Parsing `Common Data` sheet only for thermal cluster (`Common Data` are additional properties only for thermal clusters)
-    if cluster_type == THERMAL_TYPE_NAME:
-        cluster_antares_dict = _build_thermal_cluster_parameters(df, excel_sheets[ReferentialSheetNames.COMMON_DATA])
-    else:
-        cluster_antares_dict = {}
+    thermal_pemmdb_to_antares_mapping = {}
+    intermediate_dict = {}  # Used to get the Technology attribute for the upcoming `ClusterParams` class
+    for _, row in df.iterrows():
+        thermal_pemmdb_to_antares_mapping[row[ClusterColumnsNames.CLUSTER_PEMMDB]] = row[ClusterColumnsNames.CLUSTER_BP]
+        intermediate_dict[row[ClusterColumnsNames.CLUSTER_BP]] = row[ClusterColumnsNames.TECHNOLOGY]
+
+    # Parse the `Common Data` sheet
+    df = excel_sheets[ReferentialSheetNames.COMMON_DATA]
+    actual_cols = set(df.columns)
+    for common_col in CommonDataColumnsNames:
+        if common_col.value not in actual_cols:
+            raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
+
+    # check that columns are numeric values between 0 and 1
+    for column_ratio in RATIO_FIELDS:
+        if not ((df[column_ratio] >= 0).all() and (df[column_ratio] <= 1).all()):
+            raise ValueError(f"Column '{column_ratio}' must be between 0 and 1")
+
+    # check that columns are integer values
+    for column_int in [CommonDataColumnsNames.FO_DURATION_DEFAULT, CommonDataColumnsNames.PO_DURATION_DEFAULT]:
+        if not df[column_int].apply(lambda x: float(x).is_integer()).all():
+            raise ValueError(f"Column '{column_int}' must be integer")
+
+    cluster_antares_dict = {}
+    for _, row in df.iterrows():
+        bp_name = row[CommonDataColumnsNames.CLUSTER_BP]
+        fuel = row[CommonDataColumnsNames.FUEL]
+        efficiency_default = row[CommonDataColumnsNames.EFFICIENCY_DEFAULT]
+        fo_rate_default = row[CommonDataColumnsNames.FO_RATE_DEFAULT]
+        fo_duration_default = row[CommonDataColumnsNames.FO_DURATION_DEFAULT]
+        po_duration_default = row[CommonDataColumnsNames.PO_DURATION_DEFAULT]
+        po_winter_default = row[CommonDataColumnsNames.PO_WINTER_DEFAULT]
+        min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
+
+        cluster_antares_dict[bp_name] = ClusterParams(
+            technology=intermediate_dict[bp_name],
+            fuel=fuel,
+            efficiency_default=efficiency_default,
+            fo_rate_default=fo_rate_default,
+            fo_duration_default=fo_duration_default,
+            po_duration_default=po_duration_default,
+            po_winter_default=po_winter_default,
+            min_stable_generation_default=min_stable_generation_default,
+        )
+
+    # Parse the Misc `CLUSTER` sheet
+    df = excel_sheets[ReferentialSheetNames.CLUSTER]
+    df = df[df[ClusterColumnsNames.TYPE] == MISC_TYPE_NAME]
+    misc_pemmdb_to_antares_mapping = dict(
+        zip(df[ClusterColumnsNames.CLUSTER_PEMMDB], df[ClusterColumnsNames.CLUSTER_BP])
+    )
 
     # Parse "PEAK_PARAMS" sheet
     df = excel_sheets[ReferentialSheetNames.PEAK_PARAMS]
@@ -289,56 +341,9 @@ def parse_main_params(file_path: Path, cluster_type: str = THERMAL_TYPE_NAME) ->
     return MainParams(
         _market_to_antares=countries_dict,
         _year_to_scenario=scenario_dict,
-        _cluster_pemmdb_to_antares=pemmdb_to_antares_mapping,
+        _thermal_cluster_pemmdb_to_antares=thermal_pemmdb_to_antares_mapping,
+        _misc_cluster_pemmdb_to_antares=misc_pemmdb_to_antares_mapping,
         _cluster_antares=cluster_antares_dict,
         _peak_hour_label=peak_hour_dict,
         _peak_month_label=peak_month_dict,
     )
-
-
-def _build_thermal_cluster_parameters(df: pd.DataFrame, common_data_sheet: pd.DataFrame) -> dict[str, ClusterParams]:
-    # Used to get the Technology attribute for the upcoming `ClusterParams` class
-    cluster_thermal_technology_mapping = dict(
-        zip(df[ClusterColumnsNames.CLUSTER_BP], df[ClusterColumnsNames.TECHNOLOGY])
-    )
-
-    # Parse the `Common Data` sheet
-    df = common_data_sheet
-    actual_cols = set(df.columns)
-    for common_col in CommonDataColumnsNames:
-        if common_col.value not in actual_cols:
-            raise ValueError(f"Column '{common_col}' not found inside sheet '{ReferentialSheetNames.COMMON_DATA}'")
-
-    # check that columns are numeric values between 0 and 1
-    for column_ratio in RATIO_FIELDS:
-        if not ((df[column_ratio] >= 0).all() and (df[column_ratio] <= 1).all()):
-            raise ValueError(f"Column '{column_ratio}' must be between 0 and 1")
-
-    # check that columns are integer values
-    for column_int in [CommonDataColumnsNames.FO_DURATION_DEFAULT, CommonDataColumnsNames.PO_DURATION_DEFAULT]:
-        if not df[column_int].apply(lambda x: float(x).is_integer()).all():
-            raise ValueError(f"Column '{column_int}' must be integer")
-
-    cluster_antares_dict = {}
-    for _, row in df.iterrows():
-        bp_name = row[CommonDataColumnsNames.CLUSTER_BP]
-        fuel = row[CommonDataColumnsNames.FUEL]
-        efficiency_default = row[CommonDataColumnsNames.EFFICIENCY_DEFAULT]
-        fo_rate_default = row[CommonDataColumnsNames.FO_RATE_DEFAULT]
-        fo_duration_default = row[CommonDataColumnsNames.FO_DURATION_DEFAULT]
-        po_duration_default = row[CommonDataColumnsNames.PO_DURATION_DEFAULT]
-        po_winter_default = row[CommonDataColumnsNames.PO_WINTER_DEFAULT]
-        min_stable_generation_default = row[CommonDataColumnsNames.MIN_STABLE_GENERATION_DEFAULT]
-
-        cluster_antares_dict[bp_name] = ClusterParams(
-            technology=cluster_thermal_technology_mapping[bp_name],
-            fuel=fuel,
-            efficiency_default=efficiency_default,
-            fo_rate_default=fo_rate_default,
-            fo_duration_default=fo_duration_default,
-            po_duration_default=po_duration_default,
-            po_winter_default=po_winter_default,
-            min_stable_generation_default=min_stable_generation_default,
-        )
-
-    return cluster_antares_dict
