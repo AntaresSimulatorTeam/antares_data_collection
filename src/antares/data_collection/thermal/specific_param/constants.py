@@ -59,3 +59,36 @@ class OutputThermalSpecificColumns(StrEnum):
 F_COLUMNS = [f"F{i}" for i in range(1, 13)]
 P_COLUMNS = [f"P{i}" for i in range(1, 13)]
 P_COLUMNS_WINTER = [f"P{i}" for i in [1, 2, 3, 10, 11, 12]]
+
+# special header for output
+DONNEES_PRINCIPALES = "Données principales"
+EMPTY = None
+PERCENT = "%"
+RATIO = "0/1"
+DAY = "day"
+EURO_MWATT = "Euro/MWh"
+NB = "nb"
+FO_RATE_1 = "FO_Rate_1"
+P_1 = "P_1"
+
+header_before_header = {
+    OutputThermalSpecificColumns.NODE: [DONNEES_PRINCIPALES, EMPTY],
+    OutputThermalSpecificColumns.CLUSTER_PEMMDB: [EMPTY, EMPTY],
+    OutputThermalSpecificColumns.CLUSTER: [EMPTY, EMPTY],
+    OutputThermalSpecificColumns.MIN_STABLE_GEN: [EMPTY, PERCENT],
+    OutputThermalSpecificColumns.SPINNING: [EMPTY, RATIO],
+    OutputThermalSpecificColumns.EFFICIENCY: [EMPTY, RATIO],
+    OutputThermalSpecificColumns.FO_RATE: [EMPTY, RATIO],
+    OutputThermalSpecificColumns.FO_DURATION: [EMPTY, DAY],
+    OutputThermalSpecificColumns.PO_DURATION: [EMPTY, DAY],
+    OutputThermalSpecificColumns.PO_WINTER: [EMPTY, RATIO],
+    OutputThermalSpecificColumns.MARGINAL_COST: [EMPTY, EURO_MWATT],
+    OutputThermalSpecificColumns.MARKET_BID: [EMPTY, EURO_MWATT],
+    OutputThermalSpecificColumns.MR_SPECIFIC: [EMPTY, RATIO],
+    OutputThermalSpecificColumns.CM_SPECIFIC: [EMPTY, RATIO],
+    OutputThermalSpecificColumns.NPO_MAX_WINTER: [EMPTY, EMPTY],
+    OutputThermalSpecificColumns.NPO_MAX_SUMMER: [EMPTY, EMPTY],
+    OutputThermalSpecificColumns.NB_UNIT: [EMPTY, NB],
+    F_COLUMNS[0]: [FO_RATE_1, EMPTY],
+    P_COLUMNS[0]: [P_1, EMPTY],
+}
