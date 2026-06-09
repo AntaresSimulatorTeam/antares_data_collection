@@ -14,12 +14,12 @@ from pathlib import Path
 from statistics import mean
 from typing import NamedTuple, TypeAlias
 
-import numpy as np
 import pandas as pd
 
 from antares.data_collection.links.constants import (
     CURVE_UID_SPLIT_SYMBOL,
     DEFAULT_LINK_PARAMETERS,
+    FILL_FOR_VALUES,
     FIRST_SHEET_NAME,
     HOUR_OFFPEAK,
     HOUR_PEAK,
@@ -85,12 +85,10 @@ class AggregatedValues(NamedTuple):
     @property
     def selection_priority(self) -> tuple[int, int, float, float]:
         is_hvdc = self.hvdc_nb > 0
-        is_na_hvdc = is_hvdc and pd.isna(self.hvdc_for)
-
-        hvdc_for_priority = self.hvdc_for if pd.notna(self.hvdc_for) else float("inf")
+        hvdc_for_priority = self.hvdc_for
 
         return (
-            1 if is_na_hvdc else 0,  # exclude NA only for HVDC
+            1 if is_hvdc else 0,  # HVDC
             0 if self.has_curve else 1,  # curve first
             self.reference_capacity,  # value capacity curve or NTC
             hvdc_for_priority,  # value to discriminate
@@ -102,14 +100,28 @@ CrossGrtIndex: TypeAlias = dict[tuple[str, str], dict[ZoneId, dict[Direction, Ag
 
 
 class LinksParser:
-    def __init__(self, input_folder: Path, output_folder: Path, main_params: MainParams, years: list[int]):
+    def __init__(
+        self,
+        input_folder: Path,
+        output_folder: Path,
+        main_params: MainParams,
+        years: list[int],
+        for_limit_value: float = FILL_FOR_VALUES,
+    ):
         self.input_folder = input_folder
         self.output_folder = output_folder
         self.main_params = main_params
         self.years = years
+        self.for_limit_value = for_limit_value
 
     def _parse_transfer_links(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder / LINKS_TRANSFER_LINKS_NAME, list(InputTransferLinksColumns))
+
+    def _fill_values_column_for(self, df: pd.DataFrame) -> pd.DataFrame:
+        name_col_to_fill = InputTransferLinksColumns.FOR
+        for_value = self.for_limit_value
+        df[name_col_to_fill] = df[name_col_to_fill].fillna(for_value).replace(0, for_value)
+        return df
 
     def _filter_based_on_transfer_type(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[df[InputTransferLinksColumns.TRANSFER_TYPE] == NTC_FILTER_STR_VALUE]
@@ -239,6 +251,7 @@ class LinksParser:
         df = self._add_links_code_antares_column(df, InputTransferLinksColumns.MARKET_ZONE_DESTINATION)
 
         df = self._filter_duplicate_market_zone(df)
+        df = self._fill_values_column_for(df)
 
         return df
 
@@ -329,11 +342,8 @@ class LinksParser:
             # Same profile (pair/zone/direction) is summed
             current = grt_data[direction]
 
-            # Prepare the HVDC FOR calculation to avoid heavy nesting in the constructor
-            if (current.hvdc_for == 0) and pd.isna(aggregated_values.hvdc_for):
-                valid_hvdc_for = np.nan
-            else:
-                valid_hvdc_for = self._mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for])
+            # exclude 0 of computation
+            valid_hvdc_for = self._mean_strict_positive([current.hvdc_for, aggregated_values.hvdc_for])
 
             grt_data[direction] = AggregatedValues(
                 winter_hp=current.winter_hp + aggregated_values.winter_hp,
@@ -343,7 +353,7 @@ class LinksParser:
                 reference_capacity=current.reference_capacity + aggregated_values.reference_capacity,
                 hvdc_mw=current.hvdc_mw + aggregated_values.hvdc_mw,
                 hvdc_nb=current.hvdc_nb + aggregated_values.hvdc_nb,
-                hvdc_for=valid_hvdc_for,  # available with nan value
+                hvdc_for=valid_hvdc_for,
                 has_curve=current.has_curve or aggregated_values.has_curve,
             )
 
