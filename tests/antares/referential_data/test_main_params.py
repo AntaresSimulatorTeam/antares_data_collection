@@ -444,7 +444,7 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
         2060: "TYNDP",
     }
 
-    assert main_params._cluster_pemmdb_to_antares == {
+    assert main_params._thermal_cluster_pemmdb_to_antares == {
         "Gas/CCGT CCS": "CCGT CCS",
         "OtherNon-RES/Gas/CCGT CCS": "CCGT CCS",
         "Gas/CCGT CCS/CHP": "CCGT CCS CHP",
@@ -981,6 +981,15 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
             po_winter_default=0.15,
             min_stable_generation_default=0.4,
         ),
+    }
+
+    # "MISC"
+    assert main_params._misc_cluster_pemmdb_to_antares == {
+        "Marine": "wave",
+        "Waste": "waste",
+        "Small biomass": "biomass",
+        "Geothermal": "geothermal",
+        "Not defined or splitting not known RES": "other",
     }
 
     assert main_params._peak_hour_label == {

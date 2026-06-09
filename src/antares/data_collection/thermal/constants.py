@@ -16,8 +16,6 @@ BIOMASS_SNCD_FUEL_VALUE = "Bio"
 BIOMASS_CLUSTER_SUFFIX = "bio"
 FUEL_MAPPING = {BIOMASS_CLUSTER_SUFFIX: "Mixed fuel", "virtuel": "Other"}
 
-ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
-
 
 class InputThermalColumns(StrEnum):
     STUDY_SCENARIO = "STUDY_SCENARIO"

@@ -70,6 +70,7 @@ class CommonDataColumnsNames(StrEnum):
 
 
 THERMAL_TYPE_NAME = "Thermal"
+MISC_TYPE_NAME = "misc"
 
 
 # "PEAK_PARAMS"
@@ -124,7 +125,8 @@ class MainParams:
 
     _market_to_antares: dict[str, str]
     _year_to_scenario: dict[int, str]
-    _cluster_pemmdb_to_antares: dict[str, str]
+    _thermal_cluster_pemmdb_to_antares: dict[str, str]
+    _misc_cluster_pemmdb_to_antares: dict[str, str]
     _cluster_antares: dict[str, ClusterParams]
     _peak_hour_label: dict[int, str]
     _peak_month_label: dict[int, str]
@@ -148,19 +150,32 @@ class MainParams:
     def get_scenario_types(self, years: list[int]) -> set[str]:
         return {self.get_scenario_type(y) for y in years}
 
-    def get_cluster_bp(self, cluster_pemmdb: str) -> str | None:
-        value = self._cluster_pemmdb_to_antares.get(cluster_pemmdb)
+    # thermal
+    def get_thermal_cluster_bp(self, cluster_pemmdb: str) -> str | None:
+        value = self._thermal_cluster_pemmdb_to_antares.get(cluster_pemmdb)
         if pd.isna(value):
             # The value is either missing or the line does not even exist. We should log the information but not crash.
             print(f"ENTSOE Cluster '{cluster_pemmdb}' was not found inside `MainParams`")
             return None
         return value
 
-    def get_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
-        return [self.get_cluster_bp(c) for c in clusters_pemmdb]
+    def get_thermal_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
+        return [self.get_thermal_cluster_bp(c) for c in clusters_pemmdb]
+
+    # misc
+    def get_misc_cluster_bp(self, cluster_pemmdb: str) -> str | None:
+        value = self._misc_cluster_pemmdb_to_antares.get(cluster_pemmdb)
+        if pd.isna(value):
+            # The value is either missing or the line does not even exist. We should log the information but not crash.
+            print(f"ENTSOE Cluster '{cluster_pemmdb}' was not found inside `MainParams`")
+            return None
+        return value
+
+    def get_misc_clusters_bp(self, clusters_pemmdb: list[str]) -> list[str | None]:
+        return [self.get_misc_cluster_bp(c) for c in clusters_pemmdb]
 
     def get_antares_cluster_common_data_params(self, antares_cluster: str) -> ClusterParams:
-        if antares_cluster not in self._cluster_antares:
+        if self._cluster_antares is None or antares_cluster not in self._cluster_antares:
             raise ValueError(f"Cluster {antares_cluster} not found inside sheet {ReferentialSheetNames.COMMON_DATA}")
         return self._cluster_antares[antares_cluster]
 
@@ -231,7 +246,7 @@ def parse_main_params(file_path: Path) -> MainParams:
 
     scenario_dict = dict(zip(df[StudyScenarioColumnsNames.YEAR], df[StudyScenarioColumnsNames.STUDY_SCENARIO]))
 
-    # Parse the `CLUSTER` sheet
+    # Parse the Thermal `CLUSTER` sheet
     df = excel_sheets[ReferentialSheetNames.CLUSTER]
     actual_cols = set(df.columns)
     for cluster_col in [
@@ -245,10 +260,10 @@ def parse_main_params(file_path: Path) -> MainParams:
 
     df = df[df[ClusterColumnsNames.TYPE] == THERMAL_TYPE_NAME]
 
-    pemmdb_to_antares_mapping = {}
+    thermal_pemmdb_to_antares_mapping = {}
     intermediate_dict = {}  # Used to get the Technology attribute for the upcoming `ClusterParams` class
     for _, row in df.iterrows():
-        pemmdb_to_antares_mapping[row[ClusterColumnsNames.CLUSTER_PEMMDB]] = row[ClusterColumnsNames.CLUSTER_BP]
+        thermal_pemmdb_to_antares_mapping[row[ClusterColumnsNames.CLUSTER_PEMMDB]] = row[ClusterColumnsNames.CLUSTER_BP]
         intermediate_dict[row[ClusterColumnsNames.CLUSTER_BP]] = row[ClusterColumnsNames.TECHNOLOGY]
 
     # Parse the `Common Data` sheet
@@ -290,6 +305,13 @@ def parse_main_params(file_path: Path) -> MainParams:
             min_stable_generation_default=min_stable_generation_default,
         )
 
+    # Parse the Misc `CLUSTER` sheet
+    df = excel_sheets[ReferentialSheetNames.CLUSTER]
+    df = df[df[ClusterColumnsNames.TYPE] == MISC_TYPE_NAME]
+    misc_pemmdb_to_antares_mapping = dict(
+        zip(df[ClusterColumnsNames.CLUSTER_PEMMDB], df[ClusterColumnsNames.CLUSTER_BP])
+    )
+
     # Parse "PEAK_PARAMS" sheet
     df = excel_sheets[ReferentialSheetNames.PEAK_PARAMS]
     actual_cols = set(df.columns)
@@ -319,7 +341,8 @@ def parse_main_params(file_path: Path) -> MainParams:
     return MainParams(
         _market_to_antares=countries_dict,
         _year_to_scenario=scenario_dict,
-        _cluster_pemmdb_to_antares=pemmdb_to_antares_mapping,
+        _thermal_cluster_pemmdb_to_antares=thermal_pemmdb_to_antares_mapping,
+        _misc_cluster_pemmdb_to_antares=misc_pemmdb_to_antares_mapping,
         _cluster_antares=cluster_antares_dict,
         _peak_hour_label=peak_hour_dict,
         _peak_month_label=peak_month_dict,

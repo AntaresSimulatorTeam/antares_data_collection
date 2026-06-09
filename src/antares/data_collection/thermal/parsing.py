@@ -16,7 +16,6 @@ import pandas as pd
 
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
-    ANTARES_CLUSTER_NAME_COLUMN,
     BIOMASS_CLUSTER_SUFFIX,
     BIOMASS_SNCD_FUEL_VALUE,
     THERMAL_INPUT_FILE,
@@ -25,10 +24,8 @@ from antares.data_collection.thermal.constants import (
 from antares.data_collection.thermal.installed_power.parsing import ThermalInstallerPowerParser
 from antares.data_collection.thermal.param_modulation.parsing import ThermalParamModulationParser
 from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
-from antares.data_collection.thermal.utils import (
-    add_antares_cluster_name_colum,
-)
 from antares.data_collection.utils import (
+    ANTARES_CLUSTER_NAME_COLUMN,
     add_code_antares_colum,
     filter_based_on_commission_date,
     filter_based_on_net_max_gen_cap,
@@ -58,20 +55,26 @@ class ThermalParser:
     def _read_input_file(self) -> pd.DataFrame:
         return parse_input_file(self.input_folder.joinpath(THERMAL_INPUT_FILE), list(InputThermalColumns))
 
-    def _filter_non_declared_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _add_antares_thermal_cluster_name_colum(self, df: pd.DataFrame) -> pd.DataFrame:
+        cluster_list = df[InputThermalColumns.PEMMDB_TECHNOLOGY].tolist()
+        df[ANTARES_CLUSTER_NAME_COLUMN] = self.main_params.get_thermal_clusters_bp(cluster_list)
+        return df
+
+    def _filter_non_declared_thermal_clusters(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Some mapping between ENTSOE clusters and Antares ones might be missing in the `MainParams` file.
         If so, we do not want to crash but rather log that we'll not consider them.
         """
-        all_pemmdb_clusters = set(df[InputThermalColumns.PEMMDB_TECHNOLOGY])
+        key_column = InputThermalColumns.PEMMDB_TECHNOLOGY
+        all_pemmdb_clusters = set(df[key_column])
         missing_mappings = []
         for cluster_pemmdb in all_pemmdb_clusters:
-            antares_cluster = self.main_params.get_cluster_bp(cluster_pemmdb)
+            antares_cluster = self.main_params.get_thermal_cluster_bp(cluster_pemmdb)
             if not antares_cluster:
                 missing_mappings.append(cluster_pemmdb)
 
         if missing_mappings:
-            return df[~df[InputThermalColumns.PEMMDB_TECHNOLOGY].isin(missing_mappings)]
+            return df[~df[key_column].isin(missing_mappings)]
         return df
 
     def _split_clusters_with_biomass_rule(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -103,7 +106,7 @@ class ThermalParser:
         df = self._read_input_file()
         df = filter_based_on_op_stat(self.op_stat_values, df, InputThermalColumns.OP_STAT.value)
         df = filter_non_declared_areas(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
-        df = self._filter_non_declared_clusters(df)
+        df = self._filter_non_declared_thermal_clusters(df)
         df = filter_based_on_study_scenarios(df, self.main_params, self.years, InputThermalColumns.STUDY_SCENARIO.value)
         df = filter_based_on_commission_date(
             df,
@@ -111,7 +114,7 @@ class ThermalParser:
             InputThermalColumns.COMMISSIONING_DATE.value,
             InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED.value,
         )
-        df = add_antares_cluster_name_colum(self.main_params, df)
+        df = self._add_antares_thermal_cluster_name_colum(df)
         df = self._split_clusters_with_biomass_rule(df)
         df = filter_based_on_net_max_gen_cap(df, InputThermalColumns.NET_MAX_GEN_CAP.value)
         return add_code_antares_colum(self.main_params, df, InputThermalColumns.MARKET_NODE.value)
