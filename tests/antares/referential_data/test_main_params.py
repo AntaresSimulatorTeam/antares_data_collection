@@ -282,7 +282,6 @@ def test_main_params_getters() -> None:
     assert main_params.get_peak_month_label(8) == "summer"
 
 
-# Default: main_params is available for thermal clusters
 def test_parse_main_params_real_test_case_default_thermal(tmp_path: Path) -> None:
     # Use real test case
     file_path = RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx"

@@ -54,11 +54,11 @@ class MiscInstalledPowerParser:
         )
 
         output_dict: IndexCapacityCluster = {}
-        for (area, pantype_id, clusterbp_id), grouped_df_cluster in grouped_df:
+        for (area, plant_type_id, clusterbp_id), grouped_df_cluster in grouped_df:
             assert isinstance(area, AntaresNodeId)
-            assert isinstance(pantype_id, PemmdbPlantTypeId)
+            assert isinstance(plant_type_id, PemmdbPlantTypeId)
             assert isinstance(clusterbp_id, ClusterBpId)
-            output_dict.setdefault(area, {})[(pantype_id, clusterbp_id)] = round(
+            output_dict.setdefault(area, {})[(plant_type_id, clusterbp_id)] = round(
                 grouped_df_cluster[InputMiscColumns.NET_MAX_GEN_CAP].sum(), MAX_DECIMAL_DIGITS
             )
 
