@@ -261,36 +261,3 @@ def insert_str_date_time_reindex(df: pd.DataFrame, year: int, datetime_column_na
     reindex_df.insert(0, datetime_column_name, date_values)
 
     return reindex_df
-
-
-def filter_non_declared_thermal_clusters(
-    main_params: MainParams, df: pd.DataFrame, pemmdb_cluster_column: str
-) -> pd.DataFrame:
-    """
-    Some mapping between ENTSOE clusters and Antares ones might be missing in the `MainParams` file.
-    If so, we do not want to crash but rather log that we'll not consider them.
-    """
-    if pemmdb_cluster_column not in df.columns:
-        raise ValueError(f"Column {pemmdb_cluster_column} not found in the dataframe")
-
-    all_pemmdb_clusters = set(df[pemmdb_cluster_column])
-    missing_mappings = []
-    for cluster_pemmdb in all_pemmdb_clusters:
-        antares_cluster = main_params.get_thermal_cluster_bp(cluster_pemmdb)
-        if not antares_cluster:
-            missing_mappings.append(cluster_pemmdb)
-
-    if missing_mappings:
-        return df[~df[pemmdb_cluster_column].isin(missing_mappings)]
-    return df
-
-
-def add_antares_thermal_cluster_name_colum(
-    main_params: MainParams, df: pd.DataFrame, pemmdb_cluster_column: str
-) -> pd.DataFrame:
-    if pemmdb_cluster_column not in df.columns:
-        raise ValueError(f"Column {pemmdb_cluster_column} not found in the dataframe")
-
-    cluster_list = df[pemmdb_cluster_column].tolist()
-    df[ANTARES_CLUSTER_NAME_COLUMN] = main_params.get_thermal_clusters_bp(cluster_list)
-    return df
