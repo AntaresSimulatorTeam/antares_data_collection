@@ -29,6 +29,7 @@ from antares.data_collection.links.constants import (
     LINKS_NTC_TS_NAME,
     LINKS_OUTPUT_NAME_FILE,
     LINKS_TRANSFER_LINKS_NAME,
+    MAX_DECIMAL_DIGITS_FOR,
     NTC_FILTER_STR_VALUE,
     SUMMER_SEASON,
     WINTER_SEASON,
@@ -120,7 +121,10 @@ class LinksParser:
     def _fill_values_column_for(self, df: pd.DataFrame) -> pd.DataFrame:
         name_col_to_fill = InputTransferLinksColumns.FOR
         for_value = self.for_limit_value
-        df[name_col_to_fill] = df[name_col_to_fill].fillna(for_value).replace(0, for_value)
+        # fill NA + "0" values to default + round values
+        df[name_col_to_fill] = (
+            df[name_col_to_fill].fillna(for_value).replace(0, for_value).round(MAX_DECIMAL_DIGITS_FOR)
+        )
         return df
 
     def _filter_based_on_transfer_type(self, df: pd.DataFrame) -> pd.DataFrame:
