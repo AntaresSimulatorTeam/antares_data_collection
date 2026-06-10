@@ -12,7 +12,6 @@
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS, YearId
@@ -23,9 +22,10 @@ from antares.data_collection.dsr.cluster.constants import (
     DSR_GROUP,
     DSR_NAME_FILE,
     DSR_NB_HOUR_PER_DAY,
+    DSR_PRICE_VALUE,
     OutputDsrColumns,
 )
-from antares.data_collection.dsr.constants import InputDsrColumns
+from antares.data_collection.dsr.constants import DSR_INDEX_GROUP_COLUMNS, InputDsrColumns
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import filter_out_based_on_year
 
@@ -51,11 +51,13 @@ class DsrClusterParser:
             df, year, InputDsrColumns.COMMISSIONING_DATE.value, InputDsrColumns.DECOMMISSIONING_DATE_EXPECTED.value
         )
 
+        # weights
+        col_name_weights = "_weighted_max_hours"
+        df_year[col_name_weights] = df_year[InputDsrColumns.MAX_HOURS] * df_year[InputDsrColumns.NET_MAX_GEN_CAP]
+
         # Group with aggregations
         result = (
-            df_year.groupby(
-                [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.ACT_PRICE_DA, InputDsrColumns.MAX_HOURS], as_index=False
-            )
+            df_year.groupby(DSR_INDEX_GROUP_COLUMNS, as_index=False)
             .agg(
                 **{
                     OutputDsrColumns.CAPACITY.value: (InputDsrColumns.NET_MAX_GEN_CAP, "sum"),
@@ -64,13 +66,19 @@ class DsrClusterParser:
                         InputDsrColumns.DSR_DERATING_CURVE_ID,
                         lambda x: x.notna().any(),
                     ),
+                    OutputDsrColumns.MAX_HOUR_PER_DAY.value: (col_name_weights, "sum"),
                 }
             )
             .rename(columns={ANTARES_NODE_NAME_COLUMN: OutputDsrColumns.AREA})
         )
 
-        # build column "NAME" by AREA put "DSR{1:N}"
-        result[OutputDsrColumns.NAME] = DSR_GROUP + (result.groupby(OutputDsrColumns.AREA).cumcount() + 1).astype(str)
+        # normalize to have weighted average
+        result[OutputDsrColumns.MAX_HOUR_PER_DAY] = (
+            result[OutputDsrColumns.MAX_HOUR_PER_DAY] / result[OutputDsrColumns.CAPACITY.value]
+        ).round()
+
+        # build column "NAME" by AREA put "{ZONE}_DSR"
+        result[OutputDsrColumns.NAME] = result[OutputDsrColumns.AREA] + "_" + DSR_GROUP
 
         # Round capacities
         result[OutputDsrColumns.CAPACITY] = result[OutputDsrColumns.CAPACITY].round(MAX_DECIMAL_DIGITS)
@@ -79,14 +87,12 @@ class DsrClusterParser:
         result[OutputDsrColumns.TO_USE] = 1
         result[OutputDsrColumns.GROUP] = DSR_GROUP
         result[OutputDsrColumns.NB_HOUR_PER_DAY] = DSR_NB_HOUR_PER_DAY
-        result[OutputDsrColumns.MAX_HOUR_PER_DAY] = np.where(
-            result[InputDsrColumns.MAX_HOURS] == 0, DSR_NB_HOUR_PER_DAY, result[InputDsrColumns.MAX_HOURS]
-        )
-        result[OutputDsrColumns.PRICE] = result[InputDsrColumns.ACT_PRICE_DA]
+        result[OutputDsrColumns.PRICE] = DSR_PRICE_VALUE
         result[OutputDsrColumns.FO_RATE] = DSR_FO_RATE
         result[OutputDsrColumns.FO_DURATION] = DSR_FO_DURATION
 
-        return result
+        # return with business columns order
+        return result[list(OutputDsrColumns)]
 
     def _compute_dsr_cluster_years(self, df: pd.DataFrame) -> dict[YearId, pd.DataFrame]:
         years = sorted(self.years)
@@ -96,14 +102,6 @@ class DsrClusterParser:
             res[year] = self._compute_dsr_cluster_year(df, year)
 
         return res
-
-    def _filter_columns_for_output(self, dict_of_df: dict[YearId, pd.DataFrame]) -> dict[YearId, pd.DataFrame]:
-        """
-        Only keep the output columns needed for the DSR cluster.
-            - Ordering columns from `OutputDsrColumns`
-        """
-        columns_to_keep = [col.value for col in OutputDsrColumns]
-        return {year: df[columns_to_keep] for year, df in dict_of_df.items()}
 
     def _export_dsr_cluster_dataframe(self, dict_of_df: dict[int, pd.DataFrame]) -> None:
         parent_dir = self.output_folder / DSR_CLUSTER_FOLDER
@@ -123,6 +121,5 @@ class DsrClusterParser:
 
     # capacity of DSR clustering
     def build_dsr_cluster(self, df: pd.DataFrame) -> None:
-        dsr_clusters_by_years = self._compute_dsr_cluster_years(df)
-        dsr_clusters_by_years = self._filter_columns_for_output(dsr_clusters_by_years)
-        self._export_dsr_cluster_dataframe(dsr_clusters_by_years)
+        index_of_df_year = self._compute_dsr_cluster_years(df)
+        self._export_dsr_cluster_dataframe(index_of_df_year)
