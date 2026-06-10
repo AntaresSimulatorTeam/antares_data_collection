@@ -53,6 +53,11 @@ class InputTransferLinksColumns(StrEnum):
     FOR = "FOR"
 
 
+# Default value to fill for column "FOR" in "Transfer Links.csv"
+FILL_FOR_VALUES = 0.05
+MAX_DECIMAL_DIGITS_FOR = 2
+
+
 # "NTCs Index.csv"
 class InputNTCsIndexColumns(StrEnum):
     CURVE_UID = "CURVE_UID"
