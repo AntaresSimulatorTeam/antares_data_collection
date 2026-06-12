@@ -98,7 +98,7 @@ class ExportLinksColumnsNames(StrEnum):
 
 # The first tab in the export file is a data frame of constant parameters
 DEFAULT_LINK_PARAMETERS = pd.DataFrame(
-    data=[0.5, False],
+    data=[0.1, False],
     index=["Hurdle Costs", "HVDC"],
     columns=["value"],
 )
