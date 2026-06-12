@@ -14,7 +14,7 @@ from typing import Any, TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, YearId
+from antares.data_collection.constants import ANTARES_CLUSTER_NAME_COLUMN, ANTARES_NODE_NAME_COLUMN, YearId
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
     BIOMASS_CLUSTER_SUFFIX,
@@ -35,7 +35,6 @@ from antares.data_collection.thermal.utils import (
     apply_round_to_numeric_columns,
     get_path_capacity_modulation_file,
 )
-from antares.data_collection.utils import ANTARES_CLUSTER_NAME_COLUMN
 
 ZoneId: TypeAlias = str
 ClusterId: TypeAlias = str

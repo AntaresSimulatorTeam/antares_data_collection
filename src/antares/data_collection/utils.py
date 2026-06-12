@@ -24,8 +24,6 @@ from antares.data_collection.constants import (
 )
 from antares.data_collection.referential_data.main_params import MainParams
 
-ANTARES_CLUSTER_NAME_COLUMN = "cluster_name"
-
 
 def write_csv_file(file_path: Path, df: pd.DataFrame) -> None:
     file_path.parent.mkdir(parents=True, exist_ok=True)

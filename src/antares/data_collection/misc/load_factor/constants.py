@@ -9,4 +9,15 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+from enum import StrEnum
+
+LOAD_FACTOR_FILE_INDEX_NAME = "Other RES Hourly Index.csv"
+LOAD_FACTOR_FILE_TS_NAME = "Other RES Hourly.csv"
+
+
+class InputLoadFactorIndexColumns(StrEnum):
+    ZONE = "ZONE"
+    ID = "ID"
+    TARGET_YEAR = "TARGET_YEAR"
+    CURVE_UID = "CURVE_UID"
 
