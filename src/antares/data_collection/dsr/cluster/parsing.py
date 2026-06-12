@@ -74,7 +74,7 @@ class DsrClusterParser:
 
         # normalize to have weighted average
         result[OutputDsrColumns.MAX_HOUR_PER_DAY] = (
-            result[OutputDsrColumns.MAX_HOUR_PER_DAY] / result[OutputDsrColumns.CAPACITY.value]
+            result[OutputDsrColumns.MAX_HOUR_PER_DAY] / result[OutputDsrColumns.CAPACITY]
         ).round()
 
         # build column "NAME" by AREA put "{ZONE}_DSR"
