@@ -25,7 +25,6 @@ from antares.data_collection.constants import (
 )
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.thermal.constants import (
-    ANTARES_CLUSTER_NAME_COLUMN,
     InputThermalColumns,
     OutputModulationColumns,
 )
@@ -52,6 +51,7 @@ from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
 )
 from antares.data_collection.utils import (
+    ANTARES_CLUSTER_NAME_COLUMN,
     filter_based_on_study_scenarios,
     filter_index_files_with_scenario_year,
     filter_out_based_on_year,
