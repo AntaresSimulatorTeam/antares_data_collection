@@ -19,7 +19,7 @@ from antares.data_collection.dsr.cluster.constants import (
     DSR_CLUSTER_FOLDER,
     DSR_FO_DURATION,
     DSR_FO_RATE,
-    DSR_GROUP,
+    DSR_NAME,
     DSR_NAME_FILE,
     DSR_NB_HOUR_PER_DAY,
     DSR_PRICE_VALUE,
@@ -78,14 +78,13 @@ class DsrClusterParser:
         ).round()
 
         # build column "NAME" by AREA put "{ZONE}_DSR"
-        result[OutputDsrColumns.NAME] = result[OutputDsrColumns.AREA] + "_" + DSR_GROUP
+        result[OutputDsrColumns.NAME] = DSR_NAME
 
         # Round capacities
         result[OutputDsrColumns.CAPACITY] = result[OutputDsrColumns.CAPACITY].round(MAX_DECIMAL_DIGITS)
 
         # Add static columns
         result[OutputDsrColumns.TO_USE] = 1
-        result[OutputDsrColumns.GROUP] = DSR_GROUP
         result[OutputDsrColumns.NB_HOUR_PER_DAY] = DSR_NB_HOUR_PER_DAY
         result[OutputDsrColumns.PRICE] = DSR_PRICE_VALUE
         result[OutputDsrColumns.FO_RATE] = DSR_FO_RATE

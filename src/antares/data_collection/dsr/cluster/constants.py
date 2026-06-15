@@ -22,7 +22,6 @@ class OutputDsrColumns(StrEnum):
     TO_USE = "ToUse"
     AREA = "Area"
     NAME = "Name"
-    GROUP = "Group"
     CAPACITY = "Capacity"
     NB_HOUR_PER_DAY = "nb_hour_per_day"
     MAX_HOUR_PER_DAY = "max_hour_per_day"
@@ -34,7 +33,7 @@ class OutputDsrColumns(StrEnum):
 
 
 # default values for static output columns
-DSR_GROUP = "DSR"
+DSR_NAME = "DSR"
 DSR_NB_HOUR_PER_DAY = 24
 DSR_FO_RATE = 0
 DSR_FO_DURATION = 1
