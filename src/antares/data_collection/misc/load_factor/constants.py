@@ -21,3 +21,5 @@ class InputLoadFactorIndexColumns(StrEnum):
     TARGET_YEAR = "TARGET_YEAR"
     CURVE_UID = "CURVE_UID"
 
+
+EXPORT_DATE_COLUMN = "date"
