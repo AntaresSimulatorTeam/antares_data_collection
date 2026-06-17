@@ -30,7 +30,7 @@ from antares.data_collection.dsr.capacity_modulation.constants import (
     DSR_EXPORT_DATE_COLUMN,
     InputDeratingIndexColumns,
 )
-from antares.data_collection.dsr.constants import InputDsrColumns
+from antares.data_collection.dsr.constants import DSR_INDEX_GROUP_COLUMNS, InputDsrColumns
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
     filter_index_files_with_scenario_year,
@@ -45,12 +45,11 @@ ZoneId: TypeAlias = str
 DeratingId: TypeAlias = str
 CurveIds: TypeAlias = list[str]
 IndexMapping: TypeAlias = dict[ZoneId, dict[DeratingId, CurveIds]]
-DsrClusterId: TypeAlias = tuple[int, int]
 
 # mapping used to add/manage weights calculation
 WeightValue: TypeAlias = float
 AntaresCodeId: TypeAlias = str
-IndexDsrClusterWeight: TypeAlias = dict[AntaresCodeId, dict[DsrClusterId, dict[DeratingId, WeightValue]]]
+IndexDsrClusterWeight: TypeAlias = dict[AntaresCodeId, dict[DeratingId, WeightValue]]
 
 
 @dataclass(frozen=True)
@@ -65,9 +64,7 @@ class TimeSeriesAndClusterPair:
     series: pd.Series
 
 
-DsrWeightTsRepartition: TypeAlias = dict[
-    AntaresCodeId, dict[DsrClusterId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]
-]
+DsrWeightTsRepartition: TypeAlias = dict[AntaresCodeId, dict[DeratingId, list[TimeSeriesAndClusterPair]]]
 
 
 class DsrCapacityModulationParser:
@@ -109,7 +106,7 @@ class DsrCapacityModulationParser:
         )
 
         # Define grouping columns based on _compute_dsr_cluster_year
-        group_cols = [ANTARES_NODE_NAME_COLUMN, InputDsrColumns.ACT_PRICE_DA, InputDsrColumns.MAX_HOURS]
+        group_cols = [DSR_INDEX_GROUP_COLUMNS]
         subgroup_cols = group_cols + [InputDsrColumns.DSR_DERATING_CURVE_ID]
 
         # 1. Aggregate capacity by (Area, DSR_cluster, Curve ID)
@@ -132,11 +129,10 @@ class DsrCapacityModulationParser:
         dict_of_weight: IndexDsrClusterWeight = {}
         for _, row in df_weights.iterrows():
             area = row[ANTARES_NODE_NAME_COLUMN]
-            dsr_cluster_id = (row[InputDsrColumns.ACT_PRICE_DA], row[InputDsrColumns.MAX_HOURS])
             derating_id = row[InputDsrColumns.DSR_DERATING_CURVE_ID]
             weight = row[InputDsrColumns.NET_MAX_GEN_CAP]
 
-            dict_of_weight.setdefault(area, {}).setdefault(dsr_cluster_id, {})[derating_id] = weight
+            dict_of_weight.setdefault(area, {})[derating_id] = weight
 
         return dict_of_weight
 
@@ -153,46 +149,41 @@ class DsrCapacityModulationParser:
         """
         result: DsrWeightTsRepartition = {}
 
-        for zone_id, sectors in index_of_weight.items():
-            for sector_id, deratings in sectors.items():
-                for derating_id, weight in deratings.items():
-                    uid_name = index_derating_data.index.get(zone_id, {}).get(derating_id)
+        for zone_id, deratings in index_of_weight.items():
+            for derating_id, weight in deratings.items():
+                uid_name = index_derating_data.index.get(zone_id, {}).get(derating_id)
 
-                    if uid_name is None:
-                        series_df = pd.DataFrame({"col": [1] * 8760})
-                    else:
-                        series_df = index_derating_data.data[uid_name]
+                if uid_name is None:
+                    series_df = pd.DataFrame({"col": [1] * 8760})
+                else:
+                    series_df = index_derating_data.data[uid_name]
 
-                    # compute mean of several time series if necessary
-                    if len(series_df.columns) > 1:
-                        series = series_df.mean(axis=1)
-                    else:
-                        series = series_df.iloc[:, 0]
+                # compute mean of several time series if necessary
+                if len(series_df.columns) > 1:
+                    series = series_df.mean(axis=1)
+                else:
+                    series = series_df.iloc[:, 0]
 
-                    (
-                        result.setdefault(zone_id, {})
-                        .setdefault(sector_id, {})
-                        .setdefault(derating_id, [])
-                        .append(TimeSeriesAndClusterPair(weight=weight, series=series))
-                    )
+                (
+                    result.setdefault(zone_id, {})
+                    .setdefault(derating_id, [])
+                    .append(TimeSeriesAndClusterPair(weight=weight, series=series))
+                )
 
         return result
 
     def _build_pegase_dataframe(self, data_repartition: DsrWeightTsRepartition) -> pd.DataFrame:
         result: dict[str, pd.Series] = {}
 
-        for area, dsrclusters in data_repartition.items():
-            i = 1
-            for dsrcluster_id, deratings in dsrclusters.items():
-                for derating_id, pair_of_weights in deratings.items():
-                    ts_value = pair_of_weights[0].series * pair_of_weights[0].weight
-                    ts_name = f"{area}_DSR{i}"
-                    result[ts_name] = ts_value
-                i += 1
+        for area, deratings in data_repartition.items():
+            for derating_id, pair_time_series_weights in deratings.items():
+                ts_value = pair_time_series_weights[0].series * pair_time_series_weights[0].weight
+                ts_name = f"{area}_DSR"
+                result[ts_name] = ts_value
 
         df_result = pd.DataFrame(result)
 
-        # Add the Hours columns
+        # Add the Hours columns + reindex with business format
         reindex_df = insert_str_date_time_reindex(df_result, OUTPUT_DATE_INT_REFERENCE, DSR_EXPORT_DATE_COLUMN)
 
         return reindex_df
