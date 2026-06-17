@@ -56,13 +56,19 @@ class InternalIndexTsMapping:
 
 # need weight indexed to compute weighted average with time series then
 AntaresCodeId: TypeAlias = str
+PemmdbPlantTypeId: TypeAlias = str
+
 ClusterId: TypeAlias = str
 WeightValue: TypeAlias = float
 WeightedAverageTS: TypeAlias = pd.Series
 
-# aggregated data must be indexed by zone/antares_code/cluster/curve to match with index/ts data indexed only with zone
-IndexClusterWeight: TypeAlias = dict[ZoneId, dict[AntaresCodeId, dict[ClusterId, dict[CurveId, WeightValue]]]]
-IndexTimeSeriesWeightedAverage: TypeAlias = dict[AntaresCodeId, dict[ClusterId, WeightedAverageTS]]
+# aggregated data must be indexed by zone/antares_code/cluster pemmdb/cluster/curve to match with index/ts data indexed only with zone
+IndexClusterWeight: TypeAlias = dict[
+    ZoneId, dict[AntaresCodeId, dict[tuple[PemmdbPlantTypeId, ClusterId], dict[CurveId, WeightValue]]]
+]
+IndexTimeSeriesWeightedAverage: TypeAlias = dict[
+    AntaresCodeId, dict[tuple[PemmdbPlantTypeId, ClusterId], WeightedAverageTS]
+]
 
 
 class LoadFactorParser:
@@ -113,7 +119,12 @@ class LoadFactorParser:
         name_col_curve_id = InputMiscColumns.CURVE_ID.value
         name_col_capacity = InputMiscColumns.NET_MAX_GEN_CAP.value
 
-        group_cols = [InputMiscColumns.ZONE, ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN]
+        group_cols = [
+            InputMiscColumns.ZONE,
+            ANTARES_NODE_NAME_COLUMN,
+            InputMiscColumns.PEMMDB_PLANT_TYPE,
+            ANTARES_CLUSTER_NAME_COLUMN,
+        ]
         subgroup_cols = group_cols + [name_col_curve_id]
 
         # Aggregate capacity by (zone, antares code, cluster, curve)
@@ -135,11 +146,14 @@ class LoadFactorParser:
         for _, row in df_weights.iterrows():
             zone = row[InputMiscColumns.ZONE]
             area = row[ANTARES_NODE_NAME_COLUMN]
+            pemmdb_cluster = row[InputMiscColumns.PEMMDB_PLANT_TYPE]
             cluster = row[ANTARES_CLUSTER_NAME_COLUMN]
             curve = row[name_col_curve_id]
             weight = row[name_col_capacity]
 
-            dict_of_weight.setdefault(zone, {}).setdefault(area, {}).setdefault(cluster, {})[curve] = weight
+            dict_of_weight.setdefault(zone, {}).setdefault(area, {}).setdefault((pemmdb_cluster, cluster), {})[
+                curve
+            ] = weight
 
         return dict_of_weight
 
@@ -149,8 +163,8 @@ class LoadFactorParser:
         result: IndexTimeSeriesWeightedAverage = {}
 
         for zone_id, antares_data in IndexWeightCluster.items():
-            for antares_id, clusters in antares_data.items():
-                for cluster_id, curves in clusters.items():
+            for antares_id, tuple_clusters in antares_data.items():
+                for cluster_id, curves in tuple_clusters.items():
                     # Init for aggregated series by cluster
                     cluster_ts = pd.Series(0.0, index=range(8760))
 
@@ -173,9 +187,11 @@ class LoadFactorParser:
 
         return result
 
-    def _build_pegase_dataframe(self, data_repartition: IndexTimeSeriesWeightedAverage) -> dict[str, pd.DataFrame]:
+    def _build_pegase_dataframe(
+        self, data_repartition: IndexTimeSeriesWeightedAverage
+    ) -> dict[tuple[str, str], pd.DataFrame]:
         # rebuild group by cluster
-        clusters_data: dict[ClusterId, dict[AntaresCodeId, pd.Series]] = {}
+        clusters_data: dict[tuple[PemmdbPlantTypeId, ClusterId], dict[AntaresCodeId, pd.Series]] = {}
 
         for antares_id, clusters in data_repartition.items():
             for cluster_id, ts in clusters.items():
@@ -185,7 +201,7 @@ class LoadFactorParser:
                 clusters_data[cluster_id][antares_id] = ts
 
         # return for each cluster a dataframe formatted with all the time series
-        result: dict[str, pd.DataFrame] = {}
+        result: dict[tuple[str, str], pd.DataFrame] = {}
         for cluster_id, columns in clusters_data.items():
             df_cluster = pd.DataFrame(columns)
 
@@ -196,11 +212,18 @@ class LoadFactorParser:
 
         return result
 
-    def _export_load_factor(self, index_of_df_year: dict[int, dict[ClusterId, pd.DataFrame]]) -> None:
+    def _export_load_factor(
+        self, index_of_df_year: dict[int, dict[tuple[PemmdbPlantTypeId, ClusterId], pd.DataFrame]]
+    ) -> None:
         root_file_path = self.output_folder / MISC_LOAD_FACTOR_FOLDER
         for year, df_year in index_of_df_year.items():
             for cluster_id, df_cluster in df_year.items():
-                file_path = root_file_path / cluster_id / f"load_factor_{cluster_id}_{year - 1}-{year}.csv"
+                file_path = (
+                    root_file_path
+                    / cluster_id[0]
+                    / cluster_id[1]
+                    / f"load_factor_{cluster_id[1]}_{year - 1}-{year}.csv"
+                )
                 write_csv_file(file_path, df_cluster)
 
     def build_load_factor(self, df_misc_filtered: pd.DataFrame) -> None:
@@ -211,7 +234,7 @@ class LoadFactorParser:
         df_ts = pd.read_csv(self.input_folder / LOAD_FACTOR_FILE_TS_NAME)
 
         # treatments for every year
-        index_of_df_pegase: dict[int, dict[ClusterId, pd.DataFrame]] = {}
+        index_of_df_pegase: dict[int, dict[tuple[PemmdbPlantTypeId, ClusterId], pd.DataFrame]] = {}
         for year in self.years:
             # group index filtered by year + time series (raw data)
             index_mapping_year = self._build_index_mapping_year(df_index, year)
