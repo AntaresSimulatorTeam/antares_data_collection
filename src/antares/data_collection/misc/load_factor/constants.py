@@ -11,6 +11,8 @@
 # This file is part of the Antares project.
 from enum import StrEnum
 
+from antares.data_collection.misc.installed_power.constants import MISC_ROOT_FOLDER
+
 LOAD_FACTOR_FILE_INDEX_NAME = "Other RES Hourly Index.csv"
 LOAD_FACTOR_FILE_TS_NAME = "Other RES Hourly.csv"
 
@@ -23,3 +25,5 @@ class InputLoadFactorIndexColumns(StrEnum):
 
 
 EXPORT_DATE_COLUMN = "date"
+
+MISC_LOAD_FACTOR_FOLDER = MISC_ROOT_FOLDER / "load factor" / "PEMMDB"

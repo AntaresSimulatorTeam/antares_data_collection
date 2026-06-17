@@ -26,6 +26,7 @@ from antares.data_collection.misc.load_factor.constants import (
     EXPORT_DATE_COLUMN,
     LOAD_FACTOR_FILE_INDEX_NAME,
     LOAD_FACTOR_FILE_TS_NAME,
+    MISC_LOAD_FACTOR_FOLDER,
     InputLoadFactorIndexColumns,
 )
 from antares.data_collection.referential_data.main_params import MainParams
@@ -34,6 +35,7 @@ from antares.data_collection.utils import (
     filter_out_based_on_year,
     insert_str_date_time_reindex,
     parse_input_file,
+    write_csv_file,
 )
 
 # build structured index
@@ -177,10 +179,9 @@ class LoadFactorParser:
 
         for antares_id, clusters in data_repartition.items():
             for cluster_id, ts in clusters.items():
-                # On initialise le dictionnaire du cluster si besoin
+                # rebuild index to structure data by cluster
                 if cluster_id not in clusters_data:
                     clusters_data[cluster_id] = {}
-                # On ajoute la TS avec le code Antares comme nom de colonne futur
                 clusters_data[cluster_id][antares_id] = ts
 
         # return for each cluster a dataframe formatted with all the time series
@@ -194,6 +195,13 @@ class LoadFactorParser:
             result[cluster_id] = df_formatted
 
         return result
+
+    def _export_load_factor(self, index_of_df_year: dict[int, dict[ClusterId, pd.DataFrame]]) -> None:
+        root_file_path = self.output_folder / MISC_LOAD_FACTOR_FOLDER
+        for year, df_year in index_of_df_year.items():
+            for cluster_id, df_cluster in df_year.items():
+                file_path = root_file_path / cluster_id / f"load_factor_{cluster_id}_{year - 1}-{year}.csv"
+                write_csv_file(file_path, df_cluster)
 
     def build_load_factor(self, df_misc_filtered: pd.DataFrame) -> None:
         # parsing index file
@@ -219,6 +227,8 @@ class LoadFactorParser:
                 index_ts_dataclass_year, index_cluster_weight
             )
 
-            # final df with PEgase format
+            # final df with Pegase format
             index_cluster_df = self._build_pegase_dataframe(index_ts_weighted_average)
             index_of_df_pegase[year] = index_cluster_df
+
+        self._export_load_factor(index_of_df_pegase)
