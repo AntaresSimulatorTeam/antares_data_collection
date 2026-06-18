@@ -11,7 +11,7 @@
 # This file is part of the Antares project.
 from enum import StrEnum
 
-from antares.data_collection.misc.installed_power.constants import MISC_ROOT_FOLDER
+from antares.data_collection.misc.constants import MISC_ROOT_FOLDER
 
 LOAD_FACTOR_FILE_INDEX_NAME = "Other RES Hourly Index.csv"
 LOAD_FACTOR_FILE_TS_NAME = "Other RES Hourly.csv"

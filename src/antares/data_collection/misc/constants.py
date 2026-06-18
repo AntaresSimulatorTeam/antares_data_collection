@@ -10,6 +10,7 @@
 #
 # This file is part of the Antares project.
 from enum import StrEnum
+from pathlib import Path
 
 MISC_INPUT_FILE = "Renewables.csv"
 
@@ -24,3 +25,6 @@ class InputMiscColumns(StrEnum):
     NET_MAX_GEN_CAP = "NET_MAX_GEN_CAP"
     PEMMDB_PLANT_TYPE = "PEMMDB_PLANT_TYPE"
     CURVE_ID = "CURVE_ID"
+
+
+MISC_ROOT_FOLDER = Path("MISC")
