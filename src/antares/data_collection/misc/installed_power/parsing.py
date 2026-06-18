@@ -14,7 +14,7 @@ from typing import TypeAlias
 
 import pandas as pd
 
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS
+from antares.data_collection.constants import ANTARES_CLUSTER_NAME_COLUMN, ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS
 from antares.data_collection.misc.constants import InputMiscColumns
 from antares.data_collection.misc.installed_power.constants import (
     MISC_CATEGORY_NAME,
@@ -23,7 +23,7 @@ from antares.data_collection.misc.installed_power.constants import (
     OutputMiscPowerColumns,
 )
 from antares.data_collection.referential_data.main_params import MainParams
-from antares.data_collection.utils import ANTARES_CLUSTER_NAME_COLUMN, filter_out_based_on_year
+from antares.data_collection.utils import filter_out_based_on_year
 
 AntaresNodeId: TypeAlias = str
 PemmdbPlantTypeId: TypeAlias = str

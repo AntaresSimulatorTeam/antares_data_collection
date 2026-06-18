@@ -13,11 +13,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from antares.data_collection.constants import ANTARES_CLUSTER_NAME_COLUMN
 from antares.data_collection.misc.constants import MISC_INPUT_FILE, InputMiscColumns
 from antares.data_collection.misc.installed_power.parsing import MiscInstalledPowerParser
+from antares.data_collection.misc.load_factor.parsing import LoadFactorParser
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
-    ANTARES_CLUSTER_NAME_COLUMN,
     add_code_antares_colum,
     filter_based_on_commission_date,
     filter_based_on_net_max_gen_cap,
@@ -82,4 +83,8 @@ class MiscParser:
 
     def build_misc_installed_power_part(self) -> None:
         parser = MiscInstalledPowerParser(self.output_folder, self.main_params, self.years)
-        parser.build_misc_installed_power(self._build_filtered_dataframe())
+        parser.build_misc_installed_power(self.filtered_dataframe)
+
+    def build_misc_load_factor_part(self) -> None:
+        parser = LoadFactorParser(self.input_folder, self.output_folder, self.main_params, self.years)
+        parser.build_load_factor(self.filtered_dataframe)
