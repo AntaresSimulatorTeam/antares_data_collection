@@ -83,8 +83,8 @@ class MiscParser:
 
     def build_misc_installed_power_part(self) -> None:
         parser = MiscInstalledPowerParser(self.output_folder, self.main_params, self.years)
-        parser.build_misc_installed_power(self._build_filtered_dataframe())
+        parser.build_misc_installed_power(self.filtered_dataframe)
 
     def build_misc_load_factor_part(self) -> None:
         parser = LoadFactorParser(self.input_folder, self.output_folder, self.main_params, self.years)
-        parser.build_load_factor(self._build_filtered_dataframe())
+        parser.build_load_factor(self.filtered_dataframe)

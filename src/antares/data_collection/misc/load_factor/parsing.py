@@ -107,7 +107,6 @@ class LoadFactorParser:
         return mapping
 
     def _build_index_weight_year(self, df: pd.DataFrame, year: int) -> IndexClusterWeight:
-        # filter data from MiscParser
         df = filter_out_based_on_year(
             df,
             year,
@@ -158,11 +157,11 @@ class LoadFactorParser:
         return dict_of_weight
 
     def _build_index_ts_weighted_average_year(
-        self, IndexMapping: InternalIndexTsMapping, IndexWeightCluster: IndexClusterWeight
+        self, index_mapping: InternalIndexTsMapping, index_weight_cluster: IndexClusterWeight
     ) -> IndexTimeSeriesWeightedAverage:
         result: IndexTimeSeriesWeightedAverage = {}
 
-        for zone_id, antares_data in IndexWeightCluster.items():
+        for zone_id, antares_data in index_weight_cluster.items():
             for antares_id, tuple_clusters in antares_data.items():
                 for cluster_id, curves in tuple_clusters.items():
                     # Init for aggregated series by cluster
@@ -170,13 +169,13 @@ class LoadFactorParser:
 
                     for curve_id, weight in curves.items():
                         # get name(s) of ts uid(s)
-                        uids = IndexMapping.index.get(zone_id, {}).get(curve_id, [])
+                        uids = index_mapping.index.get(zone_id, {}).get(curve_id, [])
 
                         if not uids:
                             # default series if no mapping
                             series = pd.Series(1.0, index=range(8760))
                         else:
-                            series_df = IndexMapping.data[uids]
+                            series_df = index_mapping.data[uids]
                             # apply mean if multi uids for one curve_id
                             series = series_df.mean(axis=1)
 
@@ -220,8 +219,8 @@ class LoadFactorParser:
             for cluster_id, df_cluster in df_year.items():
                 file_path = (
                     root_file_path
-                    / cluster_id[0]
                     / cluster_id[1]
+                    / cluster_id[0]
                     / f"load_factor_{cluster_id[1]}_{year - 1}-{year}.csv"
                 )
                 write_csv_file(file_path, df_cluster)
@@ -242,7 +241,6 @@ class LoadFactorParser:
             # structure index and time series dataclass
             index_ts_dataclass_year = InternalIndexTsMapping(index=index_mapping_year, data=df_ts)
 
-            # buil dictionary with weight by zone/cluster/curve from MiscParser data frame
             index_cluster_weight = self._build_index_weight_year(df_misc_filtered, year)
 
             # build dictionary with zone/cluster who contains weighted average time series
