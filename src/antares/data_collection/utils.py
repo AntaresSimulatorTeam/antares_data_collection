@@ -253,6 +253,11 @@ def insert_str_date_time_reindex(df: pd.DataFrame, year: int, datetime_column_na
     starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
     time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
     first_index = time_delta.days * 24
+
+    # manage leap year case
+    if (year - 1) % 4 == 0 and ((year - 1) % 100 != 0 or (year - 1) % 400 == 0):
+        first_index -= 24
+
     new_index = list(range(first_index, len(new_df))) + list(range(0, first_index))
     reindex_df = new_df.reindex(new_index)
 
