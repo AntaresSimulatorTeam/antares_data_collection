@@ -13,6 +13,8 @@
 from enum import StrEnum
 from pathlib import Path
 
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN
+
 # DSR CLUSTER
 DSR_INPUT_FILE = "DSR.csv"
 DSR_EXPORT_ROOT_DIR = Path("DSR")
@@ -31,3 +33,7 @@ class InputDsrColumns(StrEnum):
     DSR_TYPE = "DSR_TYPE"
     MAX_HOURS = "MAX_HOURS"
     ACT_PRICE_DA = "ACT_PRICE_DA"
+
+
+# used to compute installed capacities + compute weights for capacity modulation
+DSR_INDEX_GROUP_COLUMNS = ANTARES_NODE_NAME_COLUMN

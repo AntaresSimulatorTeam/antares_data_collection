@@ -19,6 +19,7 @@ from typing import Callable, TypeAlias
 import pandas as pd
 
 from antares.data_collection.constants import (
+    ANTARES_CLUSTER_NAME_COLUMN,
     ANTARES_NODE_NAME_COLUMN,
     OUTPUT_DATE_INT_REFERENCE,
     SCENARIO_TO_ALWAYS_CONSIDER,
@@ -51,7 +52,6 @@ from antares.data_collection.thermal.utils import (
     get_path_capacity_modulation_file,
 )
 from antares.data_collection.utils import (
-    ANTARES_CLUSTER_NAME_COLUMN,
     filter_based_on_study_scenarios,
     filter_index_files_with_scenario_year,
     filter_out_based_on_year,
