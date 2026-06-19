@@ -10,7 +10,7 @@
 #
 # This file is part of the Antares project.
 from pathlib import Path
-from typing import Any, Sequence, TypeAlias, cast
+from typing import Any, TypeAlias
 
 import pandas as pd
 
@@ -29,7 +29,6 @@ from antares.data_collection.thermal.specific_param.constants import (
     SPECIFIC_PARAM_FOLDER,
     SPECIFIC_PARAM_NAME_FILE,
     OutputThermalSpecificColumns,
-    header_before_header,
     weighted_avg,
 )
 from antares.data_collection.thermal.utils import (
@@ -335,35 +334,7 @@ class ThermalSpecificParamParser:
                     by=[OutputThermalSpecificColumns.NODE, OutputThermalSpecificColumns.CLUSTER]
                 ).drop(columns=["YEAR"])
 
-                # insert first line of label values
-                cols = list(year_df.columns)
-
-                # mapping to build new header
-                header_before_header_typed = cast(dict[str, Sequence[str]], header_before_header)
-
-                header_df = pd.DataFrame(
-                    [
-                        [header_before_header_typed.get(c, ["", ""])[0] for c in cols],
-                        [header_before_header_typed.get(c, ["", ""])[1] for c in cols],
-                    ],
-                    columns=cols,
-                )
-
-                # build a data frame with previous header
-                old_header_df = pd.DataFrame([cols], columns=cols)
-
-                # concat all DF + export
-                result = pd.concat(
-                    [header_df, old_header_df, year_df],
-                    ignore_index=True,
-                )
-
-                result.to_excel(
-                    writer,
-                    sheet_name=sheet_name,
-                    index=False,
-                    header=False,
-                )
+                year_df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     def _parse_capacity_ts_modulation_file(
         self,
