@@ -9,6 +9,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import calendar
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
@@ -248,9 +250,15 @@ def insert_str_date_time_reindex(df: pd.DataFrame, year: int, datetime_column_na
     # We want our dataframe to start on the 1st of July at midnight for PEGASE.
     # So we have to reindex it at the right index
     new_df = df.copy()
-    starting_time = pd.Timestamp(year=year - 1, month=7, day=1, hour=0)
-    time_delta = starting_time - pd.Timestamp(year=year - 1, month=1, day=1, hour=0)
+    pegase_year = year - 1
+    starting_time = pd.Timestamp(year=pegase_year, month=7, day=1, hour=0)
+    time_delta = starting_time - pd.Timestamp(year=pegase_year, month=1, day=1, hour=0)
     first_index = time_delta.days * 24
+
+    # manage leap year case
+    if calendar.isleap(pegase_year):
+        first_index -= 24
+
     new_index = list(range(first_index, len(new_df))) + list(range(0, first_index))
     reindex_df = new_df.reindex(new_index)
 
