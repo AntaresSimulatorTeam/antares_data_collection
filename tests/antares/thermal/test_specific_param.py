@@ -59,17 +59,18 @@ def test_nominal_case(tmp_path: Path) -> None:
     file_wb = pd.ExcelFile(generated_file_path)
     sheet_names = file_wb.sheet_names
 
-    generated_df = pd.read_excel(generated_file_path, sheet_name=sheet_names)
-    assert list(generated_df.keys()) == ["2029-2030", "2034-2035"]
+    assert sheet_names == ["2029-2030", "2034-2035"]
 
     # Compare its content with the expected one for any sheet
     expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_param_PEMMDB.xlsx"
     expected_excel_wb = pd.ExcelFile(expected_file_path)
     # 2030
-    sheet_name = list(generated_df.keys())[0]
+    sheet_name = sheet_names[0]
     expected_df_2030 = pd.read_excel(expected_excel_wb, sheet_name)
-    pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2030, check_dtype=False)
+    generated_df_2030 = pd.read_excel(generated_file_path, sheet_name=sheet_name)
+    pd.testing.assert_frame_equal(generated_df_2030, expected_df_2030, check_dtype=False)
     # 2035
-    sheet_name = list(generated_df.keys())[1]
+    sheet_name = sheet_names[1]
     expected_df_2035 = pd.read_excel(expected_file_path, sheet_name)
-    pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2035, check_dtype=False)
+    generated_df_2035 = pd.read_excel(generated_file_path, sheet_name=sheet_name)
+    pd.testing.assert_frame_equal(generated_df_2035, expected_df_2035, check_dtype=False)

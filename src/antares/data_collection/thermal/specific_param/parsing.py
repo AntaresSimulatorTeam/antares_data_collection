@@ -197,6 +197,8 @@ class ThermalSpecificParamParser:
             OutputThermalSpecificColumns.MARKET_BID: [],
             OutputThermalSpecificColumns.MR_SPECIFIC: [],
             OutputThermalSpecificColumns.CM_SPECIFIC: [],
+            OutputThermalSpecificColumns.NPO_MAX_WINTER: [],
+            OutputThermalSpecificColumns.NPO_MAX_SUMMER: [],
             OutputThermalSpecificColumns.NB_UNIT: [],
             **{col: [] for col in F_COLUMNS},
             **{col: [] for col in P_COLUMNS},
@@ -297,6 +299,8 @@ class ThermalSpecificParamParser:
                 output_data[OutputThermalSpecificColumns.MARKET_BID].append(pd.NA)
                 output_data[OutputThermalSpecificColumns.MR_SPECIFIC].append(mr_specific)
                 output_data[OutputThermalSpecificColumns.CM_SPECIFIC].append(cm_specific)
+                output_data[OutputThermalSpecificColumns.NPO_MAX_WINTER].append(0)
+                output_data[OutputThermalSpecificColumns.NPO_MAX_SUMMER].append(0)
                 output_data[OutputThermalSpecificColumns.NB_UNIT].append(nb_unit)
                 for col in F_COLUMNS:
                     output_data[col].append(fo_rate)
@@ -324,11 +328,7 @@ class ThermalSpecificParamParser:
                     by=[OutputThermalSpecificColumns.NODE, OutputThermalSpecificColumns.CLUSTER]
                 ).drop(columns=["YEAR"])
 
-                year_df.to_excel(
-                    writer,
-                    sheet_name=sheet_name,
-                    index=False,
-                )
+                year_df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     def _parse_capacity_ts_modulation_file(
         self,
