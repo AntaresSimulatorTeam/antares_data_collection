@@ -158,7 +158,6 @@ class ThermalSpecificParamParser:
             InputThermalColumns.DECOMMISSIONING_DATE_EXPECTED,
             ANTARES_CLUSTER_NAME_COLUMN,
             ANTARES_NODE_NAME_COLUMN,
-            InputThermalColumns.PEMMDB_TECHNOLOGY,
             InputThermalColumns.NET_MAX_GEN_CAP,
             InputThermalColumns.STD_EFF_NCV,
             InputThermalColumns.FORCED_OUTAGE_RATE,
@@ -181,13 +180,10 @@ class ThermalSpecificParamParser:
         years = self.years
         years_date_format: dict[int, pd.Timestamp] = {year: pd.Timestamp(year=year, month=1, day=1) for year in years}
 
-        grouped_dfs = df.groupby(
-            [ANTARES_NODE_NAME_COLUMN, InputThermalColumns.PEMMDB_TECHNOLOGY, ANTARES_CLUSTER_NAME_COLUMN]
-        )
+        grouped_dfs = df.groupby([ANTARES_NODE_NAME_COLUMN, ANTARES_CLUSTER_NAME_COLUMN])
 
         output_data: dict[str, list[Any]] = {
             OutputThermalSpecificColumns.NODE: [],
-            OutputThermalSpecificColumns.CLUSTER_PEMMDB: [],
             OutputThermalSpecificColumns.CLUSTER: [],
             "YEAR": [],
             OutputThermalSpecificColumns.MIN_STABLE_GEN: [],
@@ -208,10 +204,9 @@ class ThermalSpecificParamParser:
             **{col: [] for col in P_COLUMNS},
         }
 
-        for (antares_node, pemmdb_source_cluster, cluster_name), grouped_df in grouped_dfs:
+        for (antares_node, cluster_name), grouped_df in grouped_dfs:
             for year, year_date in years_date_format.items():
                 assert isinstance(antares_node, str)
-                assert isinstance(pemmdb_source_cluster, str)
                 assert isinstance(cluster_name, str)
 
                 mask = (grouped_df[InputThermalColumns.COMMISSIONING_DATE] <= year_date) & (
@@ -290,7 +285,6 @@ class ThermalSpecificParamParser:
 
                 # ---- store result ----
                 output_data[OutputThermalSpecificColumns.NODE].append(antares_node)
-                output_data[OutputThermalSpecificColumns.CLUSTER_PEMMDB].append(pemmdb_source_cluster)
                 output_data[OutputThermalSpecificColumns.CLUSTER].append(cluster_name)
                 output_data["YEAR"].append(year)
 
