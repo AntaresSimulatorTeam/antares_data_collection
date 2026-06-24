@@ -1,0 +1,38 @@
+# Copyright (c) 2024, RTE (https://www.rte-france.com)
+#
+# See AUTHORS.txt
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# SPDX-License-Identifier: MPL-2.0
+#
+# This file is part of the Antares project.
+
+import time
+
+from pathlib import Path
+
+from antares.data_collection import parse_main_params
+from antares.data_collection.batteries.parsing import BatteriesParser
+from tests.conftest import RESOURCE_PATH
+
+
+def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
+    # Use the real MainParams file
+    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+
+    # Build a DSR cluster capacity file
+    parser = BatteriesParser(
+        RESOURCE_PATH,
+        tmp_path,
+        main_params,
+        [2030, 2035],
+    )
+
+    start = time.time()
+
+    end = time.time()
+    print("Duration DSR Cluster", end - start)
+
