@@ -15,6 +15,15 @@ from enum import StrEnum
 # Global
 BATTERIES_INPUT_FILE = "Batteries.csv"
 
+# Default values parameters
+PEMMDB_PLANT_TYPE_MARKET = ["Battery utility scale"]
+OP_STAT_MARKET = ["Available on market"]
+PEMMDB_PLANT_TYPE_RESIDENTIAL = ["Battery residential"]
+OP_STAT_RESIDENTIAL = ["Available on market", "Out of market - for PV/battery dispatch optimization"]
+
+# Output values parameters
+GROUP_VALUES = ["battery", "battery_out"]
+
 
 class InputBatteriesColumns(StrEnum):
     ZONE = "ZONE"
@@ -27,3 +36,19 @@ class InputBatteriesColumns(StrEnum):
     NET_MAX_CAP_GEN = "NET_MAX_CAP_GEN"
     NET_MAX_CAP_DEM = "NET_MAX_CAP_DEM"
     STO_CAP = "STO_CAP"
+
+
+class OutputBatteriesColumns(StrEnum):
+    AREA = "Area"
+    NAME = "Name"
+    GROUP = "Group"
+    INJECTION = "Injection"
+    WITHDRAWAL = "Withdrawal"
+    STORAGE = "Storage"
+    EFFICIENCY_INJECTION = "Efficiency_injection"
+    EFFICIENCY_WITHDRAWAL = "Efficiency_withdrawal"
+    INITIAL_LEVEL = "Initial_level"
+    INITIAL_LEVEL_OPTIM = "Initial_level_optim"
+    ENABLED = "Enabled"
+    SERIES = "Series"
+    CONSTRAINTS = "Constraints"

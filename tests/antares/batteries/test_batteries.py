@@ -32,7 +32,6 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     )
 
     start = time.time()
-
+    parser.build_batteries()
     end = time.time()
-    print("Duration DSR Cluster", end - start)
-
+    print("Duration BATTERIES", end - start)
