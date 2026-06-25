@@ -11,9 +11,13 @@
 # This file is part of the Antares project.
 
 from enum import StrEnum
+from pathlib import Path
 
-# Global
+# Input
 BATTERIES_INPUT_FILE = "Batteries.csv"
+
+# Output
+BATTERIES_FOLDER = Path("Battery")
 
 # Default values parameters
 PEMMDB_PLANT_TYPE_MARKET = ["Battery utility scale"]

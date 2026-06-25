@@ -165,6 +165,22 @@ class BatteriesParser:
 
         return aggregate_df[list(OutputBatteriesColumns)]
 
+    # def _export_batteries(self, dict_of_df: dict[int, pd.DataFrame]) -> None:
+    #     parent_dir = self.output_folder / BATTERIES_FOLDER
+    #     parent_dir.mkdir(parents=True, exist_ok=True)
+    #
+    #     output_path = parent_dir / DSR_NAME_FILE
+    #
+    #     with pd.ExcelWriter(output_path) as writer:
+    #         for year, df in dict_of_df.items():
+    #             sheet_name = str(year)
+    #
+    #             df.to_excel(
+    #                 writer,
+    #                 sheet_name=sheet_name,
+    #                 index=False,
+    #             )
+
     def build_batteries(self) -> None:
         df = self._build_filtered_batteries_dataframe()
 
