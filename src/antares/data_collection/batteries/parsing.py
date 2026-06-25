@@ -18,6 +18,13 @@ import pandas as pd
 
 from antares.data_collection.batteries.constants import (
     BATTERIES_INPUT_FILE,
+    DEFAULT_CONSTRAINTS,
+    DEFAULT_EFFICIENCY_WITHDRAWAL,
+    DEFAULT_INITIAL_LEVEL,
+    DEFAULT_INITIAL_LEVEL_OPTIM,
+    DEFAULT_NAME,
+    DEFAULT_SERIES,
+    EFFICIENCY_INJECTION,
     GROUP_VALUES,
     OP_STAT_MARKET,
     OP_STAT_RESIDENTIAL,
@@ -26,7 +33,7 @@ from antares.data_collection.batteries.constants import (
     InputBatteriesColumns,
     OutputBatteriesColumns,
 )
-from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN
+from antares.data_collection.constants import ANTARES_NODE_NAME_COLUMN, MAX_DECIMAL_DIGITS, YearId
 from antares.data_collection.referential_data.main_params import MainParams
 from antares.data_collection.utils import (
     add_code_antares_colum,
@@ -35,6 +42,7 @@ from antares.data_collection.utils import (
     filter_based_on_op_stat,
     filter_based_on_study_scenarios,
     filter_non_declared_areas,
+    filter_out_based_on_year,
     parse_input_file,
 )
 
@@ -53,6 +61,7 @@ class BatteriesParser:
         op_stat_market: list[str] = OP_STAT_MARKET,
         pemmdb_plant_type_residential: list[str] = PEMMDB_PLANT_TYPE_RESIDENTIAL,
         op_stat_residential: list[str] = OP_STAT_RESIDENTIAL,
+        efficiency_injection: float = EFFICIENCY_INJECTION,
     ):
         self.input_folder = input_folder
         self.output_folder = output_folder
@@ -61,6 +70,7 @@ class BatteriesParser:
         self.op_stat_market = op_stat_market
         self.pemmdb_plant_type_residential = pemmdb_plant_type_residential
         self.op_stat_residential = op_stat_residential
+        self.efficiency_injection = efficiency_injection
         self.years = years
         self.filtered_dataframe = self._build_filtered_batteries_dataframe()
 
@@ -85,18 +95,17 @@ class BatteriesParser:
 
         return df
 
-    def _compute_batteries_duration_capacities(self, df: pd.DataFrame) -> IndexStockDuration:
-        result: IndexStockDuration = {}
-        for _, row in df.iterrows():
-            hour_stock = row.STO_CAP / row.NET_MAX_CAP_GEN
-            result[row[ANTARES_NODE_NAME_COLUMN]] = hour_stock
+    def _compute_aggregated_columns_year(self, df: pd.DataFrame, year: int) -> pd.DataFrame:
+        # filter for a year
+        df = filter_out_based_on_year(
+            df, year, InputBatteriesColumns.COMMISSIONING_DATE, InputBatteriesColumns.DECOMMISSIONING_DATE_EXPECTED
+        )
 
-        return result
-
-    def _build_pegase_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         # duration capacity
         DURATION_CAPACITY_COL = "HOUR_STO"
-        df[DURATION_CAPACITY_COL] = round(df[InputBatteriesColumns.STO_CAP] / df[InputBatteriesColumns.NET_MAX_CAP_GEN])
+        df[DURATION_CAPACITY_COL] = (
+            df[InputBatteriesColumns.STO_CAP] / df[InputBatteriesColumns.NET_MAX_CAP_GEN]
+        ).round()
 
         # Define conditions
         conditions = [
@@ -115,15 +124,51 @@ class BatteriesParser:
         df[OutputBatteriesColumns.GROUP] = np.select(conditions, choices, default="unknown")
 
         # Group by multiple columns and sum
-        grouped_df = (
+        aggregate_df = (
             df.groupby([ANTARES_NODE_NAME_COLUMN, OutputBatteriesColumns.GROUP, DURATION_CAPACITY_COL])
-            .agg(**{OutputBatteriesColumns.EFFICIENCY_INJECTION.value: (InputBatteriesColumns.NET_MAX_CAP_DEM, "sum")})
+            .agg(
+                **{
+                    OutputBatteriesColumns.INJECTION.value: (InputBatteriesColumns.NET_MAX_CAP_DEM, "sum"),
+                    OutputBatteriesColumns.WITHDRAWAL.value: (InputBatteriesColumns.NET_MAX_CAP_GEN, "sum"),
+                    OutputBatteriesColumns.STORAGE.value: (InputBatteriesColumns.STO_CAP, "sum"),
+                }
+            )
+            .round(MAX_DECIMAL_DIGITS)
             .reset_index()
+            .rename(columns={ANTARES_NODE_NAME_COLUMN: OutputBatteriesColumns.AREA})
         )
 
-        return grouped_df
+        # build column "NAME"
+        # "battery"
+        name_with_duration = (
+            aggregate_df[OutputBatteriesColumns.GROUP].astype(str)
+            + "_"
+            + aggregate_df[DURATION_CAPACITY_COL].astype(int).astype(str)
+        )
+
+        aggregate_df[OutputBatteriesColumns.NAME] = np.where(
+            aggregate_df[OutputBatteriesColumns.GROUP] == GROUP_VALUES[0], name_with_duration, DEFAULT_NAME
+        )
+
+        # Add static columns
+        aggregate_df[OutputBatteriesColumns.EFFICIENCY_INJECTION] = self.efficiency_injection
+        aggregate_df[OutputBatteriesColumns.EFFICIENCY_WITHDRAWAL] = DEFAULT_EFFICIENCY_WITHDRAWAL
+        aggregate_df[OutputBatteriesColumns.INITIAL_LEVEL] = DEFAULT_INITIAL_LEVEL
+        aggregate_df[OutputBatteriesColumns.INITIAL_LEVEL_OPTIM] = DEFAULT_INITIAL_LEVEL_OPTIM
+
+        aggregate_df[OutputBatteriesColumns.ENABLED] = np.where(
+            aggregate_df[OutputBatteriesColumns.GROUP] == GROUP_VALUES[0], True, False
+        )
+
+        aggregate_df[OutputBatteriesColumns.SERIES] = DEFAULT_SERIES
+        aggregate_df[OutputBatteriesColumns.CONSTRAINTS] = DEFAULT_CONSTRAINTS
+
+        return aggregate_df[list(OutputBatteriesColumns)]
 
     def build_batteries(self) -> None:
         df = self._build_filtered_batteries_dataframe()
-        # index_stock_duaration = self._compute_batteries_duration_capacities(df)
-        df = self._build_pegase_dataframe(df)
+
+        years = sorted(self.years)
+        res: dict[YearId, pd.DataFrame] = {}
+        for year in years:
+            res[year] = self._compute_aggregated_columns_year(df, year)

@@ -20,6 +20,7 @@ PEMMDB_PLANT_TYPE_MARKET = ["Battery utility scale"]
 OP_STAT_MARKET = ["Available on market"]
 PEMMDB_PLANT_TYPE_RESIDENTIAL = ["Battery residential"]
 OP_STAT_RESIDENTIAL = ["Available on market", "Out of market - for PV/battery dispatch optimization"]
+EFFICIENCY_INJECTION = 0.8996
 
 # Output values parameters
 GROUP_VALUES = ["battery", "battery_out"]
@@ -52,3 +53,12 @@ class OutputBatteriesColumns(StrEnum):
     ENABLED = "Enabled"
     SERIES = "Series"
     CONSTRAINTS = "Constraints"
+
+
+# default values for static output columns
+DEFAULT_NAME = "battery_residential"
+DEFAULT_EFFICIENCY_WITHDRAWAL = 1
+DEFAULT_INITIAL_LEVEL = 0.5
+DEFAULT_INITIAL_LEVEL_OPTIM = False
+DEFAULT_SERIES = False
+DEFAULT_CONSTRAINTS = False
