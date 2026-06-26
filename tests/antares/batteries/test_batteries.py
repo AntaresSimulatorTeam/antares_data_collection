@@ -14,7 +14,10 @@ import time
 
 from pathlib import Path
 
+import pandas as pd
+
 from antares.data_collection import parse_main_params
+from antares.data_collection.batteries.constants import BATTERIES_FOLDER
 from antares.data_collection.batteries.parsing import BatteriesParser
 from tests.conftest import RESOURCE_PATH
 
@@ -35,3 +38,26 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     parser.build_batteries()
     end = time.time()
     print("Duration BATTERIES", end - start)
+
+    # Asserts the file is created
+    generated_file_path = tmp_path / BATTERIES_FOLDER / "cluster_battery_format_pegase.xlsx"
+    assert generated_file_path.exists()
+
+    # read Excel workbook, one sheet by year
+    file_wb = pd.ExcelFile(generated_file_path)
+    sheet_names = file_wb.sheet_names
+
+    generated_df = pd.read_excel(generated_file_path, sheet_name=sheet_names)
+    assert list(generated_df.keys()) == ["2030", "2035"]
+
+    # Compare its content with the expected one for any sheet
+    expected_wb_file_path = RESOURCE_PATH / "expected_output_files" / "batteries" / "cluster_battery_format_pegase.xlsx"
+    expected_wb = pd.ExcelFile(expected_wb_file_path)
+    # 2030
+    sheet_name = list(generated_df.keys())[0]
+    expected_df_2030 = pd.read_excel(expected_wb, sheet_name=sheet_name)
+    pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2030, check_dtype=False)
+    # 2035
+    sheet_name = list(generated_df.keys())[1]
+    expected_df_2035 = pd.read_excel(expected_wb, sheet_name=sheet_name)
+    pd.testing.assert_frame_equal(generated_df[sheet_name], expected_df_2035, check_dtype=False)

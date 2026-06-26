@@ -17,7 +17,9 @@ import numpy as np
 import pandas as pd
 
 from antares.data_collection.batteries.constants import (
+    BATTERIES_FOLDER,
     BATTERIES_INPUT_FILE,
+    BATTERIES_NAME_FILE,
     DEFAULT_CONSTRAINTS,
     DEFAULT_EFFICIENCY_WITHDRAWAL,
     DEFAULT_INITIAL_LEVEL,
@@ -165,21 +167,21 @@ class BatteriesParser:
 
         return aggregate_df[list(OutputBatteriesColumns)]
 
-    # def _export_batteries(self, dict_of_df: dict[int, pd.DataFrame]) -> None:
-    #     parent_dir = self.output_folder / BATTERIES_FOLDER
-    #     parent_dir.mkdir(parents=True, exist_ok=True)
-    #
-    #     output_path = parent_dir / DSR_NAME_FILE
-    #
-    #     with pd.ExcelWriter(output_path) as writer:
-    #         for year, df in dict_of_df.items():
-    #             sheet_name = str(year)
-    #
-    #             df.to_excel(
-    #                 writer,
-    #                 sheet_name=sheet_name,
-    #                 index=False,
-    #             )
+    def _export_batteries(self, dict_of_df: dict[int, pd.DataFrame]) -> None:
+        parent_dir = self.output_folder / BATTERIES_FOLDER
+        parent_dir.mkdir(parents=True, exist_ok=True)
+
+        output_path = parent_dir / BATTERIES_NAME_FILE
+
+        with pd.ExcelWriter(output_path) as writer:
+            for year, df in dict_of_df.items():
+                sheet_name = str(year)
+
+                df.to_excel(
+                    writer,
+                    sheet_name=sheet_name,
+                    index=False,
+                )
 
     def build_batteries(self) -> None:
         df = self._build_filtered_batteries_dataframe()
@@ -188,3 +190,5 @@ class BatteriesParser:
         res: dict[YearId, pd.DataFrame] = {}
         for year in years:
             res[year] = self._compute_aggregated_columns_year(df, year)
+
+        self._export_batteries(res)
