@@ -18,7 +18,7 @@ BATTERIES_INPUT_FILE = "Batteries.csv"
 
 # Output
 BATTERIES_FOLDER = Path("ST_Storage") / "battery" / "clusters"
-BATTERIES_NAME_FILE = "cluster_battery_format_pegase.xlsx"
+BATTERIES_NAME_FILE = "cluster_battery_PEMMDB.xlsx"
 
 # Default values parameters
 PEMMDB_PLANT_TYPE_MARKET = ["Battery utility scale"]

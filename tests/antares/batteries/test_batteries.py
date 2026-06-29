@@ -40,7 +40,8 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     print("Duration BATTERIES", end - start)
 
     # Asserts the file is created
-    generated_file_path = tmp_path / BATTERIES_FOLDER / "cluster_battery_format_pegase.xlsx"
+    ouput_file_name = "cluster_battery_PEMMDB.xlsx"
+    generated_file_path = tmp_path / BATTERIES_FOLDER / ouput_file_name
     assert generated_file_path.exists()
 
     # read Excel workbook, one sheet by year
@@ -51,7 +52,7 @@ def test_parse_main_params_real_test_case(tmp_path: Path) -> None:
     assert list(generated_df.keys()) == ["2030", "2035"]
 
     # Compare its content with the expected one for any sheet
-    expected_wb_file_path = RESOURCE_PATH / "expected_output_files" / "batteries" / "cluster_battery_format_pegase.xlsx"
+    expected_wb_file_path = RESOURCE_PATH / "expected_output_files" / "batteries" / ouput_file_name
     expected_wb = pd.ExcelFile(expected_wb_file_path)
     # 2030
     sheet_name = list(generated_df.keys())[0]

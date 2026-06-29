@@ -26,7 +26,6 @@ class ReferentialSheetNames(StrEnum):
     CLUSTER = "CLUSTER"
     PEAK_PARAMS = "PEAK_PARAMS"
     COMMON_DATA = "Common Data"
-    BATTERIES = "BATTERIES"
 
 
 # sheet "PAYS"

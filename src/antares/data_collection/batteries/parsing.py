@@ -11,7 +11,6 @@
 # This file is part of the Antares project.
 
 from pathlib import Path
-from typing import TypeAlias
 
 import numpy as np
 import pandas as pd
@@ -47,9 +46,6 @@ from antares.data_collection.utils import (
     filter_out_based_on_year,
     parse_input_file,
 )
-
-AntaresNodeId: TypeAlias = str
-IndexStockDuration: TypeAlias = dict[AntaresNodeId, float]
 
 
 class BatteriesParser:
@@ -184,7 +180,7 @@ class BatteriesParser:
                 )
 
     def build_batteries(self) -> None:
-        df = self._build_filtered_batteries_dataframe()
+        df = self.filtered_dataframe
 
         years = sorted(self.years)
         res: dict[YearId, pd.DataFrame] = {}
