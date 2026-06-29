@@ -37,8 +37,6 @@ def filter_based_on_op_stat(filter_op_stat_values: list[str], df: pd.DataFrame, 
     """We want to keep only the lines were the OP_STAT value matches the user given ones"""
     if not filter_op_stat_values:
         return df
-    if column_name not in df.columns:
-        raise ValueError(f"Column {column_name} not found in the dataframe")
     df = df[df[column_name].isin(filter_op_stat_values)]
     if df.empty:
         # We want to raise as soon as possible to have a clear error msg
