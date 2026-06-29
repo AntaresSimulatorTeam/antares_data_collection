@@ -82,16 +82,6 @@ class PeakParamsColumnsNames(StrEnum):
     PERIOD_MONTH = "period_month"
 
 
-# "BATTERIES"
-class BatteryColumnsNames(StrEnum):
-    SCENARIO_AGREGATION = "SCENARIO_AGREGATION"
-    PEMMDB_PLANT_TYPE = "PEMMDB_PLANT_TYPE"
-    OP_STAT = "OP_STAT"
-    GROUP = "GROUP"
-    NAME = "NAME"
-    REFERENCE = "REFERENCE"
-
-
 @dataclass(frozen=True)
 class ClusterParams:
     technology: str
@@ -141,7 +131,6 @@ class MainParams:
     _cluster_antares: dict[str, ClusterParams]
     _peak_hour_label: dict[int, str]
     _peak_month_label: dict[int, str]
-    _batteries_data_frame: pd.DataFrame
 
     def get_antares_code(self, market_code: str) -> str | None:
         value = self._market_to_antares.get(market_code)
@@ -349,15 +338,6 @@ def parse_main_params(file_path: Path) -> MainParams:
         zip(df[PeakParamsColumnsNames.MONTH].dropna(), df[PeakParamsColumnsNames.PERIOD_MONTH].dropna())
     )
 
-    # Parse "Batteries" sheet
-    df = excel_sheets[ReferentialSheetNames.BATTERIES]
-    actual_cols = set(df.columns)
-    for df_col in BatteryColumnsNames:
-        if df_col.value not in actual_cols:
-            raise ValueError(f"Column '{df_col}' not found inside sheet '{ReferentialSheetNames.BATTERIES}'")
-
-    batteries_df = df
-
     # Return validated dataclass
     return MainParams(
         _market_to_antares=countries_dict,
@@ -367,5 +347,4 @@ def parse_main_params(file_path: Path) -> MainParams:
         _cluster_antares=cluster_antares_dict,
         _peak_hour_label=peak_hour_dict,
         _peak_month_label=peak_month_dict,
-        _batteries_data_frame=batteries_df,
     )
