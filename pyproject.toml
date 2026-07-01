@@ -10,10 +10,10 @@ authors = [
 requires-python = ">=3.11"
 
 dependencies = [
-    "openpyxl>=3.1.5",
-    "pandas",
-    "polars~=1.39.3",
-    "xlsxwriter>=3.2.9",
+    "openpyxl>=3.0.0",
+    "pandas>=2.0.0, <3.0.0",
+    "polars>=1.35.0",
+    "xlsxwriter>=3.0.0",
 ]
 
 classifiers = [
@@ -22,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Typing :: Typed"
