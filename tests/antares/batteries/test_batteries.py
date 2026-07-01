@@ -16,9 +16,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from antares.data_collection import parse_main_params
 from antares.data_collection.batteries.constants import BATTERIES_FOLDER
 from antares.data_collection.batteries.parsing import BatteriesParser
+from antares.data_collection.referential_data.main_params import parse_main_params
 from tests.conftest import RESOURCE_PATH
 
 
