@@ -27,8 +27,7 @@ from antares.data_collection.referential_data.main_params import parse_main_para
 from antares.data_collection.thermal.parsing import ThermalParser
 
 
-class UserAPI:
-    # todo: change class name
+class PEMMDBConverter:
     def __init__(self, input_folder: Path, output_folder: Path, main_params_path: Path, years: list[int]) -> None:
         self._input_folder = input_folder
         self._output_folder = output_folder
