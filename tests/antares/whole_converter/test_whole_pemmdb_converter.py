@@ -33,3 +33,25 @@ def test_whole_converter(tmp_path: Path) -> None:
     converter.build_link_files()
     # Misc
     converter.build_misc_files(op_stat)
+
+    # Check the output folders
+    assert output_folder.exists()
+
+    folders = [folder.name for folder in output_folder.iterdir()]
+    assert sorted(folders) == ["DSR", "MISC", "ST_Storage", "link", "thermal"]
+
+    dsr_folder = output_folder / "DSR"
+    assert (dsr_folder / "capacity_modulation").is_dir()
+    assert (dsr_folder / "cluster").is_dir()
+
+    assert (output_folder / "link" / "PEMMDB_LINK.xlsx").exists()
+
+    misc_folder = output_folder / "MISC"
+    assert (misc_folder / "installed power").is_dir()
+    assert (misc_folder / "load factor").is_dir()
+
+    assert (output_folder / "ST_Storage" / "battery" / "clusters" / "cluster_battery_PEMMDB.xlsx").exists()
+
+    thermal_folder = output_folder / "thermal"
+    assert (thermal_folder / "installed power").is_dir()
+    assert (thermal_folder / "technical parameters").is_dir()
