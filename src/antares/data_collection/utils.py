@@ -44,7 +44,7 @@ def filter_based_on_op_stat(filter_op_stat_values: list[str], df: pd.DataFrame, 
     return df
 
 
-@dataclass
+@dataclass(frozen=True)
 class CommissioningDateLimits:
     last_possible_commissioning_date: pd.Timestamp
     earliest_possible_decommissioning_date: pd.Timestamp
