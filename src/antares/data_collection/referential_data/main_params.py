@@ -43,12 +43,6 @@ class StudyScenarioColumnsNames(StrEnum):
     STUDY_SCENARIO = "STUDY_SCENARIO"
 
 
-# sheet "LINKS"
-class LinksColumnsNames(StrEnum):
-    MARKET_NODE = "market_node"
-    CODE_ANTARES = "code_antares"
-
-
 # sheet "CLUSTER"
 class ClusterColumnsNames(StrEnum):
     TYPE = "TYPE"

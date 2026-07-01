@@ -9,4 +9,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+from antares.data_collection.user_api import PEMMDBConverter
 
+__all__ = ["PEMMDBConverter"]
