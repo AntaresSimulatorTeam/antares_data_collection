@@ -35,3 +35,7 @@ converter.build_link_files()
 ### Misc
 converter.build_misc_files(op_stat)
 ```
+
+### MAIN_PARAMS.xlsx file
+
+We use this [file](https://github.com/AntaresSimulatorTeam/antares_data_collection/raw/main/tests/antares/resources/MAIN_PARAMS_2025.xlsx) in our tests, and it should be up-ot-date with the latest version of the PEMMDB.
