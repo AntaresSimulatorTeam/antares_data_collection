@@ -70,7 +70,7 @@ def test_nominal_case(tmp_path: Path) -> None:
         with pd.ExcelFile(expected_file_path) as expected_excel_wb:
             for sheet_name in sheet_names:
                 expected_df = pd.read_excel(expected_excel_wb, sheet_name)
-                sheet = generated_workbook[sheet_name]
+                sheet = generated_workbook[str(sheet_name)]
                 assert all(cell.value is None for row in sheet.iter_rows(min_row=1, max_row=2) for cell in row)
                 assert [cell.value for cell in sheet[3]] == expected_df.columns.tolist()
                 assert sheet.cell(row=4, column=1).value == expected_df.iloc[0, 0]
