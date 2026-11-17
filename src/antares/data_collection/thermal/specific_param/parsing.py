@@ -314,6 +314,7 @@ class ThermalSpecificParamParser:
         return pd.DataFrame(output_data)
 
     def _export_specific_param_dataframe(self, df: pd.DataFrame) -> None:
+        """Export annual sheets with two blank rows before the header."""
         parent_dir = self.output_folder / SPECIFIC_PARAM_FOLDER
         parent_dir.mkdir(parents=True, exist_ok=True)
 
@@ -328,7 +329,7 @@ class ThermalSpecificParamParser:
                     by=[OutputThermalSpecificColumns.NODE, OutputThermalSpecificColumns.CLUSTER]
                 ).drop(columns=["YEAR"])
 
-                year_df.to_excel(writer, sheet_name=sheet_name, index=False)
+                year_df.to_excel(writer, sheet_name=sheet_name, index=False, startrow=2)
 
     def _parse_capacity_ts_modulation_file(
         self,

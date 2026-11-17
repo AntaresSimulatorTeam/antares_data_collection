@@ -16,6 +16,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from openpyxl import load_workbook
+
 from antares.data_collection.referential_data.main_params import parse_main_params
 from antares.data_collection.thermal.param_modulation.constants import TECHNICAL_PARAMS_FOLDER
 from antares.data_collection.thermal.parsing import ThermalParser
@@ -63,14 +65,17 @@ def test_nominal_case(tmp_path: Path) -> None:
 
     # Compare its content with the expected one for any sheet
     expected_file_path = RESOURCE_PATH / "expected_output_files" / "thermal" / "specific_param_PEMMDB.xlsx"
-    expected_excel_wb = pd.ExcelFile(expected_file_path)
-    # 2030
-    sheet_name = sheet_names[0]
-    expected_df_2030 = pd.read_excel(expected_excel_wb, sheet_name)
-    generated_df_2030 = pd.read_excel(generated_file_path, sheet_name=sheet_name)
-    pd.testing.assert_frame_equal(generated_df_2030, expected_df_2030, check_dtype=False)
-    # 2035
-    sheet_name = sheet_names[1]
-    expected_df_2035 = pd.read_excel(expected_file_path, sheet_name)
-    generated_df_2035 = pd.read_excel(generated_file_path, sheet_name=sheet_name)
-    pd.testing.assert_frame_equal(generated_df_2035, expected_df_2035, check_dtype=False)
+    generated_workbook = load_workbook(generated_file_path)
+    try:
+        with pd.ExcelFile(expected_file_path) as expected_excel_wb:
+            for sheet_name in sheet_names:
+                expected_df = pd.read_excel(expected_excel_wb, sheet_name)
+                sheet = generated_workbook[sheet_name]
+                assert all(cell.value is None for row in sheet.iter_rows(min_row=1, max_row=2) for cell in row)
+                assert [cell.value for cell in sheet[3]] == expected_df.columns.tolist()
+                assert sheet.cell(row=4, column=1).value == expected_df.iloc[0, 0]
+
+                generated_df = pd.read_excel(generated_file_path, sheet_name=sheet_name, skiprows=2)
+                pd.testing.assert_frame_equal(generated_df, expected_df, check_dtype=False)
+    finally:
+        generated_workbook.close()
