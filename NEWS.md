@@ -1,5 +1,23 @@
 > Copyright © 2016 RTE Réseau de transport d’électricité
 
+# antares-data-collection 0.2.1
+
+FIXES:
+* Thermal specific-parameter exports now include two blank rows before the header in each annual worksheet.
+
+# antares-data-collection 0.2.0
+
+NEW FEATURES (API):
+* `PEMMDBConverter` user class, importable from `antares.data_collection`, as single entry point to generate the output files:
+  * `build_thermal_files()`
+  * `build_dsr_files()`
+  * `build_batteries_files()`
+  * `build_link_files()`
+  * `build_misc_files()`
+
+DOCS:
+* README usage example rewritten around `PEMMDBConverter`; developer documentation extended.
+
 # antares-data-collection 0.1.0 (dev)
 
 NEW FEATURES (LINKS):
@@ -12,6 +30,5 @@ NEW FEATURES (LIB):
 
 DEV : 
 * This lib is tested with `Python 3.12/3.13/3.14`
-
 
 
