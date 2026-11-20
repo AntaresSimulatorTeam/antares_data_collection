@@ -9,6 +9,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 # This file is part of the Antares project.
+import pytest
+
 import shutil
 import time
 
@@ -22,7 +24,27 @@ from antares.data_collection.referential_data.main_params import parse_main_para
 from antares.data_collection.thermal.param_modulation.constants import TECHNICAL_PARAMS_FOLDER
 from antares.data_collection.thermal.parsing import ThermalParser
 from antares.data_collection.thermal.specific_param.constants import SPECIFIC_PARAM_FOLDER
+from antares.data_collection.thermal.specific_param.parsing import ThermalSpecificParamParser
+from antares.data_collection.thermal.utils import get_path_capacity_modulation_file
+from antares.data_collection.utils import write_csv_file
 from tests.conftest import RESOURCE_PATH
+
+
+@pytest.mark.parametrize("include_hour", [False, True])
+def test_capacity_modulation_reader_ignores_time_columns(tmp_path: Path, include_hour: bool) -> None:
+    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+    df = pd.DataFrame(
+        {
+            "DATE_HEURE": ["2028-07-01 00:00:00", "2028-07-01 01:00:00"],
+            "AT_CCGT": [0.8, 0.3],
+        }
+    )
+    if include_hour:
+        df.insert(1, "HEURE", [4345, 4346])
+    write_csv_file(get_path_capacity_modulation_file(2030, tmp_path), df)
+    parser = ThermalSpecificParamParser(tmp_path, main_params, [2030])
+
+    assert parser._parse_capacity_ts_modulation_file() == {2030: {"AT": {"CCGT": 0.3}}}
 
 
 def test_nominal_case(tmp_path: Path) -> None:

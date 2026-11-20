@@ -17,8 +17,42 @@ import pandas as pd
 
 from antares.data_collection.referential_data.main_params import parse_main_params
 from antares.data_collection.thermal.param_modulation.constants import TECHNICAL_PARAMS_FOLDER
+from antares.data_collection.thermal.param_modulation.parsing import (
+    ThermalParamModulationParser,
+    TimeSeriesAndClusterPair,
+)
 from antares.data_collection.thermal.parsing import ThermalParser
 from tests.conftest import RESOURCE_PATH
+
+
+def test_hour_column(tmp_path: Path) -> None:
+    main_params = parse_main_params(RESOURCE_PATH / "MAIN_PARAMS_2025.xlsx")
+    parser = ThermalParamModulationParser(RESOURCE_PATH, tmp_path, main_params, [2030])
+    series = pd.Series(range(8760), dtype=float)
+    repartition = {"AT00": {"test": [TimeSeriesAndClusterPair(1.0, series, True)]}}
+
+    df = parser._build_pegase_dataframe(repartition, 2030)
+
+    assert df.columns.tolist() == ["DATE_HEURE", "HEURE", "AT_test"]
+    assert pd.api.types.is_integer_dtype(df["HEURE"])
+    assert sorted(df["HEURE"].tolist()) == list(range(1, 8761))
+    expected_order = list(range(4344, 8760)) + list(range(4344))
+    assert df["AT_test"].tolist() == series.reindex(expected_order).tolist()
+    assert df["HEURE"].tolist() == [hour + 1 for hour in expected_order]
+    assert df["DATE_HEURE"].tolist() == pd.date_range("2028-07-01", periods=8760, freq="h").astype(str).tolist()
+
+    hours_by_date = df.set_index("DATE_HEURE")["HEURE"]
+    for date, expected_hour in [
+        ("2028-07-01 00:00:00", 4345),
+        ("2028-10-10 14:00:00", 6783),
+        ("2029-04-23 21:00:00", 2710),
+        ("2028-12-31 23:00:00", 8760),
+        ("2029-01-01 00:00:00", 1),
+        ("2029-02-28 23:00:00", 1416),
+        ("2029-03-01 00:00:00", 1417),
+        ("2029-06-30 23:00:00", 4344),
+    ]:
+        assert hours_by_date[date] == expected_hour
 
 
 def test_nominal_case(tmp_path: Path) -> None:
