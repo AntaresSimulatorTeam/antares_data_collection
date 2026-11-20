@@ -1,5 +1,11 @@
 > Copyright © 2016 RTE Réseau de transport d’électricité
 
+# antares-data-collection 0.2.2
+
+NEW FEATURES (THERMAL):
+* Capacity modulation (CM) and must-run (MR) CSV exports now include `HEURE` immediately after `DATE_HEURE`: a 1-based calendar-hour index from 1 to 8760, excluding February 29.
+* Existing dates, time-series values and July-to-June ordering remain unchanged; DSR and misc exports are unaffected.
+
 # antares-data-collection 0.2.1
 
 FIXES:
@@ -30,5 +36,4 @@ NEW FEATURES (LIB):
 
 DEV : 
 * This lib is tested with `Python 3.12/3.13/3.14`
-
 

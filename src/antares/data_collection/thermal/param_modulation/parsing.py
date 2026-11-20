@@ -327,6 +327,11 @@ class ThermalParamModulationParser:
 
         # Add the Hours columns
         reindex_df = insert_str_date_time_reindex(df, OUTPUT_DATE_INT_REFERENCE, OutputModulationColumns.DATE.value)
+        dates = pd.to_datetime(reindex_df[OutputModulationColumns.DATE])
+        # Ignore February 29 when numbering hours in a leap year.
+        days = dates.dt.dayofyear - (dates.dt.is_leap_year & (dates.dt.month > 2)).astype(int)
+        hours = (days - 1) * 24 + dates.dt.hour + 1
+        reindex_df.insert(1, OutputModulationColumns.HOUR.value, hours)
 
         return reindex_df
 

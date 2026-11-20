@@ -36,6 +36,12 @@ converter.build_link_files()
 converter.build_misc_files(op_stat)
 ```
 
+The thermal capacity modulation (CM) and must-run (MR) CSV files start with
+`DATE_HEURE` and `HEURE`, followed by the cluster time series. `HEURE` is the
+1-based calendar-hour index (1 to 8760), excluding February 29 even in leap years.
+It follows the date rather than the row number in the July-to-June export:
+`2028-07-01 00:00:00` corresponds to 4345, for example.
+
 ### MAIN_PARAMS.xlsx file
 
 We use this [file](https://github.com/AntaresSimulatorTeam/antares_data_collection/raw/main/tests/antares/resources/MAIN_PARAMS_2025.xlsx) in our tests, and it should be up-ot-date with the latest version of the PEMMDB.
